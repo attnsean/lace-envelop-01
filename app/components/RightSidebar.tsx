@@ -1,0 +1,1636 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
+import QRCode from "react-qr-code";
+
+const priaImg = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";
+const wanitaImg = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&auto=format&fit=crop";
+const bgImg12 = "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop";
+const bgImg3 = "https://images.unsplash.com/photo-1519225495810-7517c24a2ed3?q=80&w=1200&auto=format&fit=crop"; // Used for Reception
+const bgImgCeremony = "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop"; // Used for Ceremony
+const bgImg4 = "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=1200&auto=format&fit=crop"; // Used for Wedding Gift
+const slide4Img = "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1200&auto=format&fit=crop"; // Used for Dress Code
+
+import Slideshow from "./Slideshow";
+import FadeIn from "./FadeIn";
+import BlessingWall from "./BlessingWall";
+import CustomCursor from "./CustomCursor";
+import TimelineSection, { StoryEvent } from "./TimelineSection";
+import FloatingParticles from "./FloatingParticles";
+import { DbGuest, DbProject, DbEvent, DbWish } from "../../lib/resolveProject";
+import { supabase } from "../../lib/supabase";
+import { useSmartPosition } from "../../lib/useSmartPosition";
+
+const fragments = [
+  "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1519225495810-7517c24a2ed3?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?q=80&w=400&auto=format&fit=crop"
+];
+
+interface Props {
+  guestName: string;
+  guest?: DbGuest | null;
+  project?: DbProject | null;
+  events?: DbEvent[] | null;
+  wishes?: DbWish[] | null;
+  stats?: {
+    attending: number;
+    wishes: number;
+  };
+}
+
+interface GiftItem {
+  id: string;
+  name: string;
+  image: string;
+  isBought: boolean;
+  price: string | number;
+  originalPrice?: string | number;
+  discount?: string;
+  link?: string;
+}
+
+interface PaymentAccount {
+  provider?: string | null;
+  bank_name?: string | null;
+  bankName?: string | null;
+  bank_account?: string | null;
+  bankAccount?: string | null;
+  account_number?: string | null;
+  accountNumber?: string | null;
+  owner_name?: string | null;
+  ownerName?: string | null;
+  account_name?: string | null;
+  accountName?: string | null;
+}
+
+export default function RightSidebar({ guestName, guest, project, events, wishes, stats }: Props) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [[page, direction], setPage] = useState([0, 0]);
+
+  const groomPhotoPosition = useSmartPosition(project?.groom_photo_url || priaImg);
+  const bridePhotoPosition = useSmartPosition(project?.bride_photo_url || wanitaImg);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const [giftItems, setGiftItems] = useState<GiftItem[]>([]);
+  const [giftLoading, setGiftLoading] = useState(true);
+  const [activeGiftIndex, setActiveGiftIndex] = useState(0);
+  const [selectedGiftForQR, setSelectedGiftForQR] = useState<GiftItem | null>(null);
+
+  const defaultSealSrc = `https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/c6d00359-becb-4f70-ab00-ff8f8530d546/f93ad18d-cba2-4de0-a86b-b1fadf2783a2/wax-seal.png`;
+  const [sealSrc, setSealSrc] = useState(defaultSealSrc);
+
+  useEffect(() => {
+    if (project?.user_id && project?.id) {
+      setSealSrc(`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project.user_id}/${project.id}/wax-seal.png`);
+    } else {
+      setSealSrc(defaultSealSrc);
+    }
+  }, [project, defaultSealSrc]);
+
+  useEffect(() => {
+    async function fetchGifts() {
+      if (!project?.id) {
+        setGiftLoading(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('gift_registry')
+          .select('*')
+          .eq('project_id', project.id)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        const mapped = (data || []).map((item) => ({
+          id: item.id,
+          name: item.name,
+          image: item.image_url || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=400&auto=format&fit=crop",
+          isBought: item.is_bought || false,
+          price: item.price ? item.price.toLocaleString('id-ID') : '0',
+          originalPrice: item.original_price ? item.original_price.toLocaleString('id-ID') : undefined,
+          discount: item.discount_label || undefined,
+          link: item.link || undefined
+        }));
+        setGiftItems(mapped);
+      } catch (err) {
+        console.error("Error fetching gift registry:", err);
+      } finally {
+        setGiftLoading(false);
+      }
+    }
+    fetchGifts();
+  }, [project?.id]);
+
+  const statsState = stats || { attending: 156, wishes: 43 };
+  const galleryImages = (project?.gallery_photos && Array.isArray(project.gallery_photos) && project.gallery_photos.length > 0)
+    ? (project.gallery_photos as (string | { url?: string; public_url?: string })[])
+      .map((p) => typeof p === 'string' ? p : p?.url || p?.public_url)
+      .filter((url): url is string => typeof url === 'string' && !!url)
+    : (project ? [] : fragments);
+
+  const slideshowImages = React.useMemo(() => {
+    const list: string[] = [];
+    if (project?.opening_photo_url) list.push(project.opening_photo_url);
+    if (project?.cover_photo_url) list.push(project.cover_photo_url);
+    if (project?.bride_photo_url) list.push(project.bride_photo_url);
+    if (project?.groom_photo_url) list.push(project.groom_photo_url);
+
+    if (project?.gallery_photos && Array.isArray(project.gallery_photos)) {
+      project.gallery_photos.forEach((p) => {
+        const url = typeof p === 'string' ? p : p?.url || p?.public_url;
+        if (url) list.push(url);
+      });
+    }
+    return list.length > 0 ? list : fragments;
+  }, [project]);
+
+  const renderCalendar = () => {
+    const wDate = project?.wedding_date ? new Date(project.wedding_date) : new Date("2026-04-25");
+    const year = wDate.getFullYear();
+    const month = wDate.getMonth();
+    const targetDay = wDate.getDate();
+
+    const rawMonthName = wDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
+    const monthName = rawMonthName.split("").join(" ");
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    const grid = [];
+    for (let i = 0; i < firstDayIndex; i++) {
+      grid.push({ day: null, isTarget: false });
+    }
+    for (let d = 1; d <= totalDays; d++) {
+      grid.push({ day: d, isTarget: d === targetDay });
+    }
+
+    return { monthName, grid };
+  };
+
+  const { monthName: dynamicMonthName, grid: calendarGrid } = renderCalendar();
+
+  const getGoogleCalendarLink = () => {
+    const bride = project?.bride_nickname || "Mita";
+    const groom = project?.groom_nickname || "Tian";
+    const title = encodeURIComponent(`Wedding of ${groom} & ${bride}`);
+    const wDate = project?.wedding_date ? new Date(project.wedding_date) : new Date("2026-04-25");
+    const year = wDate.getFullYear();
+    const month = String(wDate.getMonth() + 1).padStart(2, '0');
+    const day = String(wDate.getDate()).padStart(2, '0');
+    const dates = `${year}${month}${day}T020000Z/${year}${month}${day}T140000Z`;
+    const details = encodeURIComponent(`We look forward to sharing our special day with you!`);
+    const location = encodeURIComponent(project?.venue_name || "Indonesia");
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+  };
+
+  const formatFallbackDate = (dateStr?: string | null) => {
+    const wDate = dateStr ? new Date(dateStr) : new Date("2026-04-25");
+    if (isNaN(wDate.getTime())) return "Saturday, 25 April 2026";
+    return wDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  const formatEventDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  // Gift items initialized directly in state
+
+  const openLightbox = (idx: number) => {
+    setPage([idx, 0]);
+    setSelectedIndex(idx);
+  };
+
+  const paginate = (newDirection: number) => {
+    if (selectedIndex === null) return;
+    const nextIndex = selectedIndex + newDirection;
+    if (nextIndex >= 0 && nextIndex < galleryImages.length) {
+      setPage([nextIndex, newDirection]);
+      setSelectedIndex(nextIndex);
+    }
+  };
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => Math.abs(offset) * velocity;
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert("Account number copied!");
+  };
+
+  const handleOpen = () => {
+    setIsOpen(true);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  useEffect(() => {
+    const countdownTarget = project?.countdown_target || project?.wedding_date || "2026-04-25T00:00:00";
+    const targetDate = new Date(countdownTarget).getTime();
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        clearInterval(interval);
+        return;
+      }
+
+      setTimeLeft({
+        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((distance % (1000 * 60)) / 1000)
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [project]);
+
+  return (
+    <div className="relative w-full md:w-[30%] h-[100dvh] shadow-none md:shadow-[-20px_0_30px_-15px_rgba(0,0,0,0.3)] z-20 flex-shrink-0 overflow-hidden bg-neutral-950">
+      <CustomCursor />
+
+      {/* Audio Element */}
+      <audio ref={audioRef} loop src={project?.music_url || "/audio/bgm.mp3"} />
+
+      {/* Premium Music Player UI */}
+      <div
+        className={`fixed bottom-6 right-6 z-[100] flex flex-row-reverse items-center gap-4 transition-all duration-1000 delay-500 ${isOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"}`}
+      >
+        <button
+          onClick={toggleAudio}
+          className="relative group w-14 h-14 flex items-center justify-center bg-black/40 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 overflow-hidden"
+        >
+          {/* Rotating Vinyl Effect */}
+          <motion.div
+            animate={{ rotate: isPlaying ? 360 : 0 }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            className={`absolute inset-1 rounded-full border border-dashed border-white/30 ${!isPlaying && 'opacity-50'}`}
+          />
+
+          {/* Inner Circle / Label */}
+          <div className="absolute inset-4 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center">
+            {isPlaying ? (
+              <div className="flex gap-0.5 items-end h-3">
+                <motion.div animate={{ height: [4, 12, 6] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 bg-[#d4af37]" />
+                <motion.div animate={{ height: [8, 4, 10] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-0.5 bg-[#d4af37]" />
+                <motion.div animate={{ height: [6, 10, 4] }} transition={{ repeat: Infinity, duration: 0.7 }} className="w-0.5 bg-[#d4af37]" />
+              </div>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#d4af37]">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347c-.75.412-1.667-.13-1.667-.986V5.653Z" />
+              </svg>
+            )}
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {isPlaying && (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              className="hidden sm:flex flex-col items-end"
+            >
+              <p className="text-[8px] font-bold tracking-[0.3em] text-white/40 uppercase">Now Playing</p>
+              <p className="text-[10px] font-serif text-[#d4af37] tracking-widest whitespace-nowrap">Wedding Melody</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Scrollable Content (Sections 2, 3, 4, 5, 6, 7) */}
+      <div
+        className={`h-full overflow-y-auto no-scrollbar pb-24 absolute inset-0 w-full h-full overflow-x-hidden snap-y snap-mandatory flex flex-col gap-20 md:gap-28 scrollbar-hide transition-opacity duration-1000 ease-in-out delay-300 z-10 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+      >
+        {/* SECTION 2: Quote */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
+          <div className="absolute inset-0 z-0 bg-black">
+            <Slideshow
+              images={slideshowImages}
+              intervalMs={1500}
+              overlayClassName="bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-80"
+            />
+          </div>
+
+          <div className="relative z-10 w-full h-full flex flex-row items-center justify-center pt-24 pb-16 px-6 md:px-8 gap-4 md:gap-6">
+            <FadeIn className="flex flex-col text-5xl md:text-6xl font-serif text-white/50 leading-[0.85] tracking-tight">
+              {project?.wedding_date ? (
+                (() => {
+                  const dateParts = project.wedding_date.split("-");
+                  if (dateParts.length === 3) {
+                    return (
+                      <>
+                        <span>{dateParts[2]}</span>
+                        <span>{dateParts[1]}</span>
+                        <span>{dateParts[0].substring(2)}</span>
+                      </>
+                    );
+                  }
+                  return <span>25</span>;
+                })()
+              ) : (
+                <>
+                  <span>25</span>
+                  <span>25</span>
+                  <span>04</span>
+                  <span>26</span>
+                </>
+              )}
+            </FadeIn>
+            <FadeIn delay={0.2} className="flex-1 space-y-4">
+              {project?.love_story ? (
+                <p className="text-xs md:text-sm font-sans font-light leading-relaxed tracking-wide text-gray-200 whitespace-pre-line">
+                  {project.love_story}
+                </p>
+              ) : (
+                <>
+                  <p className="text-xs md:text-sm font-sans font-light leading-relaxed tracking-wide text-gray-200">
+                    “Two are better than one, because they have a good reward for their toil. For if they fall, one will lift up his fellow. But woe to him who is alone when he falls and has not another to lift him up.”
+                  </p>
+                  <p className="text-xs md:text-sm font-bold font-sans tracking-widest text-white">
+                    (Ecclesiastes 4:9-10)
+                  </p>
+                </>
+              )}
+            </FadeIn>
+          </div>
+        </section>
+
+        {/* SECTION 3: Groom */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-black">
+          <Image
+            src={project?.groom_photo_url || priaImg}
+            alt="Mempelai Pria"
+            fill
+            unoptimized={typeof (project?.groom_photo_url) === 'string'}
+            sizes="(max-width: 768px) 100vw, 30vw"
+            className="object-cover opacity-80 grayscale transition-all duration-700 ease-out z-0"
+            style={{ objectPosition: groomPhotoPosition }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/20 z-10 pointer-events-none"></div>
+
+          <div className="relative z-10 w-full h-full flex flex-col justify-end pb-16 px-8 md:px-10">
+            <FadeIn>
+              <div className="mb-6 space-y-2">
+                <h2 className="text-4xl md:text-5xl font-serif tracking-[0.3em] text-white">
+                  {(project?.groom_nickname || "TIAN").split("").join(" ")}
+                </h2>
+                <p className="text-xl md:text-2xl font-script text-white/90">
+                  {project?.groom_name || "Christian Siahaan"}
+                </p>
+              </div>
+            </FadeIn>
+            <FadeIn delay={0.2}>
+              <p className="text-xs md:text-sm font-sans font-light leading-relaxed tracking-wide text-gray-300 max-w-sm">
+                Son of Mr. {project?.groom_father || "Binsar Hamonangan Siahaan"}{project?.groom_father_deceased ? " (Alm)" : ""} <br />
+                & Mrs. {project?.groom_mother || "Tisnawaty Sagala"}{project?.groom_mother_deceased ? " (Almh)" : ""}
+              </p>
+            </FadeIn>
+          </div>
+        </section>
+
+        {/* SECTION 4: Bride */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-black">
+          <Image
+            src={project?.bride_photo_url || wanitaImg}
+            alt="Mempelai Wanita"
+            fill
+            unoptimized={typeof (project?.bride_photo_url) === 'string'}
+            sizes="(max-width: 768px) 100vw, 30vw"
+            className="object-cover opacity-80 grayscale transition-all duration-700 ease-out z-0"
+            style={{ objectPosition: bridePhotoPosition }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/20 z-10 pointer-events-none"></div>
+
+          <div className="relative z-10 w-full h-full flex flex-col justify-end pb-16 px-8 md:px-10">
+            <FadeIn>
+              <div className="mb-6 space-y-2">
+                <h2 className="text-4xl md:text-5xl font-serif tracking-[0.3em] text-white">
+                  {(project?.bride_nickname || "MITA").split("").join(" ")}
+                </h2>
+                <p className="text-xl md:text-2xl font-script text-white/90">
+                  {project?.bride_name || "Ira Mita Simangunsong"}
+                </p>
+              </div>
+            </FadeIn>
+            <FadeIn delay={0.2}>
+              <p className="text-xs md:text-sm font-sans font-light leading-relaxed tracking-wide text-gray-300 max-w-sm">
+                Daughter of Mr. {project?.bride_father || "Rayanto Simangunsong"}{project?.bride_father_deceased ? " (Alm)" : ""} <br />
+                & Mrs. {project?.bride_mother || "Sayunah Rutsetyaningsih"}{project?.bride_mother_deceased ? " (Almh)" : ""}
+              </p>
+            </FadeIn>
+          </div>
+        </section>
+
+        {/* SECTION 4.5: The Love Story Timeline */}
+        {project?.subscriptions?.packages?.has_love_story !== false && (
+          <TimelineSection loveStoryItems={project?.love_story_items as StoryEvent[] | null | undefined} />
+        )}
+
+        {/* SECTION 5: Calendar & Countdown */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
+          <div className="absolute inset-0 z-0 bg-black">
+            <Image
+              src={project?.cover_photo_url || bgImg12}
+              alt="Save the Date"
+              fill
+              unoptimized={typeof (project?.cover_photo_url) === 'string'}
+              sizes="(max-width: 768px) 100vw, 30vw"
+              className="object-cover object-[center_35%] opacity-90"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+          </div>
+
+          <div className="absolute top-[5%] left-[-15%] text-[30rem] font-script text-white/5 leading-none pointer-events-none mix-blend-overlay">
+            &
+          </div>
+
+          <div className="relative z-10 w-full h-full flex flex-col justify-end items-center pb-12 px-6">
+            <FadeIn>
+              <h2 className="text-3xl font-serif tracking-[0.4em] text-white mb-6">
+                {dynamicMonthName}
+              </h2>
+            </FadeIn>
+
+            {/* Dynamic Calendar Grid */}
+            <FadeIn delay={0.2} className="w-full max-w-[280px] mb-10">
+              <div className="grid grid-cols-7 gap-y-4 text-center text-[10px] md:text-xs text-white/80 font-sans font-light">
+                <div className="font-medium text-white mb-2">Su</div>
+                <div className="font-medium text-white mb-2">Mo</div>
+                <div className="font-medium text-white mb-2">Tu</div>
+                <div className="font-medium text-white mb-2">We</div>
+                <div className="font-medium text-white mb-2">Th</div>
+                <div className="font-medium text-white mb-2">Fr</div>
+                <div className="font-medium text-white mb-2">Sa</div>
+
+                {calendarGrid.map((cell, idx) => (
+                  <div key={idx} className="relative flex items-center justify-center h-6 w-full">
+                    {cell.day ? (
+                      cell.isTarget ? (
+                        <>
+                          <span className="relative z-10 font-bold text-white">{cell.day}</span>
+                          <div className="absolute inset-0 bg-white/30 rounded-full scale-[1.3] md:scale-150 backdrop-blur-[2px]"></div>
+                          <span className="absolute -top-1 -right-1 md:-top-2 md:-right-2 text-[8px] md:text-[10px] text-pink-400">♥</span>
+                        </>
+                      ) : (
+                        <span>{cell.day}</span>
+                      )
+                    ) : (
+                      <span className="opacity-0"></span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </FadeIn>
+
+            {/* Countdown */}
+            {project?.subscriptions?.packages?.has_hitung_mundur !== false && (
+              <>
+                <FadeIn delay={0.4} className="w-full max-w-[280px] flex justify-between text-white font-serif tracking-widest border-t border-white/20 pt-6">
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl md:text-2xl">{timeLeft.days.toString().padStart(2, '0')}</span>
+                    <span className="text-[9px] md:text-[10px] font-sans font-light mt-1 opacity-70">Days</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl md:text-2xl">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                    <span className="text-[9px] md:text-[10px] font-sans font-light mt-1 opacity-70">Hours</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl md:text-2xl">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                    <span className="text-[9px] md:text-[10px] font-sans font-light mt-1 opacity-70">Minutes</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl md:text-2xl">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+                    <span className="text-[9px] md:text-[10px] font-sans font-light mt-1 opacity-70">Seconds</span>
+                  </div>
+                </FadeIn>
+
+                {/* Add to Calendar Button */}
+                <FadeIn delay={0.6} className="mt-8 relative z-50">
+                  <a
+                    href={getGoogleCalendarLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 border border-white/40 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-sans uppercase tracking-[0.2em] transition-all"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+                    </svg>
+                    Add to Calendar
+                  </a>
+                </FadeIn>
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* DYNAMIC EVENTS SECTION */}
+        {events && events.length > 0 ? (
+          events.map((event, index) => {
+            const eventTitle = (event.custom_label || event.event_type || "").toUpperCase();
+            const fallbackImage = (galleryImages && galleryImages.length > 0)
+              ? (index % 2 === 0 ? (galleryImages[2 % galleryImages.length] || galleryImages[0]) : (galleryImages[3 % galleryImages.length] || galleryImages[0]))
+              : (index % 2 === 0 ? bgImgCeremony : bgImg3);
+            const bgImage = event.venue_photo_url || fallbackImage;
+            const dateText = formatEventDate(event.event_date);
+            const timeText = event.event_time ? `${event.event_time.substring(0, 5)} ${event.end_time ? `- ${event.end_time.substring(0, 5)}` : ""} WIB` : "";
+
+            return (
+              <section key={event.id || index} className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
+                <div className="absolute inset-0 z-0 bg-black">
+                  <Image
+                    src={bgImage}
+                    alt={eventTitle}
+                    fill
+                    unoptimized={typeof bgImage === 'string'}
+                    sizes="(max-width: 768px) 100vw, 30vw"
+                    className="object-cover object-[center_35%] grayscale opacity-80"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 backdrop-blur-[2px]"></div>
+                </div>
+
+                <div className="relative z-10 w-full h-full flex flex-col justify-center px-8 md:px-10">
+                  <FadeIn>
+                    <h2 className="text-4xl md:text-5xl font-serif tracking-widest text-white mb-8">
+                      {eventTitle}
+                    </h2>
+                  </FadeIn>
+
+                  <div className="space-y-8">
+                    <FadeIn delay={0.2}>
+                      <p className="text-sm md:text-base font-sans tracking-[0.2em] text-white uppercase mb-4">{dateText}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="h-[1px] w-8 bg-white/30"></div>
+                        <div>
+                          <p className="text-xs font-sans tracking-widest text-white/60 uppercase">{event.custom_label || event.event_type}</p>
+                          <p className="text-sm md:text-base font-sans tracking-widest text-white">{timeText}</p>
+                        </div>
+                      </div>
+                    </FadeIn>
+
+                    <FadeIn delay={0.4}>
+                      <p className="text-sm md:text-base font-sans tracking-[0.1em] text-white">{event.venue_name}</p>
+                      <p className="text-xs font-sans font-light leading-relaxed text-gray-300 mt-2 pr-4 mb-6">
+                        {event.venue_address}
+                      </p>
+                      {((event.latitude && event.longitude) || event.venue_maps_url) && (
+                        <>
+                          <div className="w-full h-48 md:h-64 mb-6 rounded-md overflow-hidden ring-1 ring-white/20">
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              style={{ border: 0 }}
+                              loading="lazy"
+                              allowFullScreen
+                              referrerPolicy="no-referrer-when-downgrade"
+                              src={event.latitude && event.longitude
+                                ? `https://maps.google.com/maps?q=${event.latitude},${event.longitude}&hl=en&z=15&output=embed`
+                                : event.venue_maps_url || undefined
+                              }
+                            ></iframe>
+                          </div>
+                          <a
+                            href={event.venue_maps_url || `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-3 px-6 py-3 text-xs md:text-sm bg-white/20 hover:bg-white/30 transition-all duration-300 backdrop-blur-md text-white tracking-widest"
+                          >
+                            Take Me There
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                          </a>
+                        </>
+                      )}
+                    </FadeIn>
+                  </div>
+                </div>
+              </section>
+            );
+          })
+        ) : (
+          <>
+            {/* SECTION 6: Holy Matrimony */}
+            <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
+              <div className="absolute inset-0 z-0 bg-black">
+                <Image
+                  src={bgImgCeremony}
+                  alt="Holy Matrimony Location"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 30vw"
+                  className="object-cover object-[center_35%] grayscale opacity-80"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 backdrop-blur-[2px]"></div>
+              </div>
+
+              <div className="relative z-10 w-full h-full flex flex-col justify-center px-8 md:px-10">
+                <FadeIn>
+                  <h2 className="text-4xl md:text-5xl font-serif tracking-widest text-white mb-8">
+                    HOLY MATRIMONY
+                  </h2>
+                </FadeIn>
+
+                <div className="space-y-8">
+                  <FadeIn delay={0.2}>
+                    <p className="text-sm md:text-base font-sans tracking-[0.2em] text-white uppercase mb-4">{formatFallbackDate(project?.wedding_date)}</p>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-4">
+                        <div className="h-[1px] w-8 bg-white/30"></div>
+                        <div>
+                          <p className="text-xs font-sans tracking-widest text-white/60 uppercase">Wedding Ceremony</p>
+                          <p className="text-sm md:text-base font-sans tracking-widest text-white">10.00 WIB</p>
+                        </div>
+                      </div>
+                    </div>
+                  </FadeIn>
+
+                  <FadeIn delay={0.4}>
+                    <p className="text-sm md:text-base font-sans tracking-[0.1em] text-white">HKBP Perumnas Batu Onom</p>
+                    <p className="text-xs font-sans font-light leading-relaxed text-gray-300 mt-2 pr-4 mb-6">
+                      Perumnas–Batu Onom Street, Pantoan Maju, Siantar District, Simalungun Regency, North Sumatra 21151
+                    </p>
+                    <div className="w-full h-48 md:h-64 mb-6 rounded-md overflow-hidden ring-1 ring-white/20">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src="https://maps.google.com/maps?q=2.9681810000000017,99.13241908650755&hl=en&z=15&output=embed"
+                      ></iframe>
+                    </div>
+                    <a
+                      href="https://www.google.com/maps/search/?api=1&query=2.9681810000000017,99.13241908650755"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 px-6 py-3 text-xs md:text-sm bg-white/20 hover:bg-white/30 transition-all duration-300 backdrop-blur-md text-white tracking-widest"
+                    >
+                      Take Me There
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                      </svg>
+                    </a>
+                  </FadeIn>
+                </div>
+              </div>
+            </section>
+
+            {/* SECTION 6.5: Reception */}
+            <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
+              <div className="absolute inset-0 z-0 bg-black">
+                <Image
+                  src={bgImg3}
+                  alt="Reception Location"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 30vw"
+                  className="object-cover object-[center_35%]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 backdrop-blur-[2px]"></div>
+              </div>
+
+              <div className="relative z-10 w-full h-full flex flex-col justify-center px-8 md:px-10">
+                <FadeIn>
+                  <h2 className="text-4xl md:text-5xl font-serif tracking-widest text-white mb-8">
+                    RECEPTION
+                  </h2>
+                </FadeIn>
+
+                <div className="space-y-8">
+                  <FadeIn delay={0.2}>
+                    <p className="text-sm md:text-base font-sans tracking-[0.2em] text-white uppercase mb-4">{formatFallbackDate(project?.wedding_date)}</p>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-4">
+                        <div className="h-[1px] w-8 bg-white/30"></div>
+                        <div>
+                          <p className="text-xs font-sans tracking-widest text-white/60 uppercase">Reception</p>
+                          <p className="text-sm md:text-base font-sans tracking-widest text-white">12.00 WIB</p>
+                        </div>
+                      </div>
+                    </div>
+                  </FadeIn>
+
+                  <FadeIn delay={0.4}>
+                    <p className="text-sm md:text-base font-sans tracking-[0.1em] text-white">SOPO GODANG HKBP ANUGERAH</p>
+                    <p className="text-xs font-sans font-light leading-relaxed text-gray-300 mt-2 pr-4 mb-6">
+                      Pattimura Street No. 394, Tomuan, Siantar Timur District, Pematang Siantar City, North Sumatra 21139
+                    </p>
+                    <div className="w-full h-48 md:h-64 mb-6 rounded-md overflow-hidden ring-1 ring-white/20">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src="https://maps.google.com/maps?q=2.9538467276350473,99.07676277502532&hl=en&z=15&output=embed"
+                      ></iframe>
+                    </div>
+                    <a
+                      href="https://www.google.com/maps/search/?api=1&query=2.9538467276350473,99.07676277502532"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 px-6 py-3 text-xs md:text-sm bg-white/20 hover:bg-white/30 transition-all duration-300 backdrop-blur-md text-white tracking-widest"
+                    >
+                      Take Me There
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                      </svg>
+                    </a>
+                  </FadeIn>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* SECTION 7: Fragments of Forever Gallery */}
+        {galleryImages.length > 0 && (
+          <section className="relative w-full min-h-screen h-auto snap-start shrink-0 bg-neutral-900 pb-24">
+            <div className="w-full flex flex-col items-center justify-center pt-20 pb-12 px-6 sticky top-0 z-10 bg-gradient-to-b from-neutral-900 via-neutral-900/90 to-transparent pointer-events-none">
+              <FadeIn>
+                <h2 className="text-3xl md:text-4xl font-serif text-white tracking-widest text-center">
+                  Fragments of <br />
+                  <motion.span
+                    className="font-script text-4xl md:text-5xl text-[#d4af37] block mt-2 lowercase -rotate-2"
+                    initial={{ clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)" }}
+                    whileInView={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
+                  >
+                    forever
+                  </motion.span>
+                </h2>
+              </FadeIn>
+            </div>
+
+            <div className="w-full px-2 grid grid-cols-3 gap-1 relative z-0">
+              {galleryImages.map((frag, idx) => {
+                // Custom pattern matching the reference
+                let colSpan = "col-span-3";
+
+                if (idx === 3 || idx === 4 || idx === 5) colSpan = "col-span-1";
+                if (idx === 9 || idx === 10 || idx === 11) colSpan = "col-span-1";
+
+                // Keep images square when they are in 3 columns, and 16:9 / aspect-auto when full width.
+                const heightClass = colSpan === "col-span-1" ? "aspect-[3/4]" : "aspect-[4/3] md:aspect-[16/9]";
+
+                return (
+                  <div
+                    key={idx}
+                    className={`relative w-full overflow-hidden ${colSpan} ${heightClass} cursor-pointer group`}
+                    onClick={() => openLightbox(idx)}
+                  >
+                    <Image
+                      src={frag}
+                      alt={`Fragment ${idx + 1}`}
+                      fill
+                      unoptimized={typeof frag === 'string'}
+                      sizes="(max-width: 768px) 100vw, 30vw"
+                      className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                      </svg>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 8: Dress Code */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center">
+          <div className="absolute inset-0 z-0 bg-black">
+            <Image
+              src={galleryImages.length > 0 ? (galleryImages[1 % galleryImages.length] || project?.cover_photo_url || slide4Img) : (project?.cover_photo_url || slide4Img)}
+              alt="Dress Code Background"
+              fill
+              unoptimized={
+                galleryImages.length > 0
+                  ? typeof (galleryImages[1 % galleryImages.length] || project?.cover_photo_url) === 'string'
+                  : typeof (project?.cover_photo_url) === 'string'
+              }
+              sizes="(max-width: 768px) 100vw, 30vw"
+              className="object-cover object-[center_35%] opacity-30 grayscale"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
+          </div>
+          <div className="relative z-10 w-full flex flex-col items-center px-8 text-center">
+            <FadeIn>
+              <h2 className="text-3xl md:text-4xl font-serif tracking-widest text-white mb-6">
+                DRESS CODE
+              </h2>
+            </FadeIn>
+
+            <FadeIn delay={0.2} className="max-w-xs">
+              <p className="text-xs md:text-sm font-sans font-light leading-relaxed text-gray-300 mb-12">
+                To maintain the harmony of our wedding theme, we kindly request our guests to wear
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={0.4} className="flex gap-12 items-center justify-center">
+              <div className="flex flex-col items-center gap-4 group">
+                <div className="w-14 h-14 rounded-full bg-white border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-transform duration-500 group-hover:scale-110"></div>
+                <span className="text-[10px] tracking-widest text-gray-400 uppercase font-sans">White</span>
+              </div>
+              <div className="h-10 w-[1px] bg-white/20"></div>
+              <div className="flex flex-col items-center gap-4 group">
+                <div className="w-14 h-14 rounded-full bg-black border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-transform duration-500 group-hover:scale-110"></div>
+                <span className="text-[10px] tracking-widest text-gray-400 uppercase font-sans">Black</span>
+              </div>
+            </FadeIn>
+          </div>
+        </section>
+
+        {/* SECTION 9: Wedding Gift */}
+        {project?.subscriptions?.packages?.has_amplop_digital !== false && (
+          <section className="relative w-full min-h-screen h-auto snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center pt-24 pb-8">
+            <div className="absolute inset-0 z-0 bg-black">
+              <Image
+                src={galleryImages.length > 0 ? (galleryImages[2 % galleryImages.length] || project?.cover_photo_url || bgImg4) : (project?.cover_photo_url || bgImg4)}
+                alt="Wedding Gift Background"
+                fill
+                unoptimized={
+                  galleryImages.length > 0
+                    ? typeof (galleryImages[2 % galleryImages.length] || project?.cover_photo_url) === 'string'
+                    : typeof (project?.cover_photo_url) === 'string'
+                }
+                sizes="(max-width: 768px) 100vw, 30vw"
+                className="object-cover object-[center_35%] opacity-40 grayscale"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
+            </div>
+
+            <div className="relative z-10 w-full flex flex-col items-center">
+              <FadeIn>
+                <h2 className="text-3xl md:text-4xl font-serif tracking-widest text-white mb-4 text-center px-4">
+                  WEDDING GIFT
+                </h2>
+              </FadeIn>
+
+              {/* Marquee Carousel */}
+              <div className="w-full overflow-hidden mb-10">
+                <div className="flex w-max animate-marquee">
+                  {/* Original set */}
+                  <div className="flex w-max gap-2 pr-2">
+                    {galleryImages.map((img, i) => (
+                      <div key={i} className="relative w-28 md:w-36 aspect-[4/5] overflow-hidden rounded-sm">
+                        <Image src={img} alt={`Slide ${i}`} fill unoptimized={typeof img === 'string'} sizes="20vw" className="object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                  {/* Duplicated set for seamless loop */}
+                  <div className="flex w-max gap-2 pr-2">
+                    {galleryImages.map((img, i) => (
+                      <div key={`dup-${i}`} className="relative w-28 md:w-36 aspect-[4/5] overflow-hidden rounded-sm">
+                        <Image src={img} alt={`Slide dup ${i}`} fill unoptimized={typeof img === 'string'} sizes="20vw" className="object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <FadeIn delay={0.2} className="w-full max-w-lg px-6">
+                <p className="text-xs md:text-sm font-sans font-light leading-relaxed text-gray-300 mb-8 text-center">
+                  Your presence is the greatest gift of all. However, if you are unable to attend and would like to send us your wishes in the form of a gift, please use the account details below:
+                </p>
+
+                <div className="w-full mt-6 relative flex flex-col gap-12">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="w-full text-left space-y-4"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {(() => {
+                        const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
+                          ? project.payment_accounts
+                          : [
+                            { bank_name: "Bank BCA", bank_account: "7772276101", owner_name: "Christian Siahaan" },
+                            { bank_name: "Bank BCA", bank_account: "7772276101", owner_name: "Ira Mita Simangunsong" }
+                          ]) as PaymentAccount[];
+                        return paymentAccounts.map((acc: PaymentAccount, i: number) => {
+                          let bankName = acc.provider || acc.bank_name || acc.bankName || "Bank";
+                          if (bankName && !bankName.toLowerCase().startsWith("bank") && bankName.toLowerCase() !== "bank") {
+                            bankName = `Bank ${bankName}`;
+                          }
+                          const accountNo = acc.bank_account || acc.bankAccount || acc.account_number || acc.accountNumber || "";
+                          const ownerName = acc.owner_name || acc.ownerName || acc.account_name || acc.accountName || "";
+                          return (
+                            <div key={i} className="bg-white/5 backdrop-blur-md p-5 rounded-[1.5rem] border border-white/5 hover:border-[#d4af37]/30 transition-all duration-300 group flex flex-col justify-between">
+                              <div>
+                                <h3 className="text-sm font-bold text-white mb-1 uppercase tracking-wider">{bankName}</h3>
+                                <p className="text-[10px] text-[#d4af37] mb-4 uppercase tracking-widest">{ownerName}</p>
+                              </div>
+                              <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5 group-hover:border-white/10 transition-all">
+                                <span className="font-mono text-sm text-white tracking-[0.2em]">{accountNo}</span>
+                                <button
+                                  onClick={() => copyToClipboard(accountNo)}
+                                  className="text-gray-500 hover:text-white hover:scale-110 transition-all"
+                                  title="Copy Account Number"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+
+                    <div className="pt-4 pb-2">
+                      <p className="text-xs font-bold text-white mb-2 tracking-widest uppercase">*Note:</p>
+                      <p className="text-[10px] md:text-xs font-light text-gray-400 leading-relaxed italic">
+                        Before making Transfer/Shipment, please note:<br />
+                        - Bank Name, Recipient Name are already in accordance with the couple&apos;s names<br />
+                        - Confirm the gift shipment via personal chat to the couple
+                      </p>
+                    </div>
+                  </motion.div>
+
+                  {/* Unhiding physical gift registry section only if gifts exist */}
+                  {!giftLoading && giftItems.length > 0 && (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        className="w-full flex flex-col items-center justify-center pt-2 pb-2"
+                      >
+                        <div className="flex items-center justify-center gap-4 py-4 w-full opacity-60">
+                          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                          <h3 className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-white uppercase">Gift Registry</h3>
+                          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                        </div>
+                        <p className="text-xs md:text-sm font-sans font-light text-gray-300 text-center max-w-sm mb-1">
+                          We have compiled a list of items we might need. You can contribute by selecting an item to gift us.
+                        </p>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="w-full"
+                      >
+                        {/* Gift Carousel - Improved with Framer Motion Drag & Controls */}
+                        <div className="relative w-full group/carousel">
+                          {/* Navigation Arrows */}
+                          {!giftLoading && giftItems.length > 1 && (
+                            <>
+                              {activeGiftIndex > 0 && (
+                                <button
+                                  onClick={() => {
+                                    const prevEl = document.getElementById(`gift-item-${activeGiftIndex - 1}`);
+                                    const container = document.getElementById('gift-container');
+                                    if (prevEl && container) {
+                                      container.scrollTo({ left: prevEl.offsetLeft - container.offsetLeft - (container.clientWidth - prevEl.clientWidth) / 2, behavior: 'smooth' });
+                                    }
+                                  }}
+                                  className="absolute left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 items-center justify-center text-white opacity-0 group-hover/carousel:opacity-100 transition-all hover:bg-black/80 hover:scale-110 active:scale-95 shadow-xl hidden md:flex"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                  </svg>
+                                </button>
+                              )}
+                              {activeGiftIndex < giftItems.length - 1 && (
+                                <button
+                                  onClick={() => {
+                                    const nextEl = document.getElementById(`gift-item-${activeGiftIndex + 1}`);
+                                    const container = document.getElementById('gift-container');
+                                    if (nextEl && container) {
+                                      container.scrollTo({ left: nextEl.offsetLeft - container.offsetLeft - (container.clientWidth - nextEl.clientWidth) / 2, behavior: 'smooth' });
+                                    }
+                                  }}
+                                  className="absolute right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 items-center justify-center text-white opacity-0 group-hover/carousel:opacity-100 transition-all hover:bg-black/80 hover:scale-110 active:scale-95 shadow-xl hidden md:flex"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                  </svg>
+                                </button>
+                              )}
+                            </>
+                          )}
+
+                          {giftLoading ? (
+                            <div className="w-full flex flex-col items-center justify-center py-24">
+                              <div className="w-10 h-10 border-2 border-white/10 border-t-[#d4af37] rounded-full animate-spin mb-4"></div>
+                              <p className="text-[10px] tracking-[0.3em] text-white/40 uppercase font-sans">Curating Registry...</p>
+                            </div>
+                          ) : giftItems.length === 0 ? (
+                            <div className="mx-4 flex flex-col items-center justify-center py-20 px-6 bg-white/5 rounded-3xl border border-white/10 text-center backdrop-blur-sm">
+                              <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase font-sans">The registry is currently empty</p>
+                            </div>
+                          ) : (
+                            <div
+                              id="gift-container"
+                              onScroll={(e) => {
+                                const container = e.currentTarget;
+                                const scrollLeft = container.scrollLeft;
+                                const scrollWidth = container.scrollWidth - container.clientWidth;
+                                if (scrollWidth <= 0) return;
+                                const maxIndex = giftItems.length - 1;
+                                const percentage = scrollLeft / scrollWidth;
+                                const newIndex = Math.min(maxIndex, Math.max(0, Math.round(percentage * maxIndex)));
+                                if (newIndex !== activeGiftIndex) setActiveGiftIndex(newIndex);
+                              }}
+                              className="flex gap-4 md:gap-6 overflow-x-auto pt-2 pb-8 scrollbar-hide snap-x snap-mandatory no-scrollbar w-full px-[10vw] md:px-12"
+                              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                            >
+                              {giftItems.map((item, index) => (
+                                <div
+                                  key={item.id}
+                                  id={`gift-item-${index}`}
+                                  className="relative w-[80vw] max-w-[280px] md:w-[320px] md:max-w-none shrink-0 bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col group transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(212,175,55,0.1)] hover:border-white/20 snap-center"
+                                >
+                                  {/* Discount Badge */}
+                                  {item.discount && !item.isBought && (
+                                    <div className="absolute top-5 left-5 z-20 px-4 py-1.5 bg-[#d4af37] text-[10px] font-bold tracking-widest uppercase text-neutral-950 rounded-full shadow-lg">
+                                      {item.discount}
+                                    </div>
+                                  )}
+
+                                  <div className="relative w-full aspect-[4/5] overflow-hidden">
+                                    <Image
+                                      src={item.image}
+                                      alt={item.name}
+                                      fill
+                                      unoptimized
+                                      sizes="(max-width: 768px) 100vw, 33vw"
+                                      className={`object-cover transition-transform duration-1000 group-hover:scale-110 ${item.isBought ? 'grayscale opacity-50' : ''}`}
+                                    />
+                                    {item.isBought && (
+                                      <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10 bg-black/50">
+                                        <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-4">
+                                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-white">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                          </svg>
+                                        </div>
+                                        <span className="text-xs font-serif tracking-[0.4em] uppercase text-white/90">Purchased</span>
+                                      </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent opacity-90"></div>
+
+                                    {/* Item Details overlapping image */}
+                                    <div className={`absolute bottom-0 left-0 right-0 p-6 flex flex-col z-20 ${item.isBought ? 'opacity-60' : ''}`}>
+                                      <h4 className="text-base md:text-xl font-serif text-white mb-2 leading-tight tracking-wide line-clamp-2 drop-shadow-md">
+                                        {item.name}
+                                      </h4>
+                                      <div className="flex items-center gap-3 flex-wrap">
+                                        <span className="text-[#d4af37] font-serif text-lg md:text-xl font-bold tracking-wider drop-shadow-md">Rp. {item.price}</span>
+                                        {item.originalPrice && (
+                                          <span className="text-white/40 line-through text-[10px] md:text-xs tracking-wider">Rp. {item.originalPrice}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="p-6 pt-5 flex flex-col bg-neutral-950 relative z-20 border-t border-white/5">
+                                    <button
+                                      disabled={item.isBought}
+                                      onClick={() => {
+                                        setSelectedGiftForQR(item);
+                                      }}
+                                      className={`w-full py-4 px-6 rounded-2xl text-[10px] md:text-xs font-sans tracking-[0.3em] uppercase transition-all duration-500 border ${item.isBought
+                                        ? 'border-white/5 text-white/20 bg-white/5 cursor-not-allowed'
+                                        : 'border-[#d4af37]/30 text-[#d4af37] bg-transparent hover:bg-[#d4af37] hover:text-neutral-950 hover:border-[#d4af37] hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]'
+                                        }`}
+                                    >
+                                      {item.isBought ? 'Thank You' : 'Give This Gift'}
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Carousel Dot Indicators */}
+                        {!giftLoading && giftItems.length > 1 && (
+                          <div className="flex justify-center items-center gap-2 mt-4 mb-4">
+                            {giftItems.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  const container = document.getElementById('gift-container');
+                                  if (container) {
+                                    const children = container.children;
+                                    if (children && children[idx]) {
+                                      children[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                                    }
+                                  }
+                                }}
+                                className={`h-2 rounded-full transition-all duration-300 ${idx === activeGiftIndex
+                                    ? 'bg-[#d4af37] w-6'
+                                    : 'bg-white/20 hover:bg-white/40 w-2'
+                                  }`}
+                                aria-label={`Go to item ${idx + 1}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Extra space at the bottom to prevent accidental scroll */}
+                        <div className="w-full h-8 md:h-12 shrink-0"></div>
+                      </motion.div>
+                    </>
+                  )}
+                </div>
+              </FadeIn>
+            </div>
+          </section>
+        )}
+
+
+        {/* SECTION 11: Blessing Wall / RSVP */}
+        {(project?.subscriptions?.packages?.has_rsvp !== false || project?.subscriptions?.packages?.has_guestbook !== false) && (
+          <BlessingWall
+            guestName={guestName}
+            guest={guest}
+            projectId={project?.id}
+            wishes={wishes}
+            hasRsvp={project?.subscriptions?.packages?.has_rsvp !== false}
+            hasGuestbook={project?.subscriptions?.packages?.has_guestbook !== false}
+            project={project}
+            galleryImages={galleryImages}
+          />
+        )}
+
+        {/* SECTION 12: Closing & Copyright */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center bg-neutral-950 px-8 text-center border-t border-white/5">
+          <FadeIn>
+            <h2 className="text-3xl md:text-4xl font-serif text-[#d4af37] tracking-widest mb-8 uppercase drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">Thank You</h2>
+          </FadeIn>
+
+          <FadeIn delay={0.2} className="max-w-md">
+            <p className="text-xs md:text-sm font-sans font-light leading-relaxed text-gray-300 mb-12">
+              It is a joy to share this beautiful chapter of our lives with you. Your presence and blessings mean the world to us.
+            </p>
+          </FadeIn>
+
+          <FadeIn delay={0.4}>
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 uppercase font-bold">With Love</span>
+              <p className="text-2xl md:text-3xl font-script text-white mt-2">
+                {project?.groom_nickname || "Tian"} & {project?.bride_nickname || "Mita"}
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.6} className="absolute bottom-10 left-0 right-0 flex flex-col items-center opacity-60 hover:opacity-100 transition-opacity duration-500">
+            <div className="h-[1px] w-12 bg-white/30 mb-4"></div>
+            <p className="text-[8px] md:text-[9px] font-sans tracking-[0.3em] text-white uppercase font-bold">
+              Designed & Crafted by
+            </p>
+            <p className="text-[10px] md:text-xs font-serif tracking-widest text-[#d4af37] mt-1.5 font-bold">
+              SERA STORY
+            </p>
+            <p className="text-[7px] md:text-[8px] font-sans tracking-[0.2em] text-white/50 mt-1 uppercase">
+              © {new Date().getFullYear()} All Rights Reserved.
+            </p>
+          </FadeIn>
+        </section>
+
+        {/* Snap anchor for the bottom of the last tall section */}
+        <div className="w-full h-[1px] shrink-0 snap-end"></div>
+      </div>
+
+      {/* SECTION 1: Cover (Envelope Reveal) */}
+      <section
+        className={`absolute inset-0 w-full h-full z-40 transition-transform duration-[1500ms] ease-[cubic-bezier(0.7,0,0.3,1)] ${isOpen ? "-translate-y-[120%] pointer-events-none" : "translate-y-0 pointer-events-auto"
+          } flex flex-col items-center justify-center`}
+      >
+        <div className="absolute inset-0 z-0 overflow-hidden bg-black shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
+          <FloatingParticles />
+          <Slideshow images={slideshowImages} />
+          <div className="absolute inset-0 bg-black/40"></div>
+        </div>
+
+        <div className="relative z-20 flex flex-col items-center justify-center gap-12 md:gap-16 lg:gap-24 min-h-full py-16 md:py-24 text-white text-center px-4 md:px-8 w-full overflow-y-auto overflow-x-hidden no-scrollbar">
+          {/* Wax Seal Top Flap Illusion via Background */}
+          <div className="absolute top-0 left-0 w-full h-[40%] bg-gradient-to-b from-black/80 to-transparent pointer-events-none mix-blend-overlay"></div>
+
+          <div className="relative w-full flex flex-col items-center mt-4 md:mt-8">
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+              className="text-xl md:text-2xl italic font-script text-[#d4af37] mb-2 md:mb-4"
+            >
+              The wedding of
+            </motion.p>
+
+            <motion.h1
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1.2, ease: "easeOut", delay: 0.8 }}
+              className="text-[clamp(1.15rem,4.5vw,2rem)] md:text-3xl lg:text-4xl font-serif tracking-widest mb-4 md:mb-6 leading-snug drop-shadow-2xl"
+            >
+              {project?.groom_nickname || "CHRISTIAN"} <br />&<br />
+              {project?.bride_nickname || "IRA MITA"}
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: "easeOut", delay: 1.6 }}
+              className="text-xs md:text-sm tracking-[0.4em] text-gray-200"
+            >
+              {project?.wedding_date ? (
+                (() => {
+                  const parts = project.wedding_date.split("-");
+                  if (parts.length === 3) {
+                    return `${parts[2]} . ${parts[1]} . ${parts[0].substring(2)}`;
+                  }
+                  return "25 . 04 . 26";
+                })()
+              ) : (
+                "25 . 04 . 26"
+              )}
+            </motion.p>
+          </div>
+
+          <div className="flex flex-col items-center gap-6 mb-4 md:mb-8 z-30">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2, ease: "backOut", delay: 2.2 }}
+              className="text-center bg-white/10 backdrop-blur-xl px-6 md:px-10 py-8 w-[90%] md:w-[85%] rounded-sm shrink-0 border border-white/20 shadow-2xl relative mx-auto"
+            >
+              {/* Decorative Wax Seal on the Ticket */}
+              <div className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 w-16 h-16 md:w-20 md:h-20 group-hover:scale-110 transition-transform drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
+                <Image
+                  src={sealSrc}
+                  alt="Wax Seal"
+                  fill
+                  sizes="(max-width: 768px) 80px, 80px"
+                  className="object-contain"
+                  onError={() => {
+                    setSealSrc(defaultSealSrc);
+                  }}
+                />
+                <span className="absolute z-10 font-serif text-[#d4af37] text-[10px] md:text-xs font-bold tracking-tighter drop-shadow-md">
+                  {(project?.groom_nickname || "T").charAt(0)} & {(project?.bride_nickname || "M").charAt(0)}
+                </span>
+              </div>
+
+              <p className="text-[10px] md:text-xs text-gray-300 font-sans uppercase tracking-[0.3em] mb-2 mt-2">Special Invitation For</p>
+              <h2 className="text-xl md:text-2xl font-serif tracking-widest text-[#d4af37] break-words leading-snug">{guestName}</h2>
+            </motion.div>
+
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1, ease: "easeOut", delay: 2.8 }}
+              className="flex flex-col items-center gap-3 w-full px-6 mt-4"
+            >
+              <button
+                onClick={handleOpen}
+                className="group w-full flex items-center justify-center gap-3 px-8 py-4 border border-[#d4af37]/60 bg-black/60 hover:bg-[#d4af37]/20 transition-all duration-500 backdrop-blur-md tracking-[0.2em] uppercase text-white hover:text-[#d4af37] rounded-full text-[10px] md:text-xs shadow-xl"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 opacity-70 group-hover:opacity-100">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                Break The Seal
+              </button>
+
+              <button
+                onClick={() => setShowQRModal(true)}
+                className="group w-full flex items-center justify-center gap-3 px-8 py-4 border border-white/20 bg-white/5 hover:bg-white/10 transition-all duration-500 backdrop-blur-md tracking-[0.2em] uppercase text-white/80 hover:text-white rounded-full text-[10px] md:text-xs"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 opacity-60 group-hover:opacity-100">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5Zm10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 14.25 9.375v-4.5Zm0 10.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Zm-10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Z" />
+                </svg>
+                Entry Code
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* QR Modal */}
+      <AnimatePresence>
+        {showQRModal && (
+          <motion.div
+            key="entry-qr-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 backdrop-blur-xl cursor-pointer p-6"
+            onClick={() => setShowQRModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
+              className="bg-white p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col items-center max-w-sm w-full border border-neutral-100"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="mb-8 bg-neutral-950 rounded-[2rem] border border-neutral-800 overflow-hidden flex flex-col items-center shadow-xl">
+                <div className="p-6 pb-4 w-full flex justify-center bg-white relative z-10">
+                  <div className="relative inline-block w-[220px] h-[220px]">
+                    <QRCode
+                      value={guest?.invitation_slug || guestName || "Guest"}
+                      size={220}
+                      level="H"
+                      bgColor="white"
+                      fgColor="black"
+                      style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Text Watermark Bottom Centered */}
+                <div className="w-full py-4 flex flex-col items-center justify-center select-none bg-neutral-950 border-t border-white/5 relative z-0">
+                  <span className="text-[12px] font-serif font-bold tracking-[0.15em] text-[#d4af37] uppercase mb-1 drop-shadow-md">Sera Story</span>
+                  <span className="text-[6px] font-sans tracking-[0.3em] text-neutral-400 uppercase">© 2026 All Rights Reserved.</span>
+                </div>
+              </div>
+
+              <div className="text-center space-y-2">
+                <h2 className="text-[10px] font-bold tracking-[0.4em] text-neutral-400 uppercase">Your Access Code</h2>
+                <p className="text-2xl font-serif text-black uppercase tracking-tight break-words max-w-full leading-tight">{guest?.invitation_slug || guestName || "Guest"}</p>
+              </div>
+
+              <p className="text-neutral-400 text-[10px] font-sans mt-8 uppercase tracking-[0.2em] text-center italic">Show this code at the entrance</p>
+
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="mt-10 w-full py-5 bg-neutral-900 text-white text-[10px] font-bold tracking-[0.2em] transition-all uppercase rounded-2xl hover:bg-neutral-800 active:scale-95 shadow-xl"
+              >
+                Return to Invitation
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {selectedIndex !== null && (
+          <motion.div
+            key="lightbox-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl"
+          >
+            {/* Top Bar with Close Button */}
+            <div className="absolute top-0 w-full p-4 md:p-6 flex justify-between items-center z-50">
+              <div className="text-white/50 text-xs tracking-widest font-sans bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">
+                {selectedIndex + 1} / {galleryImages.length}
+              </div>
+              <button
+                className="text-white bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full p-2 transition-all duration-300"
+                onClick={() => setSelectedIndex(null)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Main Image Slider */}
+            <div className="relative w-full h-[65vh] md:h-[70vh] flex items-center justify-center overflow-hidden safe-area-x mt-10 md:mt-0">
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div
+                  key={page}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: "spring", stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.2 }
+                  }}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={1}
+                  onDragEnd={(e, { offset, velocity }) => {
+                    const swipe = swipePower(offset.x, velocity.x);
+                    if (swipe < -swipeConfidenceThreshold) {
+                      paginate(1);
+                    } else if (swipe > swipeConfidenceThreshold) {
+                      paginate(-1);
+                    }
+                  }}
+                  className="absolute w-full h-full max-w-5xl px-4 flex justify-center items-center cursor-grab active:cursor-grabbing"
+                >
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={galleryImages[selectedIndex]}
+                      alt={`Fragment ${selectedIndex + 1}`}
+                      fill
+                      unoptimized={typeof galleryImages[selectedIndex] === 'string'}
+                      className="object-contain"
+                      sizes="100vw"
+                      quality={100}
+                      draggable={false}
+                    />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Nav Buttons (Desktop) */}
+              <div className="hidden md:flex absolute inset-y-0 w-full max-w-7xl justify-between items-center px-4 pointer-events-none z-10">
+                <button
+                  className={`pointer-events-auto w-12 h-12 flex items-center justify-center rounded-full bg-black/40 border border-white/20 text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-110 ${selectedIndex === 0 ? 'opacity-0 pointer-events-none cursor-default' : 'opacity-100'}`}
+                  onClick={() => paginate(-1)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                </button>
+                <button
+                  className={`pointer-events-auto w-12 h-12 flex items-center justify-center rounded-full bg-black/40 border border-white/20 text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-110 ${selectedIndex === galleryImages.length - 1 ? 'opacity-0 pointer-events-none cursor-default' : 'opacity-100'}`}
+                  onClick={() => paginate(1)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Thumbnails row below */}
+            <div className="w-full h-[15vh] mt-4 md:mt-8 px-4 safe-area-x safe-area-b flex flex-col justify-center">
+              <div className="w-full max-w-3xl mx-auto flex items-center gap-2 md:gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-4 px-2">
+                {galleryImages.map((frag, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => openLightbox(idx)}
+                    className={`relative shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden snap-center transition-all duration-300 ${selectedIndex === idx ? 'ring-2 ring-[#d4af37] scale-110 opacity-100' : 'opacity-40 hover:opacity-100'}`}
+                  >
+                    <Image
+                      src={frag}
+                      alt={`Thumb ${idx + 1}`}
+                      fill
+                      unoptimized={typeof frag === 'string'}
+                      className="object-cover"
+                      sizes="(max-width: 768px) 20vw, 10vw"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* QRIS Gift Modal */}
+      <AnimatePresence>
+        {selectedGiftForQR && (
+          <motion.div
+            key="gift-qr-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 backdrop-blur-xl p-6"
+            onClick={() => setSelectedGiftForQR(null)}
+          >
+            <motion.div
+              layout
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col items-center max-w-[90%] sm:max-w-sm w-full border border-neutral-100 overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              <motion.div layout className="mb-4 sm:mb-6 text-center">
+                <motion.h3 layout className="text-[8px] sm:text-[10px] font-bold tracking-[0.4em] text-neutral-400 uppercase mb-1 sm:mb-2">Gift Registry</motion.h3>
+                <motion.p layout className="text-base sm:text-lg font-serif text-black leading-tight mb-0.5 sm:mb-1">{selectedGiftForQR.name}</motion.p>
+                <motion.div layout className="flex items-center justify-center gap-2">
+                  <span className="text-lg sm:text-xl font-bold text-[#d4af37]">Rp {selectedGiftForQR.price}</span>
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                key="transfer"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="w-full"
+              >
+                <div className="text-center space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-[1px] w-4 bg-neutral-200"></div>
+                    <span className="text-[8px] sm:text-[10px] font-bold tracking-[0.2em] text-neutral-400 uppercase">Transfer To</span>
+                    <div className="h-[1px] w-4 bg-neutral-200"></div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 mb-4 sm:mb-8">
+                  {(() => {
+                    const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
+                      ? project.payment_accounts
+                      : [
+                        { bank_name: "Bank BCA", bank_account: "7772276101", owner_name: "Christian Siahaan" },
+                        { bank_name: "Bank BCA", bank_account: "7772276101", owner_name: "Ira Mita Simangunsong" }
+                      ]) as PaymentAccount[];
+                    return paymentAccounts.map((acc: PaymentAccount, i: number) => {
+                      const bankName = acc.bank_name || acc.bankName || "Bank";
+                      const accountNo = acc.bank_account || acc.bankAccount || acc.account_number || acc.accountNumber || "";
+                      const ownerName = acc.owner_name || acc.ownerName || acc.account_name || acc.accountName || "";
+                      return (
+                        <div key={i} className="bg-neutral-900 p-5 rounded-[1.5rem] border border-neutral-800 transition-all duration-300 group flex flex-col justify-between shadow-lg">
+                          <div>
+                            <h3 className="text-sm font-bold text-white mb-1 uppercase tracking-wider">{bankName}</h3>
+                            <p className="text-[10px] text-[#d4af37] mb-4 uppercase tracking-widest">{ownerName}</p>
+                          </div>
+                          <div className="flex items-center justify-between bg-black/60 p-3 rounded-xl border border-white/5 transition-all">
+                            <span className="font-mono text-sm text-white tracking-[0.2em]">{accountNo}</span>
+                            <button
+                              onClick={() => copyToClipboard(accountNo)}
+                              className="text-gray-400 hover:text-white hover:scale-110 transition-all"
+                              title="Copy Account Number"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+
+                <div className="pt-2 pb-2">
+                  <p className="text-[10px] md:text-xs font-light text-neutral-500 leading-relaxed italic text-center">
+                    Please confirm the gift shipment via personal chat to the couple.
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.button
+                layout
+                onClick={() => setSelectedGiftForQR(null)}
+                className="w-full py-4 sm:py-5 bg-neutral-900 text-white text-[10px] font-bold tracking-[0.3em] transition-all uppercase rounded-2xl hover:bg-black active:scale-95 shadow-xl"
+              >
+                Close
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}
