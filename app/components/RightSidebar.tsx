@@ -1359,7 +1359,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
-              className="bg-white p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col items-center max-w-sm w-full border border-neutral-100"
+              className="bg-white p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col items-center max-w-sm w-full border-2 border-[#5b3b1e]"
               onClick={e => e.stopPropagation()}
             >
               <div className="mb-8 bg-neutral-950 rounded-[2rem] border border-neutral-800 overflow-hidden flex flex-col items-center shadow-xl">
@@ -1528,7 +1528,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col items-center max-w-[90%] sm:max-w-sm w-full border border-neutral-100 overflow-hidden"
+              className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col items-center max-w-[90%] sm:max-w-sm w-full border-2 border-[#5b3b1e] overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
               <motion.div layout className="mb-4 sm:mb-6 text-center">
