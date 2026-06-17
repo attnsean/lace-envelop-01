@@ -397,12 +397,12 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 initial={{ opacity: 0 }}
                 animate={isOpen ? { opacity: 1 } : {}}
                 transition={{ duration: 1, delay: 1.0 }}
-                className="relative z-10 flex flex-col items-center justify-center text-center -mt-2 w-[70%]"
+                className="relative z-10 flex flex-col items-center justify-center text-center -mt-1 w-[80%]"
               >
-                <span className="font-parfumerie text-[#5b3b1e] text-[clamp(36px,9.5vw,52px)] xs:text-[clamp(40px,9vw,56px)] md:text-[clamp(46px,5vw,72px)] leading-[1.0] font-light block whitespace-nowrap">
+                <span className="font-parfumerie text-[#5b3b1e] text-[clamp(45px,11.5vw,68px)] xs:text-[clamp(50px,11vw,72px)] md:text-[clamp(58px,6vw,92px)] leading-[1.0] font-bold block whitespace-nowrap">
                   Jovita &
                 </span>
-                <span className="font-parfumerie text-[#5b3b1e] text-[clamp(36px,9.5vw,52px)] xs:text-[clamp(40px,9vw,56px)] md:text-[clamp(46px,5vw,72px)] leading-[1.0] font-light block whitespace-nowrap mt-1">
+                <span className="font-parfumerie text-[#5b3b1e] text-[clamp(45px,11.5vw,68px)] xs:text-[clamp(50px,11vw,72px)] md:text-[clamp(58px,6vw,92px)] leading-[1.0] font-bold block whitespace-nowrap mt-1">
                   Luqman
                 </span>
               </motion.div>
