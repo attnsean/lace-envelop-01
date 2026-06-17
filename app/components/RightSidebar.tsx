@@ -864,7 +864,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         {project?.subscriptions?.packages?.has_amplop_digital !== false && (
           <section id="gift-registry" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col md:flex-row bg-[#E1D8CC] text-[#4A3E3D] select-none">
             {/* Left Column (Registry title and bird) */}
-            <div className="w-full md:w-[45%] h-[30%] md:h-full flex flex-col items-center justify-center p-4 pb-2 md:p-12 text-center relative">
+            <div className="w-full md:w-[45%] h-[25%] md:h-full flex flex-col items-center justify-center p-4 pb-2 md:p-12 text-center relative">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -900,16 +900,16 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             </div>
 
             {/* Right Column (Message and Doily bank details card) */}
-            <div className="w-full md:w-[55%] h-[70%] md:h-full flex flex-col items-center justify-center p-4 pt-2 md:p-12 text-center md:text-left md:items-start space-y-4 md:space-y-8">
+            <div className="w-full md:w-[55%] h-[75%] md:h-full flex flex-col items-center justify-start md:justify-center p-4 pt-4 pb-2 md:p-12 text-center md:text-left md:items-start space-y-3 xs:space-y-5 md:space-y-8">
               {/* Message */}
               <div className="space-y-2 md:space-y-4 max-w-xl md:max-w-md lg:max-w-lg">
                 <FadeIn delay={0.3}>
-                  <h4 className="font-seasons text-[clamp(16px,4vw,22px)] md:text-[clamp(26px,2vw,36px)] leading-[1.3] text-[#4A3E3D] font-normal">
+                  <h4 className="font-seasons text-[clamp(18px,4.5vw,25px)] md:text-[clamp(26px,2vw,36px)] leading-[1.3] text-[#4A3E3D] font-normal">
                     Your presence at our wedding is the greatest gift of all.
                   </h4>
                 </FadeIn>
                 <FadeIn delay={0.4}>
-                  <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(11px,2.4vw,13px)] md:text-[clamp(14px,1.2vw,16px)] leading-relaxed font-light text-justify md:text-left">
+                  <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(12px,2.6vw,14px)] md:text-[clamp(14px,1.2vw,16px)] leading-relaxed font-light text-justify md:text-left">
                     For family and friends who have kindly asked about wedding gifts, we truly appreciate your generosity and thoughtfulness. Should you wish to bless us with a gift, a contribution through the following registry would be warmly appreciated as we begin this new chapter together.
                   </p>
                 </FadeIn>
@@ -944,14 +944,14 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
-                            className="relative w-[290px] h-[180px] xs:w-[340px] xs:h-[210px] md:w-[560px] md:h-[345px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
+                            className="relative w-[320px] h-[200px] xs:w-[370px] xs:h-[230px] md:w-[560px] md:h-[345px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
                           >
                             {/* Lace Frame Background */}
                             <Image
                               src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
                               alt="Lace Card Frame"
                               fill
-                              sizes="(max-width: 768px) 340px, 560px"
+                              sizes="(max-width: 768px) 370px, 560px"
                               className="object-contain pointer-events-none select-none"
                               unoptimized
                             />
@@ -961,18 +961,18 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                               className="relative z-10 flex flex-col items-center justify-center text-center p-3 md:p-4 -mt-2 w-[80%] h-[75%] origin-center"
                               style={{ transform: "rotate(-3.5deg)" }}
                             >
-                              <span className="text-[clamp(11px,2.2vw,14px)] md:text-[clamp(15px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
+                              <span className="text-[clamp(12px,2.4vw,15px)] md:text-[clamp(15px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                                 {bankName}
                               </span>
-                              <span className="text-[clamp(15px,3vw,19px)] md:text-[clamp(22px,1.8vw,26px)] font-normal text-[#4A3E3D] mt-1 mb-1.5 md:mt-2 md:mb-2 tracking-wide truncate max-w-full">
+                              <span className="text-[clamp(17px,3.5vw,21px)] md:text-[clamp(22px,1.8vw,26px)] font-normal text-[#4A3E3D] mt-1 mb-1.5 md:mt-2 md:mb-2 tracking-wide truncate max-w-full">
                                 {ownerName}
                               </span>
-                              <span className="font-lekton italic text-[clamp(13px,2.6vw,16px)] md:text-[clamp(17px,1.4vw,20px)] text-[#4A3E3D] tracking-[0.12em] mb-3 md:mb-4 select-text">
+                              <span className="font-lekton italic text-[clamp(14px,2.8vw,18px)] md:text-[clamp(17px,1.4vw,20px)] text-[#4A3E3D] tracking-[0.12em] mb-3 md:mb-4 select-text">
                                 {accountNo}
                               </span>
                               <button
                                 onClick={() => copyToClipboard(accountNo)}
-                                className="font-lekton text-white text-[clamp(10px,2vw,12px)] md:text-[clamp(13px,1.1vw,15px)] tracking-[0.2em] uppercase px-6 py-1.5 md:px-10 md:py-2.5 bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md"
+                                className="font-lekton text-white text-[clamp(11px,2.2vw,13px)] md:text-[clamp(13px,1.1vw,15px)] tracking-[0.2em] uppercase px-6 py-1.5 md:px-10 md:py-2.5 bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md"
                               >
                                 Copy
                               </button>
