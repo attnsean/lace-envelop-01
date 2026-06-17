@@ -1276,12 +1276,15 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
-            className="mb-8"
+            className="relative w-16 h-20 mb-8 flex items-center justify-center"
           >
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white/80">
-              <path d="M30 50C30 35 30 20 30 10C30 10 24 12 20 8C16 4 22 2 30 10C38 2 44 4 40 8C36 12 30 10 30 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M30 32C22 28 20 18 30 18C40 18 38 28 30 32Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Image
+              src="/logo-white.png"
+              alt="Logo"
+              fill
+              className="object-contain filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.3)]"
+              priority
+            />
           </motion.div>
 
           {/* Dear, [Nama tamu] using font The Seasons */}
