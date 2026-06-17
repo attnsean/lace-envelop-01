@@ -1267,7 +1267,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             draggable={false}
             priority
           />
-          <div className="absolute inset-0 bg-black/30"></div>
+          <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply"></div>
         </div>
 
         <div className="relative z-20 flex flex-col items-center justify-center min-h-full py-16 text-white text-center px-4 w-full overflow-y-auto no-scrollbar">
@@ -1351,7 +1351,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 backdrop-blur-xl cursor-pointer p-6"
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-[#5b3b1e]/90 backdrop-blur-md cursor-pointer p-6"
             onClick={() => setShowQRModal(false)}
           >
             <motion.div
@@ -1359,7 +1359,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
-              className="bg-white p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col items-center max-w-sm w-full border-2 border-[#5b3b1e]"
+              className="bg-white p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col items-center max-w-sm w-full border border-neutral-100"
               onClick={e => e.stopPropagation()}
             >
               <div className="mb-8 bg-neutral-950 rounded-[2rem] border border-neutral-800 overflow-hidden flex flex-col items-center shadow-xl">
@@ -1519,7 +1519,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 backdrop-blur-xl p-6"
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-[#5b3b1e]/90 backdrop-blur-md p-6"
             onClick={() => setSelectedGiftForQR(null)}
           >
             <motion.div
@@ -1528,7 +1528,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col items-center max-w-[90%] sm:max-w-sm w-full border-2 border-[#5b3b1e] overflow-hidden"
+              className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col items-center max-w-[90%] sm:max-w-sm w-full border border-neutral-100 overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
               <motion.div layout className="mb-4 sm:mb-6 text-center">
