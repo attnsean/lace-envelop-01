@@ -1,3 +1,5 @@
+@import url("https://db.onlinewebfonts.com/c/9366bd460113d8bf675fd2bdfe1ce764?family=The+Seasons");
+@import url("https://db.onlinewebfonts.com/c/5aed2eb513548a59f3e2bff1bba07d12?family=Parfumerie+Script+W00+Regular");
 @import "tailwindcss";
 
 :root {
@@ -12,6 +14,8 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-playfair);
   --font-script: var(--font-great-vibes);
+  --font-seasons: "The Seasons", var(--font-playfair), serif;
+  --font-parfumerie: "Parfumerie Script W00 Regular", var(--font-great-vibes), cursive;
   --animate-marquee: marquee 30s ease-in-out infinite alternate;
 }
 

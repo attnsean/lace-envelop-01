@@ -36,10 +36,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .replace(/\s+/g, " ").trim();
   }
 
-  const brideName = dbData.project?.bride_nickname || "Mita";
-  const groomName = dbData.project?.groom_nickname || "Tian";
-  const brideFull = dbData.project?.bride_name || "Ira Mita";
-  const groomFull = dbData.project?.groom_name || "Christian";
+  const brideName = dbData.project?.bride_nickname || "Jovita";
+  const groomName = dbData.project?.groom_nickname || "Luqman";
+  const brideFull = dbData.project?.bride_name || "Jovita";
+  const groomFull = dbData.project?.groom_name || "Luqman";
 
   const title = `Wedding Invitation for ${guestName} | ${groomName} & ${brideName}`;
   const description = `We cordially invite ${guestName} to share our special day. The wedding celebration of ${groomFull} & ${brideFull}.`;
@@ -156,8 +156,8 @@ export default async function Home({ params }: Props) {
     guestName = guestName.replace(/\s+/g, " ").trim();
   }
 
-  const brideNickname = dbData.project?.bride_nickname || "IRA MITA";
-  const groomNickname = dbData.project?.groom_nickname || "CHRISTIAN";
+  const brideNickname = dbData.project?.bride_nickname || "JOVITA";
+  const groomNickname = dbData.project?.groom_nickname || "LUQMAN";
   const weddingDateRaw = dbData.project?.wedding_date; // YYYY-MM-DD
   
   // Format Date for Cover overlay (e.g. 25 . 04 . 2026)
@@ -175,38 +175,7 @@ export default async function Home({ params }: Props) {
   const mainBgImage = dbData.project?.opening_photo_url || dbData.project?.cover_photo_url || bgImg;
 
   return (
-    <main className="min-h-[100dvh] w-full flex flex-col md:flex-row bg-neutral-950 overflow-hidden relative">
-      
-      {/* Background Watermark Overlapping Both (Hidden on mobile) */}
-      <div className="hidden md:block absolute top-[5%] right-[18%] text-[28rem] font-script text-white/30 leading-none select-none z-30 pointer-events-none opacity-40 mix-blend-overlay">
-        &
-      </div>
-
-      {/* Left side: Main Image (70%) */}
-      <div className="hidden md:block relative md:w-[70%] md:h-[100dvh]">
-        <Image 
-          src={mainBgImage} 
-          alt={`Prewedding ${groomNickname} & ${brideNickname}`} 
-          fill 
-          sizes="(max-width: 768px) 0vw, 70vw"
-          className="object-cover object-[center_40%] brightness-[0.85] select-none"
-          draggable={false}
-          priority
-        />
-        {/* Name Overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10 pointer-events-none px-10">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <h1 className="relative text-3xl lg:text-5xl font-serif tracking-[0.2em] mb-4 text-center leading-snug drop-shadow-2xl">
-            {groomNickname} <br />
-            <span className="text-xl lg:text-3xl block my-1">&</span>
-            {brideNickname}
-          </h1>
-          <div className="relative h-[1px] w-24 bg-white/50 mb-4"></div>
-          <p className="relative text-sm lg:text-base font-serif tracking-[0.4em] text-white/90 uppercase">{formattedDate}</p>
-        </div>
-      </div>
-
-      {/* Right side: Sidebar (Scrollable Content) */}
+    <main className="min-h-[100dvh] w-full bg-neutral-950 overflow-hidden relative">
       <RightSidebar 
         guestName={guestName} 
         guest={dbData.guest}
@@ -215,7 +184,6 @@ export default async function Home({ params }: Props) {
         wishes={dbData.wishes}
         stats={dbData.stats}
       />
-      
     </main>
   );
 }

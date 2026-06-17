@@ -181,8 +181,8 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   const { monthName: dynamicMonthName, grid: calendarGrid } = renderCalendar();
 
   const getGoogleCalendarLink = () => {
-    const bride = project?.bride_nickname || "Mita";
-    const groom = project?.groom_nickname || "Tian";
+    const bride = project?.bride_nickname || "Jovita";
+    const groom = project?.groom_nickname || "Luqman";
     const title = encodeURIComponent(`Wedding of ${groom} & ${bride}`);
     const wDate = project?.wedding_date ? new Date(project.wedding_date) : new Date("2026-04-25");
     const year = wDate.getFullYear();
@@ -293,7 +293,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   }, [project]);
 
   return (
-    <div className="relative w-full md:w-[30%] h-[100dvh] shadow-none md:shadow-[-20px_0_30px_-15px_rgba(0,0,0,0.3)] z-20 flex-shrink-0 overflow-hidden bg-neutral-950">
+    <div className="relative w-full h-[100dvh] z-20 flex-shrink-0 overflow-hidden bg-neutral-950">
       <CustomCursor />
 
       {/* Audio Element */}
@@ -420,10 +420,10 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             <FadeIn>
               <div className="mb-6 space-y-2">
                 <h2 className="text-4xl md:text-5xl font-serif tracking-[0.3em] text-white">
-                  {(project?.groom_nickname || "TIAN").split("").join(" ")}
+                  {(project?.groom_nickname || "LUQMAN").split("").join(" ")}
                 </h2>
                 <p className="text-xl md:text-2xl font-script text-white/90">
-                  {project?.groom_name || "Christian Siahaan"}
+                  {project?.groom_name || "Luqman"}
                 </p>
               </div>
             </FadeIn>
@@ -453,10 +453,10 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             <FadeIn>
               <div className="mb-6 space-y-2">
                 <h2 className="text-4xl md:text-5xl font-serif tracking-[0.3em] text-white">
-                  {(project?.bride_nickname || "MITA").split("").join(" ")}
+                  {(project?.bride_nickname || "JOVITA").split("").join(" ")}
                 </h2>
                 <p className="text-xl md:text-2xl font-script text-white/90">
-                  {project?.bride_name || "Ira Mita Simangunsong"}
+                  {project?.bride_name || "Jovita"}
                 </p>
               </div>
             </FadeIn>
@@ -1228,7 +1228,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             <div className="flex flex-col items-center gap-2">
               <span className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 uppercase font-bold">With Love</span>
               <p className="text-2xl md:text-3xl font-script text-white mt-2">
-                {project?.groom_nickname || "Tian"} & {project?.bride_nickname || "Mita"}
+                {project?.groom_nickname || "Luqman"} & {project?.bride_nickname || "Jovita"}
               </p>
             </div>
           </FadeIn>
@@ -1258,105 +1258,80 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
       >
         <div className="absolute inset-0 z-0 overflow-hidden bg-black shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
           <FloatingParticles />
-          <Slideshow images={slideshowImages} />
-          <div className="absolute inset-0 bg-black/40"></div>
+          <Image
+            src={project?.opening_photo_url || project?.cover_photo_url || "/bg-invitation.jpg"}
+            alt="Background"
+            fill
+            sizes="100vw"
+            className="object-cover brightness-[0.65] select-none"
+            draggable={false}
+            priority
+          />
+          <div className="absolute inset-0 bg-black/30"></div>
         </div>
 
-        <div className="relative z-20 flex flex-col items-center justify-center gap-12 md:gap-16 lg:gap-24 min-h-full py-16 md:py-24 text-white text-center px-4 md:px-8 w-full overflow-y-auto overflow-x-hidden no-scrollbar">
-          {/* Wax Seal Top Flap Illusion via Background */}
-          <div className="absolute top-0 left-0 w-full h-[40%] bg-gradient-to-b from-black/80 to-transparent pointer-events-none mix-blend-overlay"></div>
+        <div className="relative z-20 flex flex-col items-center justify-center min-h-full py-16 text-white text-center px-4 w-full overflow-y-auto no-scrollbar">
+          {/* Top Leaf Logo */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            className="mb-8"
+          >
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white/80">
+              <path d="M30 50C30 35 30 20 30 10C30 10 24 12 20 8C16 4 22 2 30 10C38 2 44 4 40 8C36 12 30 10 30 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M30 32C22 28 20 18 30 18C40 18 38 28 30 32Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </motion.div>
 
-          <div className="relative w-full flex flex-col items-center mt-4 md:mt-8">
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-              className="text-xl md:text-2xl italic font-script text-[#d4af37] mb-2 md:mb-4"
-            >
-              The wedding of
-            </motion.p>
+          {/* Dear, [Nama tamu] using font The Seasons */}
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+            className="text-lg md:text-xl font-seasons text-white/90 tracking-wide mb-6"
+          >
+            Dear, {guestName}
+          </motion.p>
 
-            <motion.h1
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 1.2, ease: "easeOut", delay: 0.8 }}
-              className="text-[clamp(1.15rem,4.5vw,2rem)] md:text-3xl lg:text-4xl font-serif tracking-widest mb-4 md:mb-6 leading-snug drop-shadow-2xl"
-            >
-              {project?.groom_nickname || "CHRISTIAN"} <br />&<br />
-              {project?.bride_nickname || "IRA MITA"}
-            </motion.h1>
+          {/* Bride & Groom names in Parfumerie Script */}
+          <motion.h1
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.2, ease: "easeOut", delay: 0.8 }}
+            className="text-6xl md:text-8xl lg:text-9xl font-parfumerie text-white mb-6 leading-none drop-shadow-2xl font-light"
+          >
+            Jovita & Luqman
+          </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: "easeOut", delay: 1.6 }}
-              className="text-xs md:text-sm tracking-[0.4em] text-gray-200"
-            >
-              {project?.wedding_date ? (
-                (() => {
-                  const parts = project.wedding_date.split("-");
-                  if (parts.length === 3) {
-                    return `${parts[2]} . ${parts[1]} . ${parts[0].substring(2)}`;
-                  }
-                  return "25 . 04 . 26";
-                })()
-              ) : (
-                "25 . 04 . 26"
-              )}
-            </motion.p>
-          </div>
+          {/* Excitedly request your presence in The Seasons */}
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: "easeOut", delay: 1.4 }}
+            className="text-xs md:text-sm tracking-[0.2em] text-white/80 uppercase font-seasons mb-12"
+          >
+            excitedly request your presence
+          </motion.p>
 
-          <div className="flex flex-col items-center gap-6 mb-4 md:mb-8 z-30">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, ease: "backOut", delay: 2.2 }}
-              className="text-center bg-white/10 backdrop-blur-xl px-6 md:px-10 py-8 w-[90%] md:w-[85%] rounded-sm shrink-0 border border-white/20 shadow-2xl relative mx-auto"
-            >
-              {/* Decorative Wax Seal on the Ticket */}
-              <div className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 w-16 h-16 md:w-20 md:h-20 group-hover:scale-110 transition-transform drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
-                <Image
-                  src={sealSrc}
-                  alt="Wax Seal"
-                  fill
-                  sizes="(max-width: 768px) 80px, 80px"
-                  className="object-contain"
-                  onError={() => {
-                    setSealSrc(defaultSealSrc);
-                  }}
-                />
-                <span className="absolute z-10 font-serif text-[#d4af37] text-[10px] md:text-xs font-bold tracking-tighter drop-shadow-md">
-                  {(project?.groom_nickname || "T").charAt(0)} & {(project?.bride_nickname || "M").charAt(0)}
-                </span>
-              </div>
-
-              <p className="text-[10px] md:text-xs text-gray-300 font-sans uppercase tracking-[0.3em] mb-2 mt-2">Special Invitation For</p>
-              <h2 className="text-xl md:text-2xl font-serif tracking-widest text-[#d4af37] break-words leading-snug">{guestName}</h2>
-            </motion.div>
-
+          <div className="flex flex-col items-center w-full max-w-[240px] z-30">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 1, ease: "easeOut", delay: 2.8 }}
-              className="flex flex-col items-center gap-3 w-full px-6 mt-4"
+              transition={{ duration: 1, ease: "easeOut", delay: 2.0 }}
+              className="w-full"
             >
               <button
                 onClick={handleOpen}
-                className="group w-full flex items-center justify-center gap-3 px-8 py-4 border border-[#d4af37]/60 bg-black/60 hover:bg-[#d4af37]/20 transition-all duration-500 backdrop-blur-md tracking-[0.2em] uppercase text-white hover:text-[#d4af37] rounded-full text-[10px] md:text-xs shadow-xl"
+                className="w-full py-3 px-8 rounded-full bg-[#EAE3D2] text-[#333333] hover:bg-[#D8C4A9] transition-all duration-300 font-seasons text-xs tracking-[0.15em] uppercase shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 opacity-70 group-hover:opacity-100">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                </svg>
-                Break The Seal
+                Open Invitation
               </button>
 
               <button
                 onClick={() => setShowQRModal(true)}
-                className="group w-full flex items-center justify-center gap-3 px-8 py-4 border border-white/20 bg-white/5 hover:bg-white/10 transition-all duration-500 backdrop-blur-md tracking-[0.2em] uppercase text-white/80 hover:text-white rounded-full text-[10px] md:text-xs"
+                className="w-full py-3 px-8 mt-4 rounded-full border border-white/30 text-white/80 hover:text-white hover:border-white/60 hover:bg-white/5 transition-all duration-300 font-seasons text-xs tracking-[0.15em] uppercase"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 opacity-60 group-hover:opacity-100">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5Zm10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 14.25 9.375v-4.5Zm0 10.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Zm-10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Z" />
-                </svg>
                 Entry Code
               </button>
             </motion.div>
