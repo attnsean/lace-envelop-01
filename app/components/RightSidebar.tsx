@@ -860,6 +860,107 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
           </div>
         </section>
 
+        {/* NEW SECTION: Gift Registry */}
+        {project?.subscriptions?.packages?.has_amplop_digital !== false && (
+          <section id="gift-registry" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col md:flex-row bg-[#E1D8CC] text-[#4A3E3D] select-none">
+            {/* Left Column (Registry title and bird) */}
+            <div className="w-full md:w-[45%] h-[38%] md:h-full flex flex-col items-center justify-center p-6 md:p-12 text-center relative">
+              <FadeIn delay={0.2} className="flex flex-col items-center select-none">
+                <span className="font-parfumerie text-[#4A3E3D] text-[clamp(50px,10.5vw,76px)] md:text-[clamp(65px,5.5vw,90px)] leading-none italic font-light z-10 -mb-2 md:-mb-4">
+                  Gift
+                </span>
+                <h3 className="font-seasons text-[#4A3E3D] text-[clamp(28px,6vw,46px)] md:text-[clamp(36px,3.8vw,56px)] font-normal uppercase leading-none tracking-[0.1em] mb-4 md:mb-6">
+                  REGISTRY
+                </h3>
+                
+                {/* Bird illustration */}
+                <div className="relative w-[180px] h-[100px] md:w-[260px] md:h-[150px] mt-2 select-none pointer-events-none">
+                  <Image
+                    src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-bird.png`}
+                    alt="Bird Illustration"
+                    fill
+                    sizes="(max-width: 768px) 180px, 260px"
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              </FadeIn>
+            </div>
+
+            {/* Right Column (Message and Doily bank details card) */}
+            <div className="w-full md:w-[55%] h-[62%] md:h-full flex flex-col items-center justify-center p-6 md:p-12 text-center md:text-left md:items-start space-y-6 md:space-y-8">
+              {/* Message */}
+              <div className="space-y-4 max-w-xl md:max-w-md lg:max-w-xl">
+                <FadeIn delay={0.3}>
+                  <h4 className="font-seasons text-[clamp(16px,3vw,22px)] md:text-[clamp(18px,1.5vw,26px)] leading-relaxed text-[#4A3E3D] font-normal">
+                    Your presence at our wedding is the greatest gift of all.
+                  </h4>
+                </FadeIn>
+                <FadeIn delay={0.4}>
+                  <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(11.5px,2.2vw,14px)] md:text-[clamp(12px,1.1vw,14.5px)] leading-relaxed font-light text-justify md:text-left">
+                    For family and friends who have kindly asked about wedding gifts, we truly appreciate your generosity and thoughtfulness. Should you wish to bless us with a gift, a contribution through the following registry would be warmly appreciated as we begin this new chapter together.
+                  </p>
+                </FadeIn>
+              </div>
+
+              {/* Doily Card list */}
+              <FadeIn delay={0.5} className="w-full flex justify-center md:justify-start">
+                <div className="flex flex-col sm:flex-row gap-4 w-full justify-center md:justify-start overflow-x-auto no-scrollbar">
+                  {(() => {
+                    const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
+                      ? project.payment_accounts
+                      : [
+                          { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" }
+                        ]) as PaymentAccount[];
+
+                    return paymentAccounts.map((acc, i) => {
+                      const bankName = acc.provider || acc.bank_name || acc.bankName || "";
+                      const accountNo = acc.bank_account || acc.bankAccount || acc.account_number || acc.accountNumber || "";
+                      const ownerName = acc.owner_name || acc.ownerName || acc.account_name || acc.accountName || "";
+
+                      return (
+                        <div
+                          key={i}
+                          className="relative w-[280px] h-[175px] md:w-[320px] md:h-[200px] shrink-0 flex items-center justify-center text-[#4A3E3D] font-seasons"
+                        >
+                          {/* Lace Frame Background */}
+                          <Image
+                            src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
+                            alt="Lace Card Frame"
+                            fill
+                            sizes="320px"
+                            className="object-contain pointer-events-none select-none"
+                            unoptimized
+                          />
+
+                          {/* Card Content */}
+                          <div className="relative z-10 flex flex-col items-center justify-center text-center p-4 -mt-2 w-[80%] h-[75%]">
+                            <span className="text-[clamp(11px,2.2vw,14px)] md:text-[clamp(12px,1.1vw,15px)] font-bold tracking-widest uppercase text-[#4A3E3D]/80">
+                              {bankName}
+                            </span>
+                            <span className="text-[clamp(13px,2.4vw,16px)] md:text-[clamp(14px,1.2vw,18px)] font-semibold text-[#4A3E3D] mt-1 mb-2 tracking-wide truncate max-w-full">
+                              {ownerName}
+                            </span>
+                            <span className="font-lekton text-[clamp(12px,2.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] text-[#4A3E3D] tracking-[0.15em] mb-3 select-text">
+                              {accountNo}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(accountNo)}
+                              className="font-lekton text-white text-[11px] md:text-xs tracking-wider px-6 py-1.5 bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </FadeIn>
+            </div>
+          </section>
+        )}
+
         {/* SECTION 3: Groom */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-black">
           <Image
@@ -1348,312 +1449,6 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             </FadeIn>
           </div>
         </section>
-
-        {/* SECTION 9: Wedding Gift */}
-        {project?.subscriptions?.packages?.has_amplop_digital !== false && (
-          <section className="relative w-full min-h-screen h-auto snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center pt-24 pb-8">
-            <div className="absolute inset-0 z-0 bg-black">
-              <Image
-                src={galleryImages.length > 0 ? (galleryImages[2 % galleryImages.length] || project?.cover_photo_url || bgImg4) : (project?.cover_photo_url || bgImg4)}
-                alt="Wedding Gift Background"
-                fill
-                unoptimized={
-                  galleryImages.length > 0
-                    ? typeof (galleryImages[2 % galleryImages.length] || project?.cover_photo_url) === 'string'
-                    : typeof (project?.cover_photo_url) === 'string'
-                }
-                sizes="(max-width: 768px) 100vw, 30vw"
-                className="object-cover object-[center_35%] opacity-40 grayscale"
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80"></div>
-            </div>
-
-            <div className="relative z-10 w-full flex flex-col items-center">
-              <FadeIn>
-                <h2 className="text-3xl md:text-4xl font-serif tracking-widest text-white mb-4 text-center px-4">
-                  WEDDING GIFT
-                </h2>
-              </FadeIn>
-
-              {/* Marquee Carousel */}
-              <div className="w-full overflow-hidden mb-10">
-                <div className="flex w-max animate-marquee">
-                  {/* Original set */}
-                  <div className="flex w-max gap-2 pr-2">
-                    {galleryImages.map((img, i) => (
-                      <div key={i} className="relative w-28 md:w-36 aspect-[4/5] overflow-hidden rounded-sm">
-                        <Image src={img} alt={`Slide ${i}`} fill unoptimized={typeof img === 'string'} sizes="20vw" className="object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                  {/* Duplicated set for seamless loop */}
-                  <div className="flex w-max gap-2 pr-2">
-                    {galleryImages.map((img, i) => (
-                      <div key={`dup-${i}`} className="relative w-28 md:w-36 aspect-[4/5] overflow-hidden rounded-sm">
-                        <Image src={img} alt={`Slide dup ${i}`} fill unoptimized={typeof img === 'string'} sizes="20vw" className="object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <FadeIn delay={0.2} className="w-full max-w-lg px-6">
-                <p className="text-xs md:text-sm font-sans font-light leading-relaxed text-gray-300 mb-8 text-center">
-                  Your presence is the greatest gift of all. However, if you are unable to attend and would like to send us your wishes in the form of a gift, please use the account details below:
-                </p>
-
-                <div className="w-full mt-6 relative flex flex-col gap-12">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="w-full text-left space-y-4"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {(() => {
-                        const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
-                          ? project.payment_accounts
-                          : [
-                            { bank_name: "Bank BCA", bank_account: "7772276101", owner_name: "Christian Siahaan" },
-                            { bank_name: "Bank BCA", bank_account: "7772276101", owner_name: "Ira Mita Simangunsong" }
-                          ]) as PaymentAccount[];
-                        return paymentAccounts.map((acc: PaymentAccount, i: number) => {
-                          let bankName = acc.provider || acc.bank_name || acc.bankName || "Bank";
-                          if (bankName && !bankName.toLowerCase().startsWith("bank") && bankName.toLowerCase() !== "bank") {
-                            bankName = `Bank ${bankName}`;
-                          }
-                          const accountNo = acc.bank_account || acc.bankAccount || acc.account_number || acc.accountNumber || "";
-                          const ownerName = acc.owner_name || acc.ownerName || acc.account_name || acc.accountName || "";
-                          return (
-                            <div key={i} className="bg-white/5 backdrop-blur-md p-5 rounded-[1.5rem] border border-white/5 hover:border-[#d4af37]/30 transition-all duration-300 group flex flex-col justify-between">
-                              <div>
-                                <h3 className="text-sm font-bold text-white mb-1 uppercase tracking-wider">{bankName}</h3>
-                                <p className="text-[10px] text-[#d4af37] mb-4 uppercase tracking-widest">{ownerName}</p>
-                              </div>
-                              <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5 group-hover:border-white/10 transition-all">
-                                <span className="font-mono text-sm text-white tracking-[0.2em]">{accountNo}</span>
-                                <button
-                                  onClick={() => copyToClipboard(accountNo)}
-                                  className="text-gray-500 hover:text-white hover:scale-110 transition-all"
-                                  title="Copy Account Number"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        });
-                      })()}
-                    </div>
-
-                    <div className="pt-4 pb-2">
-                      <p className="text-xs font-bold text-white mb-2 tracking-widest uppercase">*Note:</p>
-                      <p className="text-[10px] md:text-xs font-light text-gray-400 leading-relaxed italic">
-                        Before making Transfer/Shipment, please note:<br />
-                        - Bank Name, Recipient Name are already in accordance with the couple&apos;s names<br />
-                        - Confirm the gift shipment via personal chat to the couple
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  {/* Unhiding physical gift registry section only if gifts exist */}
-                  {!giftLoading && giftItems.length > 0 && (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        className="w-full flex flex-col items-center justify-center pt-2 pb-2"
-                      >
-                        <div className="flex items-center justify-center gap-4 py-4 w-full opacity-60">
-                          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                          <h3 className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-white uppercase">Gift Registry</h3>
-                          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                        </div>
-                        <p className="text-xs md:text-sm font-sans font-light text-gray-300 text-center max-w-sm mb-1">
-                          We have compiled a list of items we might need. You can contribute by selecting an item to gift us.
-                        </p>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="w-full"
-                      >
-                        {/* Gift Carousel - Improved with Framer Motion Drag & Controls */}
-                        <div className="relative w-full group/carousel">
-                          {/* Navigation Arrows */}
-                          {!giftLoading && giftItems.length > 1 && (
-                            <>
-                              {activeGiftIndex > 0 && (
-                                <button
-                                  onClick={() => {
-                                    const prevEl = document.getElementById(`gift-item-${activeGiftIndex - 1}`);
-                                    const container = document.getElementById('gift-container');
-                                    if (prevEl && container) {
-                                      container.scrollTo({ left: prevEl.offsetLeft - container.offsetLeft - (container.clientWidth - prevEl.clientWidth) / 2, behavior: 'smooth' });
-                                    }
-                                  }}
-                                  className="absolute left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 items-center justify-center text-white opacity-0 group-hover/carousel:opacity-100 transition-all hover:bg-black/80 hover:scale-110 active:scale-95 shadow-xl hidden md:flex"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                                  </svg>
-                                </button>
-                              )}
-                              {activeGiftIndex < giftItems.length - 1 && (
-                                <button
-                                  onClick={() => {
-                                    const nextEl = document.getElementById(`gift-item-${activeGiftIndex + 1}`);
-                                    const container = document.getElementById('gift-container');
-                                    if (nextEl && container) {
-                                      container.scrollTo({ left: nextEl.offsetLeft - container.offsetLeft - (container.clientWidth - nextEl.clientWidth) / 2, behavior: 'smooth' });
-                                    }
-                                  }}
-                                  className="absolute right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 items-center justify-center text-white opacity-0 group-hover/carousel:opacity-100 transition-all hover:bg-black/80 hover:scale-110 active:scale-95 shadow-xl hidden md:flex"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                  </svg>
-                                </button>
-                              )}
-                            </>
-                          )}
-
-                          {giftLoading ? (
-                            <div className="w-full flex flex-col items-center justify-center py-24">
-                              <div className="w-10 h-10 border-2 border-white/10 border-t-[#d4af37] rounded-full animate-spin mb-4"></div>
-                              <p className="text-[10px] tracking-[0.3em] text-white/40 uppercase font-sans">Curating Registry...</p>
-                            </div>
-                          ) : giftItems.length === 0 ? (
-                            <div className="mx-4 flex flex-col items-center justify-center py-20 px-6 bg-white/5 rounded-3xl border border-white/10 text-center backdrop-blur-sm">
-                              <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase font-sans">The registry is currently empty</p>
-                            </div>
-                          ) : (
-                            <div
-                              id="gift-container"
-                              onScroll={(e) => {
-                                const container = e.currentTarget;
-                                const scrollLeft = container.scrollLeft;
-                                const scrollWidth = container.scrollWidth - container.clientWidth;
-                                if (scrollWidth <= 0) return;
-                                const maxIndex = giftItems.length - 1;
-                                const percentage = scrollLeft / scrollWidth;
-                                const newIndex = Math.min(maxIndex, Math.max(0, Math.round(percentage * maxIndex)));
-                                if (newIndex !== activeGiftIndex) setActiveGiftIndex(newIndex);
-                              }}
-                              className="flex gap-4 md:gap-6 overflow-x-auto pt-2 pb-8 scrollbar-hide snap-x snap-mandatory no-scrollbar w-full px-[10vw] md:px-12"
-                              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                            >
-                              {giftItems.map((item, index) => (
-                                <div
-                                  key={item.id}
-                                  id={`gift-item-${index}`}
-                                  className="relative w-[80vw] max-w-[280px] md:w-[320px] md:max-w-none shrink-0 bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col group transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(212,175,55,0.1)] hover:border-white/20 snap-center"
-                                >
-                                  {/* Discount Badge */}
-                                  {item.discount && !item.isBought && (
-                                    <div className="absolute top-5 left-5 z-20 px-4 py-1.5 bg-[#d4af37] text-[10px] font-bold tracking-widest uppercase text-neutral-950 rounded-full shadow-lg">
-                                      {item.discount}
-                                    </div>
-                                  )}
-
-                                  <div className="relative w-full aspect-[4/5] overflow-hidden">
-                                    <Image
-                                      src={item.image}
-                                      alt={item.name}
-                                      fill
-                                      unoptimized
-                                      sizes="(max-width: 768px) 100vw, 33vw"
-                                      className={`object-cover transition-transform duration-1000 group-hover:scale-110 ${item.isBought ? 'grayscale opacity-50' : ''}`}
-                                    />
-                                    {item.isBought && (
-                                      <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10 bg-black/50">
-                                        <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-4">
-                                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-white">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                          </svg>
-                                        </div>
-                                        <span className="text-xs font-serif tracking-[0.4em] uppercase text-white/90">Purchased</span>
-                                      </div>
-                                    )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent opacity-90"></div>
-
-                                    {/* Item Details overlapping image */}
-                                    <div className={`absolute bottom-0 left-0 right-0 p-6 flex flex-col z-20 ${item.isBought ? 'opacity-60' : ''}`}>
-                                      <h4 className="text-base md:text-xl font-serif text-white mb-2 leading-tight tracking-wide line-clamp-2 drop-shadow-md">
-                                        {item.name}
-                                      </h4>
-                                      <div className="flex items-center gap-3 flex-wrap">
-                                        <span className="text-[#d4af37] font-serif text-lg md:text-xl font-bold tracking-wider drop-shadow-md">Rp. {item.price}</span>
-                                        {item.originalPrice && (
-                                          <span className="text-white/40 line-through text-[10px] md:text-xs tracking-wider">Rp. {item.originalPrice}</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="p-6 pt-5 flex flex-col bg-neutral-950 relative z-20 border-t border-white/5">
-                                    <button
-                                      disabled={item.isBought}
-                                      onClick={() => {
-                                        setSelectedGiftForQR(item);
-                                      }}
-                                      className={`w-full py-4 px-6 rounded-2xl text-[10px] md:text-xs font-sans tracking-[0.3em] uppercase transition-all duration-500 border ${item.isBought
-                                        ? 'border-white/5 text-white/20 bg-white/5 cursor-not-allowed'
-                                        : 'border-[#d4af37]/30 text-[#d4af37] bg-transparent hover:bg-[#d4af37] hover:text-neutral-950 hover:border-[#d4af37] hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]'
-                                        }`}
-                                    >
-                                      {item.isBought ? 'Thank You' : 'Give This Gift'}
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Carousel Dot Indicators */}
-                        {!giftLoading && giftItems.length > 1 && (
-                          <div className="flex justify-center items-center gap-2 mt-4 mb-4">
-                            {giftItems.map((_, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => {
-                                  const container = document.getElementById('gift-container');
-                                  if (container) {
-                                    const children = container.children;
-                                    if (children && children[idx]) {
-                                      children[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                                    }
-                                  }
-                                }}
-                                className={`h-2 rounded-full transition-all duration-300 ${idx === activeGiftIndex
-                                    ? 'bg-[#d4af37] w-6'
-                                    : 'bg-white/20 hover:bg-white/40 w-2'
-                                  }`}
-                                aria-label={`Go to item ${idx + 1}`}
-                              />
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Extra space at the bottom to prevent accidental scroll */}
-                        <div className="w-full h-8 md:h-12 shrink-0"></div>
-                      </motion.div>
-                    </>
-                  )}
-                </div>
-              </FadeIn>
-            </div>
-          </section>
-        )}
-
 
         {/* SECTION 11: Blessing Wall / Guestbook */}
         {project?.subscriptions?.packages?.has_guestbook !== false && (
