@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Playfair_Display, Great_Vibes } from "next/font/google";
+import localFont from "next/font/local";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -28,6 +29,11 @@ const customScript = Great_Vibes({
   variable: "--font-great-vibes",
   weight: "400",
   subsets: ["latin"],
+});
+
+const altesseStd = localFont({
+  src: "./assets/font/AltesseStd-Regular24pt.otf",
+  variable: "--font-altesse-local",
 });
 
 import { supabase } from "../lib/supabase";
@@ -90,7 +96,7 @@ export default function RootLayout({
   return (
     <html 
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${customSerif.variable} ${customScript.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${customSerif.variable} ${customScript.variable} ${altesseStd.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ClientSecurity />
