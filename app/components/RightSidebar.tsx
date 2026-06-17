@@ -695,6 +695,84 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
           />
         )}
 
+        {/* NEW SECTION: The Details */}
+        {(() => {
+          const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+          const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+          const detailsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec6-details.jpg`;
+
+          return (
+            <section id="details" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col md:flex-row bg-[#E1D8CC]">
+              {/* Left Column (Foot-in-grass photo) */}
+              <div className="relative w-full md:w-[50%] h-[42%] md:h-full shrink-0">
+                <Image
+                  src={detailsImgUrl}
+                  alt="Wedding Details Foot Photo"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover pointer-events-none w-full h-full select-none"
+                  unoptimized
+                />
+              </div>
+
+              {/* Right Column (Beige detail card) */}
+              <div className="w-full md:w-[50%] h-[58%] md:h-full flex flex-col items-center justify-center p-6 md:p-12 text-[#4A3E3D] select-none text-center bg-[#E1D8CC]">
+                {/* The Details Title */}
+                <div className="flex flex-col items-center mb-6 md:mb-10 select-none relative">
+                  <span className="font-parfumerie text-[#4A3E3D] text-[clamp(45px,9.5vw,68px)] md:text-[clamp(55px,4.5vw,80px)] leading-none italic font-light z-10 -mb-2 md:-mb-3">
+                    The
+                  </span>
+                  <h3 className="font-seasons text-[#4A3E3D] text-[clamp(24px,5.5vw,40px)] md:text-[clamp(30px,3.2vw,48px)] font-normal uppercase leading-none tracking-[0.2em]">
+                    DETAILS
+                  </h3>
+                </div>
+
+                {/* Date & Location */}
+                <div className="flex flex-col items-center mb-4 md:mb-6">
+                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,2.2vw,14px)] font-medium uppercase tracking-[0.25em] mb-1.5 md:mb-2">
+                    DATE & LOCATION
+                  </h4>
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2vw,13px)] md:text-[clamp(11px,1.1vw,14px)] leading-relaxed tracking-wider">
+                    Saturday, 8 August 2026
+                  </p>
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2vw,13px)] md:text-[clamp(11px,1.1vw,14px)] leading-relaxed tracking-wider">
+                    Openaire Resto Bar Market Semarang
+                  </p>
+                </div>
+
+                {/* Thin Divider */}
+                <div className="w-16 md:w-24 h-[1px] bg-[#4A3E3D]/20 my-3 md:my-4"></div>
+
+                {/* Akad & Reception */}
+                <div className="flex flex-col items-center mb-4 md:mb-6">
+                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,2.2vw,14px)] font-medium uppercase tracking-[0.25em] mb-1.5 md:mb-2">
+                    AKAD & RECEPTION
+                  </h4>
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2vw,13px)] md:text-[clamp(11px,1.1vw,14px)] leading-relaxed tracking-wider">
+                    13.15-18.00
+                  </p>
+                </div>
+
+                {/* Thin Divider */}
+                <div className="w-16 md:w-24 h-[1px] bg-[#4A3E3D]/20 my-3 md:my-4"></div>
+
+                {/* Action Button */}
+                <div className="mt-2">
+                  <button
+                    onClick={() => {
+                      document.getElementById("events-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="font-lekton text-[#4A3E3D] text-[clamp(9.5px,1.8vw,12.5px)] tracking-wider px-6 md:px-8 py-2 md:py-3 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
+                  >
+                    Detailed Info & Rundown
+                  </button>
+                </div>
+              </div>
+            </section>
+          );
+        })()}
+
         {/* SECTION 3: Groom */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-black">
           <Image
@@ -875,7 +953,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             const timeText = event.event_time ? `${event.event_time.substring(0, 5)} ${event.end_time ? `- ${event.end_time.substring(0, 5)}` : ""} WIB` : "";
 
             return (
-              <section key={event.id || index} className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
+              <section key={event.id || index} id={index === 0 ? "events-section" : undefined} className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
                 <div className="absolute inset-0 z-0 bg-black">
                   <Image
                     src={bgImage}
@@ -950,7 +1028,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         ) : (
           <>
             {/* SECTION 6: Holy Matrimony */}
-            <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
+            <section id="events-section" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
               <div className="absolute inset-0 z-0 bg-black">
                 <Image
                   src={bgImgCeremony}
