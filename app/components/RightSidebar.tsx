@@ -207,6 +207,20 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
     return date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
 
+  const formattedWeddingDate = React.useMemo(() => {
+    if (project?.wedding_date) {
+      const date = new Date(project.wedding_date);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+      }
+    }
+    return "AUGUST 8, 2026";
+  }, [project?.wedding_date]);
+
+  const formattedWeddingLocation = React.useMemo(() => {
+    return project?.venue_name || "SEMARANG";
+  }, [project?.venue_name]);
+
   // Gift items initialized directly in state
 
   const openLightbox = (idx: number) => {
@@ -349,6 +363,74 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
       <div
         className={`h-full overflow-y-auto no-scrollbar pb-24 absolute inset-0 w-full h-full overflow-x-hidden snap-y snap-mandatory flex flex-col gap-20 md:gap-28 scrollbar-hide transition-opacity duration-1000 ease-in-out delay-300 z-10 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
       >
+        {/* NEW SECTION: Wedding Intro with Heart Doily */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center">
+          <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+            <Image
+              src={project?.opening_photo_url || project?.cover_photo_url || "/bg-invitation.jpg"}
+              alt="Background"
+              fill
+              sizes="100vw"
+              className="object-cover brightness-[0.55] select-none"
+              draggable={false}
+              priority
+            />
+            <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply"></div>
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center justify-center min-h-full py-16 text-center px-4 w-full select-none">
+            {/* Heart Doily wrapper with scale/fade animation */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={isOpen ? { scale: 1, opacity: 1 } : {}}
+              transition={{ duration: 1.4, ease: "easeOut", delay: 0.4 }}
+              className="relative w-[320px] h-[308px] md:w-[380px] md:h-[365px] flex items-center justify-center mb-8 drop-shadow-2xl"
+            >
+              <Image
+                src="/heart-doily.png"
+                alt="Heart Doily"
+                fill
+                className="object-contain"
+                priority
+              />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={isOpen ? { opacity: 1 } : {}}
+                transition={{ duration: 1, delay: 1.0 }}
+                className="relative z-10 flex flex-col items-center justify-center text-center -mt-2"
+              >
+                <span className="font-parfumerie text-[#5b3b1e] text-4xl md:text-5xl leading-[1.1] font-light">
+                  Jovita &
+                </span>
+                <span className="font-parfumerie text-[#5b3b1e] text-4xl md:text-5xl leading-[1.1] font-light">
+                  Luqman
+                </span>
+              </motion.div>
+            </motion.div>
+
+            {/* Are getting married! in Altesse Std */}
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              animate={isOpen ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 1, delay: 1.4 }}
+              className="font-altesse text-white text-3xl md:text-4xl lg:text-5xl mt-2 tracking-wide drop-shadow-md"
+            >
+              Are getting married!
+            </motion.p>
+
+            {/* Date and Place in The Seasons */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={isOpen ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 1, delay: 1.8 }}
+              className="flex flex-col items-center mt-8 gap-2 text-white font-seasons drop-shadow-md tracking-[0.2em] text-xs md:text-sm uppercase"
+            >
+              <p>{formattedWeddingDate}</p>
+              <p>{formattedWeddingLocation}</p>
+            </motion.div>
+          </div>
+        </section>
+
         {/* SECTION 2: Quote */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
           <div className="absolute inset-0 z-0 bg-black">

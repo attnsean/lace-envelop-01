@@ -2,6 +2,14 @@
 @import url("https://db.onlinewebfonts.com/c/5aed2eb513548a59f3e2bff1bba07d12?family=Parfumerie+Script+W00+Regular");
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Altesse Std";
+  src: url("./assets/font/AltesseStd-Regular24pt.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -16,6 +24,7 @@
   --font-script: var(--font-great-vibes);
   --font-seasons: "The Seasons", var(--font-playfair), serif;
   --font-parfumerie: "Parfumerie Script W00 Regular", var(--font-great-vibes), cursive;
+  --font-altesse: "Altesse Std", var(--font-script), cursive;
   --animate-marquee: marquee 30s ease-in-out infinite alternate;
 }
 
