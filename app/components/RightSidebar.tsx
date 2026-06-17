@@ -719,51 +719,51 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               {/* Right Column (Beige detail card) */}
               <div className="w-full md:w-[50%] h-[58%] md:h-full flex flex-col items-center justify-center p-6 md:p-12 text-[#4A3E3D] select-none text-center bg-[#E1D8CC]">
                 {/* The Details Title */}
-                <div className="flex flex-col items-center mb-6 md:mb-10 select-none relative">
-                  <span className="font-parfumerie text-[#4A3E3D] text-[clamp(45px,9.5vw,68px)] md:text-[clamp(55px,4.5vw,80px)] leading-none italic font-light z-10 -mb-2 md:-mb-3">
+                <div className="flex flex-col items-center mb-8 md:mb-12 select-none relative">
+                  <span className="font-parfumerie text-[#4A3E3D] text-[clamp(65px,14vw,95px)] md:text-[clamp(85px,6vw,120px)] leading-none italic font-light z-10 -mb-3 md:-mb-5">
                     The
                   </span>
-                  <h3 className="font-seasons text-[#4A3E3D] text-[clamp(24px,5.5vw,40px)] md:text-[clamp(30px,3.2vw,48px)] font-normal uppercase leading-none tracking-[0.2em]">
+                  <h3 className="font-seasons text-[#4A3E3D] text-[clamp(36px,8vw,56px)] md:text-[clamp(48px,4.5vw,68px)] font-normal uppercase leading-none tracking-[0.2em]">
                     DETAILS
                   </h3>
                 </div>
 
                 {/* Date & Location */}
-                <div className="flex flex-col items-center mb-4 md:mb-6">
-                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,2.2vw,14px)] font-medium uppercase tracking-[0.25em] mb-1.5 md:mb-2">
+                <div className="flex flex-col items-center mb-5 md:mb-8">
+                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(15px,3vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.25em] mb-2 md:mb-3">
                     DATE & LOCATION
                   </h4>
-                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2vw,13px)] md:text-[clamp(11px,1.1vw,14px)] leading-relaxed tracking-wider">
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
                     Saturday, 8 August 2026
                   </p>
-                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2vw,13px)] md:text-[clamp(11px,1.1vw,14px)] leading-relaxed tracking-wider">
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
                     Openaire Resto Bar Market Semarang
                   </p>
                 </div>
 
                 {/* Thin Divider */}
-                <div className="w-16 md:w-24 h-[1px] bg-[#4A3E3D]/20 my-3 md:my-4"></div>
+                <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-4 md:my-5"></div>
 
                 {/* Akad & Reception */}
-                <div className="flex flex-col items-center mb-4 md:mb-6">
-                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,2.2vw,14px)] font-medium uppercase tracking-[0.25em] mb-1.5 md:mb-2">
+                <div className="flex flex-col items-center mb-5 md:mb-8">
+                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(15px,3vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.25em] mb-2 md:mb-3">
                     AKAD & RECEPTION
                   </h4>
-                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2vw,13px)] md:text-[clamp(11px,1.1vw,14px)] leading-relaxed tracking-wider">
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
                     13.15-18.00
                   </p>
                 </div>
 
                 {/* Thin Divider */}
-                <div className="w-16 md:w-24 h-[1px] bg-[#4A3E3D]/20 my-3 md:my-4"></div>
+                <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-4 md:my-5"></div>
 
                 {/* Action Button */}
-                <div className="mt-2">
+                <div className="mt-3">
                   <button
                     onClick={() => {
                       document.getElementById("events-section")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="font-lekton text-[#4A3E3D] text-[clamp(9.5px,1.8vw,12.5px)] tracking-wider px-6 md:px-8 py-2 md:py-3 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
+                    className="font-lekton text-[#4A3E3D] text-[clamp(12px,2.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] tracking-wider px-8 md:px-10 py-3 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
                   >
                     Detailed Info & Rundown
                   </button>
