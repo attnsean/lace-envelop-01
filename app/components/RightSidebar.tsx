@@ -988,6 +988,8 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
           </section>
         )}
 
+        {/* === HIDDEN SECTIONS START (below Gift Registry) === */}
+        {false && (<>
         {/* SECTION 3: Groom */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-black">
           <Image
@@ -1157,8 +1159,8 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         </section>
 
         {/* DYNAMIC EVENTS SECTION */}
-        {events && events.length > 0 ? (
-          events.map((event, index) => {
+        {events && (events?.length ?? 0) > 0 ? (
+          events!.map((event, index) => {
             const eventTitle = (event.custom_label || event.event_type || "").toUpperCase();
             const fallbackImage = (galleryImages && galleryImages.length > 0)
               ? (index % 2 === 0 ? (galleryImages[2 % galleryImages.length] || galleryImages[0]) : (galleryImages[3 % galleryImages.length] || galleryImages[0]))
@@ -1490,6 +1492,8 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             galleryImages={galleryImages}
           />
         )}
+        </>)}
+        {/* === HIDDEN SECTIONS END === */}
 
         {/* SECTION 12: Closing & Copyright */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center bg-neutral-950 px-8 text-center border-t border-white/5">
