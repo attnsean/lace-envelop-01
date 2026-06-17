@@ -921,14 +921,14 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                       return (
                         <div
                           key={i}
-                          className="relative w-[350px] h-[215px] xs:w-[380px] xs:h-[235px] md:w-[500px] md:h-[310px] shrink-0 flex items-center justify-center text-[#4A3E3D] font-seasons"
+                          className="relative w-[340px] h-[210px] xs:w-[400px] xs:h-[245px] md:w-[560px] md:h-[345px] shrink-0 flex items-center justify-center text-[#4A3E3D] font-seasons"
                         >
                           {/* Lace Frame Background */}
                           <Image
                             src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
                             alt="Lace Card Frame"
                             fill
-                            sizes="(max-width: 768px) 380px, 500px"
+                            sizes="(max-width: 768px) 400px, 560px"
                             className="object-contain pointer-events-none select-none"
                             unoptimized
                           />
@@ -936,7 +936,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                           {/* Card Content */}
                           <div 
                             className="relative z-10 flex flex-col items-center justify-center text-center p-4 -mt-2 w-[80%] h-[75%] origin-center"
-                            style={{ transform: "rotate(3.5deg)" }}
+                            style={{ transform: "rotate(-3.5deg)" }}
                           >
                             <span className="text-[clamp(13px,2.6vw,16px)] md:text-[clamp(15px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                               {bankName}
