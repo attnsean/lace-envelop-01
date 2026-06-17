@@ -773,6 +773,69 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
           );
         })()}
 
+        {/* NEW SECTION: FAQs */}
+        <section id="faq" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-[#363D22] text-white flex flex-col justify-center items-center select-none">
+          <div className="w-full max-w-2xl px-6 md:px-8 py-8 md:py-12 flex flex-col items-center justify-center text-center h-full space-y-6 md:space-y-8">
+            {/* Header */}
+            <h2 className="font-seasons text-[clamp(36px,8vw,56px)] md:text-[clamp(48px,4.5vw,68px)] font-normal tracking-wide text-white leading-none">
+              FAQs
+            </h2>
+
+            {/* FAQ Q&A Container */}
+            <div className="flex flex-col space-y-5 md:space-y-7 w-full overflow-y-auto no-scrollbar max-h-[80vh] py-2">
+              {/* Q&A Item 1 */}
+              <div className="space-y-1.5 md:space-y-2">
+                <h4 className="font-seasons text-[#E1D8CC] text-[clamp(14px,2.8vw,18px)] md:text-[clamp(16px,1.4vw,20px)] font-medium tracking-wide">
+                  Can I arrive in the middle of the event?
+                </h4>
+                <p className="font-sans text-[#D2CFC7]/95 text-[clamp(11.5px,2.2vw,14px)] md:text-[clamp(12px,1.1vw,14px)] leading-relaxed max-w-xl mx-auto font-light">
+                  We kindly recommend arriving on time, as the celebration will feature a seated set-menu dining experience served at specific times throughout the evening. Arriving late may result in missed courses.
+                </p>
+              </div>
+
+              {/* Q&A Item 2 */}
+              <div className="space-y-1.5 md:space-y-2">
+                <h4 className="font-seasons text-[#E1D8CC] text-[clamp(14px,2.8vw,18px)] md:text-[clamp(16px,1.4vw,20px)] font-medium tracking-wide">
+                  Can I bring a plus one?
+                </h4>
+                <p className="font-sans text-[#D2CFC7]/95 text-[clamp(11.5px,2.2vw,14px)] md:text-[clamp(12px,1.1vw,14px)] leading-relaxed max-w-xl mx-auto font-light">
+                  This is an intimate destination wedding with limited seating. Kindly note that only named guests in the invitation are included.
+                </p>
+              </div>
+
+              {/* Q&A Item 3 */}
+              <div className="space-y-1.5 md:space-y-2">
+                <h4 className="font-seasons text-[#E1D8CC] text-[clamp(14px,2.8vw,18px)] md:text-[clamp(16px,1.4vw,20px)] font-medium tracking-wide">
+                  Can children attend the wedding?
+                </h4>
+                <p className="font-sans text-[#D2CFC7]/95 text-[clamp(11.5px,2.2vw,14px)] md:text-[clamp(12px,1.1vw,14px)] leading-relaxed max-w-xl mx-auto font-light">
+                  To maintain the atmosphere and seating arrangements, attendance is limited to guests listed on the invitation.
+                </p>
+              </div>
+
+              {/* Q&A Item 4 */}
+              <div className="space-y-1.5 md:space-y-2">
+                <h4 className="font-seasons text-[#E1D8CC] text-[clamp(14px,2.8vw,18px)] md:text-[clamp(16px,1.4vw,20px)] font-medium tracking-wide">
+                  Is there a dress code?
+                </h4>
+                <p className="font-sans text-[#D2CFC7]/95 text-[clamp(11.5px,2.2vw,14px)] md:text-[clamp(12px,1.1vw,14px)] leading-relaxed max-w-xl mx-auto font-light">
+                  Guests are welcome to wear any style or color they feel comfortable in, as long as it is appropriate for the occasion. We kindly ask guests to avoid white, cream, or overly bright/light colors, and encourage darker tones instead.
+                </p>
+              </div>
+
+              {/* Q&A Item 5 */}
+              <div className="space-y-1.5 md:space-y-2">
+                <h4 className="font-seasons text-[#E1D8CC] text-[clamp(14px,2.8vw,18px)] md:text-[clamp(16px,1.4vw,20px)] font-medium tracking-wide">
+                  Can I choose my seat/table?
+                </h4>
+                <p className="font-sans text-[#D2CFC7]/95 text-[clamp(11.5px,2.2vw,14px)] md:text-[clamp(12px,1.1vw,14px)] leading-relaxed max-w-xl mx-auto font-light">
+                  Seating has been thoughtfully arranged by the couple and families. Your assigned table information will be available upon arrival.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* SECTION 3: Groom */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-black">
           <Image
