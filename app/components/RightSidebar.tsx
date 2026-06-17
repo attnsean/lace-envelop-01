@@ -432,58 +432,268 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         </section>
 
         {/* SECTION 2: Quote */}
-        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden">
-          <div className="absolute inset-0 z-0 bg-black">
-            <Slideshow
-              images={slideshowImages}
-              intervalMs={1500}
-              overlayClassName="bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-80"
-            />
-          </div>
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-[#e2ddc7]">
+          {/* Decorative Images around center text with Staggered Animations */}
+          {(() => {
+            const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+            const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
 
-          <div className="relative z-10 w-full h-full flex flex-row items-center justify-center pt-24 pb-16 px-6 md:px-8 gap-4 md:gap-6">
-            <FadeIn className="flex flex-col text-5xl md:text-6xl font-serif text-white/50 leading-[0.85] tracking-tight">
-              {project?.wedding_date ? (
-                (() => {
-                  const dateParts = project.wedding_date.split("-");
-                  if (dateParts.length === 3) {
-                    return (
-                      <>
-                        <span>{dateParts[2]}</span>
-                        <span>{dateParts[1]}</span>
-                        <span>{dateParts[0].substring(2)}</span>
-                      </>
-                    );
-                  }
-                  return <span>25</span>;
-                })()
-              ) : (
-                <>
-                  <span>25</span>
-                  <span>25</span>
-                  <span>04</span>
-                  <span>26</span>
-                </>
-              )}
+            const danceImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-dance.jpg`;
+            const pigeonsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-pigeons.jpg`;
+            const flowersImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/gallery-24.jpg`;
+            const runImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-run.jpg`;
+
+            return (
+              <>
+                {/* Top-Left: Dance */}
+                <FadeIn 
+                  delay={0.1} 
+                  className="absolute top-[8%] sm:top-[12%] left-[4%] sm:left-[8%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                >
+                  <Image
+                    src={danceImgUrl}
+                    alt="Dancing"
+                    fill
+                    sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
+                    className="object-cover pointer-events-none w-full h-full"
+                    unoptimized
+                  />
+                </FadeIn>
+
+                {/* Top-Right: Pigeons */}
+                <FadeIn 
+                  delay={0.3} 
+                  className="absolute top-[12%] sm:top-[16%] right-[4%] sm:right-[8%] w-[35vw] sm:w-[26vw] md:w-[14vw] lg:w-[15vw] xl:w-[15vw] max-w-[230px] sm:max-w-[290px] md:max-w-[165px] lg:max-w-[205px] xl:max-w-[240px] aspect-square shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                >
+                  <Image
+                    src={pigeonsImgUrl}
+                    alt="Pigeons"
+                    fill
+                    sizes="(max-width: 768px) 230px, (max-width: 1024px) 205px, 250px"
+                    className="object-cover pointer-events-none w-full h-full"
+                    unoptimized
+                  />
+                </FadeIn>
+
+                {/* Bottom-Left: Flowers */}
+                <FadeIn 
+                  delay={0.5} 
+                  className="absolute bottom-[12%] sm:bottom-[16%] left-[6%] sm:left-[12%] w-[32vw] sm:w-[24vw] md:w-[12vw] lg:w-[14vw] xl:w-[15vw] max-w-[195px] sm:max-w-[265px] md:max-w-[150px] lg:max-w-[195px] xl:max-w-[225px] aspect-[4/5] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                >
+                  <Image
+                    src={flowersImgUrl}
+                    alt="Flowers"
+                    fill
+                    sizes="(max-width: 768px) 195px, (max-width: 1024px) 195px, 240px"
+                    className="object-cover pointer-events-none w-full h-full"
+                    unoptimized
+                  />
+                </FadeIn>
+
+                {/* Bottom-Right: Run */}
+                <FadeIn 
+                  delay={0.7} 
+                  className="absolute bottom-[8%] sm:bottom-[12%] right-[6%] sm:right-[12%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                >
+                  <Image
+                    src={runImgUrl}
+                    alt="Running"
+                    fill
+                    sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
+                    className="object-cover pointer-events-none w-full h-full"
+                    unoptimized
+                  />
+                </FadeIn>
+              </>
+            );
+          })()}
+
+          {/* Centered Content with Cascading Text Animations */}
+          <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-2xl mx-auto h-full select-none space-y-3 sm:space-y-4">
+            <FadeIn delay={0.4}>
+              <p className="font-seasons text-[#4a3525] text-[clamp(16px,4.5vw,36px)] font-medium leading-relaxed tracking-wide">
+                Our next chapter starts{" "}
+                <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
+                  here,
+                </span>
+              </p>
             </FadeIn>
-            <FadeIn delay={0.2} className="flex-1 space-y-4">
-              {project?.love_story ? (
-                <p className="text-xs md:text-sm font-sans font-light leading-relaxed tracking-wide text-gray-200 whitespace-pre-line">
-                  {project.love_story}
-                </p>
-              ) : (
-                <>
-                  <p className="text-xs md:text-sm font-sans font-light leading-relaxed tracking-wide text-gray-200">
-                    “Two are better than one, because they have a good reward for their toil. For if they fall, one will lift up his fellow. But woe to him who is alone when he falls and has not another to lift him up.”
-                  </p>
-                  <p className="text-xs md:text-sm font-bold font-sans tracking-widest text-white">
-                    (Ecclesiastes 4:9-10)
-                  </p>
-                </>
-              )}
+            
+            <FadeIn delay={0.7}>
+              <p className="font-seasons text-[#4a3525] text-[clamp(16px,4.5vw,36px)] font-medium leading-relaxed tracking-wide">
+                And it starts with{" "}
+                <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
+                  love.
+                </span>
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={1.0} className="pt-8 sm:pt-10">
+              <motion.button
+                onClick={() => {
+                  document.getElementById("love-story")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                whileHover={{ scale: 1.06 }}
+                animate={{ 
+                  y: [0, -5, 0],
+                  textShadow: [
+                    "0px 0px 0px rgba(74,53,37,0)",
+                    "0px 0px 4px rgba(74,53,37,0.2)",
+                    "0px 0px 0px rgba(74,53,37,0)"
+                  ]
+                }}
+                transition={{ 
+                  y: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
+                  textShadow: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
+                  scale: { duration: 0.2 }
+                }}
+                className="font-lekton text-[#4a3525] text-[clamp(11px,2vw,15px)] uppercase tracking-[0.25em] border-b border-[#4a3525]/60 pb-1.5 hover:text-[#4a3525]/80 hover:border-[#4a3525]/80 transition-all cursor-pointer flex items-center gap-2 group"
+              >
+                <span>Open the Love Files</span>
+                <motion.span
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
+                  className="inline-block"
+                >
+                  &gt;&gt;
+                </motion.span>
+              </motion.button>
             </FadeIn>
           </div>
         </section>
+
+        {/* SECTION 2.5: Quran Verse */}
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-neutral-950 flex flex-col items-center justify-center">
+          {/* Background image with overlay */}
+          {(() => {
+            const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+            const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+
+            const bgImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-bg.jpg`;
+            const frameImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-frame.png`;
+            const coupleImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-couple.jpg`;
+
+            return (
+              <>
+                <div className="absolute inset-0 z-0 bg-black">
+                  <Image
+                    src={bgImgUrl}
+                    alt="Background"
+                    fill
+                    sizes="100vw"
+                    className="object-cover opacity-100 select-none"
+                    draggable={false}
+                    unoptimized
+                  />
+                </div>
+
+                <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 max-w-xl mx-auto h-full select-none gap-6 sm:gap-8">
+                  {/* Silver Platter with Spring Entry + Gentle Floating Animation */}
+                  <div className="relative">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: 30 }}
+                      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.3 }}
+                      transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.1 }}
+                    >
+                      <motion.div
+                        animate={{ y: [-5, 5, -5] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        className="relative w-[95vw] sm:w-[90vw] max-w-[540px] sm:max-w-[660px] aspect-[1.7] flex items-center justify-center filter drop-shadow-2xl"
+                      >
+                        {/* Silver Platter png overlay (rotated 90deg, visually horizontal and gepeng, z-10) */}
+                        <div className="absolute w-[55%] h-[158%] z-10 rotate-90">
+                          <Image
+                            src={frameImgUrl}
+                            alt="Silver Platter"
+                            fill
+                            sizes="(max-width: 640px) 540px, 660px"
+                            className="object-fill"
+                            unoptimized
+                          />
+                        </div>
+
+                        {/* Couple Photo cropped into horizontal flat ellipse, placed on TOP of the platter (z-20) */}
+                        <div className="absolute w-[70%] h-[74%] z-20 overflow-hidden" style={{ clipPath: 'ellipse(48% 48% at 50% 50%)' }}>
+                          <Image
+                            src={coupleImgUrl}
+                            alt="Couple under Veil"
+                            fill
+                            sizes="(max-width: 640px) 380px, 460px"
+                            className="object-cover scale-110"
+                            unoptimized
+                          />
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  </div>
+
+                  {/* Texts with staggered delay and premium blur fade-in */}
+                  <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 15, filter: "blur(6px)" }}
+                      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      viewport={{ once: false, amount: 0.3 }}
+                      transition={{ duration: 1.0, ease: "easeOut", delay: 0.4 }}
+                    >
+                      <h3 
+                        className="text-white text-[clamp(28px,7.5vw,46px)] leading-relaxed text-center font-normal"
+                        style={{ 
+                          fontFamily: '"Traditional Arabic", "Amiri", "Scheherazade New", serif', 
+                          direction: 'rtl'
+                        }}
+                      >
+                        وَخَلَقْنَاكُمْ أَزْوَاجًا
+                      </h3>
+                    </motion.div>
+
+                    <motion.div 
+                      initial={{ opacity: 0, y: 15, filter: "blur(6px)" }}
+                      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      viewport={{ once: false, amount: 0.3 }}
+                      transition={{ duration: 1.0, ease: "easeOut", delay: 0.7 }}
+                    >
+                      <p 
+                        className="font-altesse text-white text-[clamp(22px,5vw,36px)] italic font-light tracking-wide text-center leading-normal"
+                        style={{ textShadow: '0 0 8px rgba(255, 255, 255, 0.95), 0 0 18px rgba(255, 255, 255, 0.85), 0 0 32px rgba(255, 255, 255, 0.75), 0 0 48px rgba(255, 255, 255, 0.6), 1px 1px 3px rgba(0, 0, 0, 0.95)' }}
+                      >
+                        “And We created you in pairs.”
+                      </p>
+                    </motion.div>
+
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      viewport={{ once: false, amount: 0.3 }}
+                      transition={{ duration: 1.0, ease: "easeOut", delay: 1.0 }}
+                      className="w-full text-right"
+                    >
+                      <p className="font-seasons text-white/90 text-[clamp(10px,1.8vw,13px)] uppercase tracking-[0.25em] pt-2">
+                        — Surah An-Naba (78:8)
+                      </p>
+                    </motion.div>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </section>
+
+        {/* RSVP Section (Moved above Groom/Bride details) */}
+        {project?.subscriptions?.packages?.has_rsvp !== false && (
+          <BlessingWall
+            guestName={guestName}
+            guest={guest}
+            projectId={project?.id}
+            wishes={wishes}
+            hasRsvp={true}
+            hasGuestbook={false}
+            project={project}
+            galleryImages={galleryImages}
+          />
+        )}
 
         {/* SECTION 3: Groom */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-black">
@@ -1280,15 +1490,15 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         )}
 
 
-        {/* SECTION 11: Blessing Wall / RSVP */}
-        {(project?.subscriptions?.packages?.has_rsvp !== false || project?.subscriptions?.packages?.has_guestbook !== false) && (
+        {/* SECTION 11: Blessing Wall / Guestbook */}
+        {project?.subscriptions?.packages?.has_guestbook !== false && (
           <BlessingWall
             guestName={guestName}
             guest={guest}
             projectId={project?.id}
             wishes={wishes}
-            hasRsvp={project?.subscriptions?.packages?.has_rsvp !== false}
-            hasGuestbook={project?.subscriptions?.packages?.has_guestbook !== false}
+            hasRsvp={false}
+            hasGuestbook={true}
             project={project}
             galleryImages={galleryImages}
           />

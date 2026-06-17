@@ -5,9 +5,15 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Use admin client if running on server with service role key to bypass RLS for subscriptions
+// Disable Next.js fetch caching by passing cache: 'no-store' to global fetch options
 const supabase = supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } })
-  : publicSupabase;
+  ? createClient(supabaseUrl, supabaseServiceKey, { 
+      auth: { persistSession: false },
+      global: { fetch: (url, init) => fetch(url, { ...init, cache: 'no-store' }) }
+    })
+  : createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key', {
+      global: { fetch: (url, init) => fetch(url, { ...init, cache: 'no-store' }) }
+    });
 
 export interface DbGuest {
   id: string;

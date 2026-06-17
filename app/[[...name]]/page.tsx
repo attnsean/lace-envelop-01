@@ -3,6 +3,8 @@ import Image from "next/image";
 import RightSidebar from "../components/RightSidebar";
 import { headers } from "next/headers";
 
+export const revalidate = 0;
+
 const bgImg = "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop";
 import { resolveProjectData } from "../../lib/resolveProject";
 

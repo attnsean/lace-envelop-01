@@ -50,7 +50,7 @@ export default function TimelineSection({ loveStoryItems }: TimelineSectionProps
       ];
 
   return (
-    <section className="relative w-full min-h-[100dvh] h-auto snap-start shrink-0 overflow-hidden flex flex-col py-24 bg-neutral-950">
+    <section id="love-story" className="relative w-full min-h-[100dvh] h-auto snap-start shrink-0 overflow-hidden flex flex-col py-24 bg-neutral-950">
       <div className="absolute inset-0 z-0 bg-black">
         <Image
           src={bgTimeline}
