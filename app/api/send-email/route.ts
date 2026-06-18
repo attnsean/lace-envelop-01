@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       html: `
         <div style="font-family: serif, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px;">
           <h1 style="text-align: center; color: #333; letter-spacing: 2px;">${groomName.toUpperCase()} & ${brideName.toUpperCase()}</h1>
-          <div style="height: 1px; background: #d4af37; width: 100px; margin: 20px auto;"></div>
+          <div style="height: 1px; background: #979e6c; width: 100px; margin: 20px auto;"></div>
           
           <p style="font-size: 16px; color: #555; line-height: 1.6; text-align: center;">
             Dear <strong>${name}</strong>,
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
             </div>
             
             <div style="padding: 20px 15px; background: #0a0a0a; border-top: 1px solid #222;">
-              <div style="font-size: 16px; font-family: serif; font-weight: bold; letter-spacing: 2px; color: #d4af37; text-transform: uppercase; margin-bottom: 8px;">Sera Story</div>
+              <div style="font-size: 16px; font-family: serif; font-weight: bold; letter-spacing: 2px; color: #979e6c; text-transform: uppercase; margin-bottom: 8px;">Sera Story</div>
               <div style="font-size: 9px; font-family: sans-serif; letter-spacing: 3px; color: #888; text-transform: uppercase;">&copy; 2026 All Rights Reserved.</div>
             </div>
           </div>

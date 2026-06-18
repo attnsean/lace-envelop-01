@@ -49,8 +49,8 @@ function WishCard({ wish }: { wish: DisplayWish }) {
     : "Recently Shared";
 
   return (
-    <div className="group relative flex flex-col gap-5 p-6 md:p-8 bg-white/[0.015] hover:bg-white/[0.03] border border-white/5 hover:border-[#d4af37]/20 rounded-[2rem] transition-all duration-700 shadow-2xl overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-[#d4af37]/5 transition-all duration-700"></div>
+    <div className="group relative flex flex-col gap-5 p-6 md:p-8 bg-white/[0.015] hover:bg-white/[0.03] border border-white/5 hover:border-[#979e6c]/20 rounded-[2rem] transition-all duration-700 shadow-2xl overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-[#979e6c]/5 transition-all duration-700"></div>
       
       <p 
         ref={textRef}
@@ -62,7 +62,7 @@ function WishCard({ wish }: { wish: DisplayWish }) {
       {isTruncated && !isExpanded && (
         <button 
           onClick={() => setIsExpanded(true)}
-          className="text-[#d4af37] text-[10px] font-bold tracking-widest uppercase hover:text-white transition-colors relative z-10 mt-2 mx-auto"
+          className="text-[#979e6c] text-[10px] font-bold tracking-widest uppercase hover:text-white transition-colors relative z-10 mt-2 mx-auto"
         >
           See more
         </button>
@@ -71,16 +71,16 @@ function WishCard({ wish }: { wish: DisplayWish }) {
       {isExpanded && (
         <button 
           onClick={() => setIsExpanded(false)}
-          className="text-gray-500 hover:text-[#d4af37] text-[10px] font-bold tracking-widest uppercase transition-colors relative z-10 mt-2 mx-auto"
+          className="text-gray-500 hover:text-[#979e6c] text-[10px] font-bold tracking-widest uppercase transition-colors relative z-10 mt-2 mx-auto"
         >
           Show less
         </button>
       )}
       
       <div className="flex flex-col items-center gap-6 pt-8 border-t border-white/5 relative z-10 mt-auto">
-        <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-[10px] font-bold text-[#d4af37] group-hover:border-[#d4af37]/40 transition-all duration-500">{(wish.name || "G").charAt(0)}</div>
+        <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-[10px] font-bold text-[#979e6c] group-hover:border-[#979e6c]/40 transition-all duration-500">{(wish.name || "G").charAt(0)}</div>
         <div className="flex flex-col items-center gap-2">
-          <h4 className="text-[10px] font-bold text-white tracking-[0.3em] uppercase leading-none group-hover:text-[#d4af37] transition-colors">{wish.name}</h4>
+          <h4 className="text-[10px] font-bold text-white tracking-[0.3em] uppercase leading-none group-hover:text-[#979e6c] transition-colors">{wish.name}</h4>
           <span className="text-[8px] text-gray-600 uppercase tracking-[0.2em]">{formattedDate}</span>
         </div>
       </div>
@@ -698,7 +698,7 @@ export default function BlessingWall({
         <div className="relative z-10 w-full max-w-5xl px-6 md:px-10 flex flex-col items-center">
           <FadeIn>
             <div className="text-center mb-12 md:mb-16">
-              <span className="text-[7px] md:text-[10px] font-bold tracking-[0.6em] text-[#d4af37] uppercase mb-4 block">Part II</span>
+              <span className="text-[7px] md:text-[10px] font-bold tracking-[0.6em] text-[#979e6c] uppercase mb-4 block">Part II</span>
               <h2 className="text-3xl md:text-5xl font-serif text-white font-light tracking-tight leading-none">Blessings</h2>
               <p className="text-[7px] sm:text-[8px] md:text-[10px] text-gray-600 tracking-[0.2em] md:tracking-[0.3em] uppercase mt-4 md:mt-6 max-w-[250px] md:max-w-xs mx-auto leading-relaxed">Leave your warmest words for the beginning of our new chapter.</p>
             </div>
@@ -715,8 +715,8 @@ export default function BlessingWall({
                 ) : (
                   <form onSubmit={handleWishSubmit} className="space-y-10">
                     <div className="relative">
-                      <textarea value={wishText} onChange={(e) => setWishText(e.target.value)} className="w-full bg-transparent border-b border-white/10 py-3 md:py-4 text-xs md:text-sm text-white focus:outline-none focus:border-[#d4af37] transition-all duration-500 peer placeholder-transparent min-h-[80px] md:min-h-[100px] resize-none font-sans" placeholder="Wishes" required />
-                      <label className="absolute left-0 -top-6 md:-top-7 text-[9px] md:text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em] md:tracking-[0.4em] peer-placeholder-shown:text-xs peer-placeholder-shown:top-4 peer-focus:-top-6 peer-focus:text-[#d4af37] whitespace-nowrap">Share your blessings ({myWishes.length}/3)</label>
+                      <textarea value={wishText} onChange={(e) => setWishText(e.target.value)} className="w-full bg-transparent border-b border-white/10 py-3 md:py-4 text-xs md:text-sm text-white focus:outline-none focus:border-[#979e6c] transition-all duration-500 peer placeholder-transparent min-h-[80px] md:min-h-[100px] resize-none font-sans" placeholder="Wishes" required />
+                      <label className="absolute left-0 -top-6 md:-top-7 text-[9px] md:text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em] md:tracking-[0.4em] peer-placeholder-shown:text-xs peer-placeholder-shown:top-4 peer-focus:-top-6 peer-focus:text-[#979e6c] whitespace-nowrap">Share your blessings ({myWishes.length}/3)</label>
                     </div>
                     <button type="submit" disabled={isSubmitting} className="w-full py-4 md:py-5 border border-white/10 text-white text-[9px] md:text-[11px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase rounded-full hover:bg-white hover:text-black transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
                       <span className="truncate">{isSubmitting && successType === 'wish' ? "SHARING..." : "SUBMIT BLESSING"}</span>
@@ -732,7 +732,7 @@ export default function BlessingWall({
             <div className="flex flex-col items-center mb-16 text-center">
                <div className="h-[1px] w-16 bg-white/10 mb-8"></div>
                <h3 className="text-2xl md:text-4xl font-serif text-white font-light tracking-tight leading-none mb-4">Gallery of Love</h3>
-               <span className="text-[7px] md:text-[9px] font-bold tracking-[0.3em] md:tracking-[0.5em] text-[#d4af37] uppercase">{allDisplayWishes.length} Shared Messages</span>
+               <span className="text-[7px] md:text-[9px] font-bold tracking-[0.3em] md:tracking-[0.5em] text-[#979e6c] uppercase">{allDisplayWishes.length} Shared Messages</span>
             </div>
 
             {/* Single Column List (Paginated) */}
@@ -759,19 +759,19 @@ export default function BlessingWall({
                 <button 
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="p-3 md:p-4 border border-white/10 rounded-full text-[#d4af37] disabled:opacity-20 hover:bg-white/5 transition-all"
+                  className="p-3 md:p-4 border border-white/10 rounded-full text-[#979e6c] disabled:opacity-20 hover:bg-white/5 transition-all"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 md:w-5 md:h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                 </button>
                 <div className="flex items-center gap-2 md:gap-4">
                    <span className="text-[9px] md:text-[10px] font-bold text-white tracking-[0.2em] md:tracking-[0.4em] uppercase">Page</span>
-                   <div className="px-3 py-1.5 md:px-4 md:py-2 bg-white/5 border border-white/10 rounded-lg text-[#d4af37] text-[10px] md:text-xs font-bold">{currentPage}</div>
+                   <div className="px-3 py-1.5 md:px-4 md:py-2 bg-white/5 border border-white/10 rounded-lg text-[#979e6c] text-[10px] md:text-xs font-bold">{currentPage}</div>
                    <span className="text-[9px] md:text-[10px] font-bold text-gray-600 tracking-[0.2em] md:tracking-[0.4em] uppercase">of {totalPages}</span>
                 </div>
                 <button 
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="p-3 md:p-4 border border-white/10 rounded-full text-[#d4af37] disabled:opacity-20 hover:bg-white/5 transition-all"
+                  className="p-3 md:p-4 border border-white/10 rounded-full text-[#979e6c] disabled:opacity-20 hover:bg-white/5 transition-all"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 md:w-5 md:h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
                 </button>
@@ -789,13 +789,13 @@ export default function BlessingWall({
         {showSuccess && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[500] flex items-center justify-center bg-black/98 backdrop-blur-3xl p-6">
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 40 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 40 }} className="bg-neutral-950 border border-white/5 p-12 md:p-20 flex flex-col items-center gap-12 text-center max-w-sm rounded-[5rem] relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent"></div>
-              <div className="w-24 h-24 bg-[#d4af37]/5 rounded-full flex items-center justify-center text-5xl border border-[#d4af37]/10"><span className="relative z-10">{successType === 'rsvp' ? '🥂' : '✨'}</span></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#979e6c] to-transparent"></div>
+              <div className="w-24 h-24 bg-[#979e6c]/5 rounded-full flex items-center justify-center text-5xl border border-[#979e6c]/10"><span className="relative z-10">{successType === 'rsvp' ? '🥂' : '✨'}</span></div>
               <div className="space-y-5">
                 <h4 className="text-white font-serif text-4xl tracking-widest italic leading-none">{successType === 'rsvp' ? 'Confirmed' : 'Sent'}</h4>
                 <p className="text-gray-500 text-[10px] font-sans tracking-[0.25em] leading-relaxed uppercase">{successType === 'rsvp' ? "Your presence is our joy." : "Your beautiful words are shared."}</p>
               </div>
-              <button onClick={() => setShowSuccess(false)} className="w-full py-6 bg-white text-black text-[11px] font-bold tracking-[0.6em] uppercase rounded-full hover:bg-[#d4af37]">Close</button>
+              <button onClick={() => setShowSuccess(false)} className="w-full py-6 bg-white text-black text-[11px] font-bold tracking-[0.6em] uppercase rounded-full hover:bg-[#979e6c]">Close</button>
             </motion.div>
           </motion.div>
         )}

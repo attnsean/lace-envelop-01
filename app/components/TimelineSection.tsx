@@ -90,12 +90,12 @@ export default function TimelineSection({ loveStoryItems }: TimelineSectionProps
                   className={`relative flex items-center md:justify-between w-full ${isEven ? "md:flex-row" : "md:flex-row-reverse"}`}
                 >
                   {/* Timeline Dot */}
-                  <div className="absolute left-[20px] md:left-1/2 w-3 h-3 rounded-full bg-[#d4af37] border-4 border-neutral-900 -translate-x-[5px] md:-translate-x-1/2 z-10 shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
+                  <div className="absolute left-[20px] md:left-1/2 w-3 h-3 rounded-full bg-[#979e6c] border-4 border-neutral-900 -translate-x-[5px] md:-translate-x-1/2 z-10 shadow-[0_0_10px_rgba(151, 158, 108,0.5)]"></div>
 
                   {/* Content Space (Desktop: left or right, Mobile: always right) */}
                   <div className="w-full md:w-[45%] pl-14 md:pl-0">
                     <div className={`flex flex-col gap-2 ${isEven ? "md:text-right" : "md:text-left"}`}>
-                      <span className="text-[#d4af37] font-script text-2xl md:text-3xl lowercase">{event.year}</span>
+                      <span className="text-[#979e6c] font-script text-2xl md:text-3xl lowercase">{event.year}</span>
                       <h4 className="text-white font-serif tracking-widest uppercase text-base">{event.title}</h4>
                       <p className="text-gray-400 font-sans font-light text-xs leading-relaxed">
                         {event.desc}

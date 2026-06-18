@@ -22,7 +22,7 @@ export default function PhotoGallery() {
   return (
     <div className="w-full min-h-[100dvh] bg-neutral-950 py-16 px-6 relative z-10 font-sans">
       <div className="text-center mb-10">
-        <h2 className="text-4xl text-[#d4af37] font-serif tracking-widest mb-2">Our Moments</h2>
+        <h2 className="text-4xl text-[#979e6c] font-serif tracking-widest mb-2">Our Moments</h2>
         <p className="text-white/60 text-sm tracking-widest uppercase">Glimpses of forever</p>
       </div>
 

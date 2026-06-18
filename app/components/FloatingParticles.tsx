@@ -32,7 +32,7 @@ export default function FloatingParticles() {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full bg-[#d4af37] blur-[1px]"
+          className="absolute rounded-full bg-[#979e6c] blur-[1px]"
           style={{ width: p.size, height: p.size, left: `${p.x}%`, top: `${p.y}%` }}
           animate={{
             y: ["0%", "-100vh"],

@@ -329,15 +329,15 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
           />
 
           {/* Inner Circle / Label */}
-          <div className="absolute inset-4 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center">
+          <div className="absolute inset-4 rounded-full bg-[#979e6c]/20 border border-[#979e6c]/40 flex items-center justify-center">
             {isPlaying ? (
               <div className="flex gap-0.5 items-end h-3">
-                <motion.div animate={{ height: [4, 12, 6] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 bg-[#d4af37]" />
-                <motion.div animate={{ height: [8, 4, 10] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-0.5 bg-[#d4af37]" />
-                <motion.div animate={{ height: [6, 10, 4] }} transition={{ repeat: Infinity, duration: 0.7 }} className="w-0.5 bg-[#d4af37]" />
+                <motion.div animate={{ height: [4, 12, 6] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 bg-[#979e6c]" />
+                <motion.div animate={{ height: [8, 4, 10] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-0.5 bg-[#979e6c]" />
+                <motion.div animate={{ height: [6, 10, 4] }} transition={{ repeat: Infinity, duration: 0.7 }} className="w-0.5 bg-[#979e6c]" />
               </div>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#d4af37]">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#979e6c]">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347c-.75.412-1.667-.13-1.667-.986V5.653Z" />
               </svg>
             )}
@@ -353,7 +353,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               className="hidden sm:flex flex-col items-end"
             >
               <p className="text-[8px] font-bold tracking-[0.3em] text-white/40 uppercase">Now Playing</p>
-              <p className="text-[10px] font-serif text-[#d4af37] tracking-widest whitespace-nowrap">Wedding Melody</p>
+              <p className="text-[10px] font-serif text-[#979e6c] tracking-widest whitespace-nowrap">Wedding Melody</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1515,7 +1515,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 <h2 className="text-3xl md:text-4xl font-serif text-white tracking-widest text-center">
                   Fragments of <br />
                   <motion.span
-                    className="font-script text-4xl md:text-5xl text-[#d4af37] block mt-2 lowercase -rotate-2"
+                    className="font-script text-4xl md:text-5xl text-[#979e6c] block mt-2 lowercase -rotate-2"
                     initial={{ clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)" }}
                     whileInView={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
                     viewport={{ once: true }}
@@ -1627,7 +1627,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         {/* SECTION 12: Closing & Copyright */}
         <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center bg-neutral-950 px-8 text-center border-t border-white/5">
           <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-serif text-[#d4af37] tracking-widest mb-8 uppercase drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">Thank You</h2>
+            <h2 className="text-3xl md:text-4xl font-serif text-[#979e6c] tracking-widest mb-8 uppercase drop-shadow-[0_0_15px_rgba(151, 158, 108,0.3)]">Thank You</h2>
           </FadeIn>
 
           <FadeIn delay={0.2} className="max-w-md">
@@ -1650,7 +1650,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             <p className="text-[8px] md:text-[9px] font-sans tracking-[0.3em] text-white uppercase font-bold">
               Designed & Crafted by
             </p>
-            <p className="text-[10px] md:text-xs font-serif tracking-widest text-[#d4af37] mt-1.5 font-bold">
+            <p className="text-[10px] md:text-xs font-serif tracking-widest text-[#979e6c] mt-1.5 font-bold">
               SERA STORY
             </p>
             <p className="text-[7px] md:text-[8px] font-sans tracking-[0.2em] text-white/50 mt-1 uppercase">
@@ -1790,7 +1790,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
 
                 {/* Text Watermark Bottom Centered */}
                 <div className="w-full py-4 flex flex-col items-center justify-center select-none bg-neutral-950 border-t border-white/5 relative z-0">
-                  <span className="text-[12px] font-serif font-bold tracking-[0.15em] text-[#d4af37] uppercase mb-1 drop-shadow-md">Sera Story</span>
+                  <span className="text-[12px] font-serif font-bold tracking-[0.15em] text-[#979e6c] uppercase mb-1 drop-shadow-md">Sera Story</span>
                   <span className="text-[6px] font-sans tracking-[0.3em] text-neutral-400 uppercase">© 2026 All Rights Reserved.</span>
                 </div>
               </div>
@@ -1904,7 +1904,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                   <button
                     key={idx}
                     onClick={() => openLightbox(idx)}
-                    className={`relative shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden snap-center transition-all duration-300 ${selectedIndex === idx ? 'ring-2 ring-[#d4af37] scale-110 opacity-100' : 'opacity-40 hover:opacity-100'}`}
+                    className={`relative shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden snap-center transition-all duration-300 ${selectedIndex === idx ? 'ring-2 ring-[#979e6c] scale-110 opacity-100' : 'opacity-40 hover:opacity-100'}`}
                   >
                     <Image
                       src={frag}
@@ -1947,7 +1947,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 <motion.h3 layout className="text-[8px] sm:text-[10px] font-bold tracking-[0.4em] text-neutral-400 uppercase mb-1 sm:mb-2">Gift Registry</motion.h3>
                 <motion.p layout className="text-base sm:text-lg font-serif text-black leading-tight mb-0.5 sm:mb-1">{selectedGiftForQR.name}</motion.p>
                 <motion.div layout className="flex items-center justify-center gap-2">
-                  <span className="text-lg sm:text-xl font-bold text-[#d4af37]">Rp {selectedGiftForQR.price}</span>
+                  <span className="text-lg sm:text-xl font-bold text-[#979e6c]">Rp {selectedGiftForQR.price}</span>
                 </motion.div>
               </motion.div>
 
@@ -1982,7 +1982,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                         <div key={i} className="bg-neutral-900 p-5 rounded-[1.5rem] border border-neutral-800 transition-all duration-300 group flex flex-col justify-between shadow-lg">
                           <div>
                             <h3 className="text-sm font-bold text-white mb-1 uppercase tracking-wider">{bankName}</h3>
-                            <p className="text-[10px] text-[#d4af37] mb-4 uppercase tracking-widest">{ownerName}</p>
+                            <p className="text-[10px] text-[#979e6c] mb-4 uppercase tracking-widest">{ownerName}</p>
                           </div>
                           <div className="flex items-center justify-between bg-black/60 p-3 rounded-xl border border-white/5 transition-all">
                             <span className="font-mono text-sm text-white tracking-[0.2em]">{accountNo}</span>

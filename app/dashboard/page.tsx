@@ -2764,7 +2764,7 @@ export default function RSVPDashboard() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg">Order: {event.order}</span>
-                              <span className="text-[#d4af37] font-script text-xl">{event.year}</span>
+                              <span className="text-[#979e6c] font-script text-xl">{event.year}</span>
                             </div>
                             <h5 className="font-serif text-neutral-800 uppercase text-sm font-bold">{event.title}</h5>
                             <p className="text-neutral-500 text-sm mt-1 leading-relaxed">{event.desc}</p>
