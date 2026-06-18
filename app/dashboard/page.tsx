@@ -221,8 +221,8 @@ export default function RSVPDashboard() {
         .select('*')
         .eq('project_id', projectId);
 
-      if (checkinsError) {
-        console.error("Error fetching checkins:", checkinsError);
+      if (checkinsError && checkinsError.message) {
+        console.warn("Checkins table not available:", checkinsError.message);
       }
 
       // 5. Merge data

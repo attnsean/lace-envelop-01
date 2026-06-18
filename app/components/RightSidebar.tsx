@@ -862,9 +862,131 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
 
         {/* NEW SECTION: Gift Registry */}
         {project?.subscriptions?.packages?.has_amplop_digital !== false && (
-          <section id="gift-registry" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col md:flex-row bg-[#E1D8CC] text-[#4A3E3D] select-none">
-            {/* Left Column (Registry title and bird) */}
-            <div className="w-full md:w-[45%] h-[25%] md:h-full flex flex-col items-center justify-center p-4 pb-2 md:p-12 text-center relative">
+          <section id="gift-registry" className="relative w-full min-h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center bg-[#E1D8CC] text-[#4A3E3D] select-none py-10 md:py-0">
+            {/* Desktop: side-by-side layout */}
+            <div className="hidden md:flex w-full h-[100dvh] flex-row">
+              {/* Left Column (Registry title and bird) - Desktop */}
+              <div className="w-[45%] h-full flex flex-col items-center justify-center p-12 text-center relative">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.0, ease: "easeOut" }}
+                  className="flex flex-col items-center select-none"
+                >
+                  <span className="font-parfumerie text-[#4A3E3D] text-[clamp(100px,8vw,140px)] leading-none italic font-light z-10 -mb-6">
+                    Gift
+                  </span>
+                  <h3 className="font-seasons text-[#4A3E3D] text-[clamp(55px,5vw,85px)] font-normal uppercase leading-none tracking-[0.08em] mb-8">
+                    REGISTRY
+                  </h3>
+                  
+                  {/* Bird illustration */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, rotate: -8 }}
+                    whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                    className="relative w-[360px] h-[200px] mt-3 select-none pointer-events-none"
+                  >
+                    <Image
+                      src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-bird.png`}
+                      alt="Bird Illustration"
+                      fill
+                      sizes="360px"
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </motion.div>
+                </motion.div>
+              </div>
+
+              {/* Right Column (Message and Doily bank details card) - Desktop */}
+              <div className="w-[55%] h-full flex flex-col items-start justify-center p-12 text-left space-y-8">
+                <div className="space-y-4 max-w-md lg:max-w-lg">
+                  <FadeIn delay={0.3}>
+                    <h4 className="font-seasons text-[clamp(26px,2vw,36px)] leading-[1.3] text-[#4A3E3D] font-normal">
+                      Your presence at our wedding is the greatest gift of all.
+                    </h4>
+                  </FadeIn>
+                  <FadeIn delay={0.4}>
+                    <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(14px,1.2vw,16px)] leading-relaxed font-light text-left">
+                      For family and friends who have kindly asked about wedding gifts, we truly appreciate your generosity and thoughtfulness. Should you wish to bless us with a gift, a contribution through the following registry would be warmly appreciated as we begin this new chapter together.
+                    </p>
+                  </FadeIn>
+                </div>
+
+                <div className="w-full flex justify-start">
+                  <div className="flex flex-col sm:flex-row gap-4 w-full justify-start overflow-x-auto no-scrollbar">
+                    {(() => {
+                      const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
+                        ? project.payment_accounts
+                        : [
+                            { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" }
+                          ]) as PaymentAccount[];
+
+                      return paymentAccounts.map((acc, i) => {
+                        const bankName = acc.provider || acc.bank_name || acc.bankName || "";
+                        const accountNo = acc.bank_account || acc.bankAccount || acc.account_number || acc.accountNumber || "";
+                        const ownerName = acc.owner_name || acc.ownerName || acc.account_name || acc.accountName || "";
+
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 35 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 * i }}
+                            className="relative shrink-0"
+                          >
+                            <motion.div
+                              animate={{ y: [-4, 4, -4] }}
+                              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              className="relative w-[560px] h-[345px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
+                            >
+                              <Image
+                                src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
+                                alt="Lace Card Frame"
+                                fill
+                                sizes="560px"
+                                className="object-contain pointer-events-none select-none"
+                                unoptimized
+                              />
+                              <div 
+                                className="relative z-10 flex flex-col items-center justify-center text-center p-4 -mt-2 w-[80%] h-[75%] origin-center"
+                                style={{ transform: "rotate(-3.5deg)" }}
+                              >
+                                <span className="text-[clamp(15px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
+                                  {bankName}
+                                </span>
+                                <span className="text-[clamp(22px,1.8vw,26px)] font-normal text-[#4A3E3D] mt-2 mb-2 tracking-wide truncate max-w-full">
+                                  {ownerName}
+                                </span>
+                                <span className="font-lekton italic text-[clamp(17px,1.4vw,20px)] text-[#4A3E3D] tracking-[0.12em] mb-4 select-text">
+                                  {accountNo}
+                                </span>
+                                <button
+                                  onClick={() => copyToClipboard(accountNo)}
+                                  className="font-lekton text-white text-[clamp(13px,1.1vw,15px)] tracking-[0.2em] uppercase px-10 py-2.5 bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md"
+                                >
+                                  Copy
+                                </button>
+                              </div>
+                            </motion.div>
+                          </motion.div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile: stacked vertical layout */}
+            <div className="flex md:hidden flex-col items-center w-full px-5 gap-6">
+              {/* Title */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -872,52 +994,56 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 transition={{ duration: 1.0, ease: "easeOut" }}
                 className="flex flex-col items-center select-none"
               >
-                <span className="font-parfumerie text-[#4A3E3D] text-[clamp(60px,12vw,80px)] md:text-[clamp(100px,8vw,140px)] leading-none italic font-light z-10 -mb-3 md:-mb-6">
+                <span className="font-parfumerie text-[#4A3E3D] text-[56px] leading-none italic font-light z-10 -mb-2">
                   Gift
                 </span>
-                <h3 className="font-seasons text-[#4A3E3D] text-[clamp(32px,7vw,46px)] md:text-[clamp(55px,5vw,85px)] font-normal uppercase leading-none tracking-[0.08em] mb-3 md:mb-8">
+                <h3 className="font-seasons text-[#4A3E3D] text-[32px] font-normal uppercase leading-none tracking-[0.08em]">
                   REGISTRY
                 </h3>
-                
-                {/* Bird illustration */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, rotate: -8 }}
-                  whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
-                  className="relative w-[160px] h-[90px] xs:w-[190px] xs:h-[110px] md:w-[360px] md:h-[200px] mt-1 md:mt-3 select-none pointer-events-none"
-                >
-                  <Image
-                    src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-bird.png`}
-                    alt="Bird Illustration"
-                    fill
-                    sizes="(max-width: 768px) 190px, 360px"
-                    className="object-contain"
-                    unoptimized
-                  />
-                </motion.div>
               </motion.div>
-            </div>
 
-            {/* Right Column (Message and Doily bank details card) */}
-            <div className="w-full md:w-[55%] h-[75%] md:h-full flex flex-col items-center justify-start md:justify-center p-4 pt-4 pb-2 md:p-12 text-center md:text-left md:items-start space-y-3 xs:space-y-5 md:space-y-8">
+              {/* Bird illustration */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, rotate: -8 }}
+                whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                className="relative w-[140px] h-[80px] select-none pointer-events-none -mt-1"
+              >
+                <Image
+                  src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-bird.png`}
+                  alt="Bird Illustration"
+                  fill
+                  sizes="140px"
+                  className="object-contain"
+                  unoptimized
+                />
+              </motion.div>
+
+              {/* Decorative divider */}
+              <div className="flex items-center gap-3 w-full max-w-[280px]">
+                <div className="flex-1 h-[0.5px] bg-[#4A3E3D]/20"></div>
+                <span className="text-[#4A3E3D]/30 text-[10px]">✦</span>
+                <div className="flex-1 h-[0.5px] bg-[#4A3E3D]/20"></div>
+              </div>
+
               {/* Message */}
-              <div className="space-y-2 md:space-y-4 max-w-xl md:max-w-md lg:max-w-lg">
+              <div className="space-y-3 max-w-xs text-center">
                 <FadeIn delay={0.3}>
-                  <h4 className="font-seasons text-[clamp(18px,4.5vw,25px)] md:text-[clamp(26px,2vw,36px)] leading-[1.3] text-[#4A3E3D] font-normal">
+                  <h4 className="font-seasons text-[20px] leading-[1.35] text-[#4A3E3D] font-normal">
                     Your presence at our wedding is the greatest gift of all.
                   </h4>
                 </FadeIn>
                 <FadeIn delay={0.4}>
-                  <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(12px,2.6vw,14px)] md:text-[clamp(14px,1.2vw,16px)] leading-relaxed font-light text-justify md:text-left">
+                  <p className="font-lekton text-[#4A3E3D]/80 text-[12px] leading-[1.7] font-light text-justify">
                     For family and friends who have kindly asked about wedding gifts, we truly appreciate your generosity and thoughtfulness. Should you wish to bless us with a gift, a contribution through the following registry would be warmly appreciated as we begin this new chapter together.
                   </p>
                 </FadeIn>
               </div>
 
-              {/* Doily Card list */}
-              <div className="w-full flex justify-center md:justify-start">
-                <div className="flex flex-col sm:flex-row gap-4 w-full justify-center md:justify-start overflow-x-auto no-scrollbar">
+              {/* Doily Card - larger and centered */}
+              <div className="w-full flex justify-center mt-2">
+                <div className="flex flex-col gap-5 w-full items-center">
                   {(() => {
                     const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
                       ? project.payment_accounts
@@ -937,42 +1063,38 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 * i }}
-                          className="relative shrink-0"
+                          className="relative"
                         >
                           <motion.div
-                            animate={{ y: [-4, 4, -4] }}
+                            animate={{ y: [-3, 3, -3] }}
                             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                            whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
-                            className="relative w-[320px] h-[200px] xs:w-[370px] xs:h-[230px] md:w-[560px] md:h-[345px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
+                            className="relative w-[340px] h-[210px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
                           >
-                            {/* Lace Frame Background */}
                             <Image
                               src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
                               alt="Lace Card Frame"
                               fill
-                              sizes="(max-width: 768px) 370px, 560px"
+                              sizes="340px"
                               className="object-contain pointer-events-none select-none"
                               unoptimized
                             />
-
-                            {/* Card Content */}
                             <div 
-                              className="relative z-10 flex flex-col items-center justify-center text-center p-3 md:p-4 -mt-2 w-[80%] h-[75%] origin-center"
+                              className="relative z-10 flex flex-col items-center justify-center text-center p-3 -mt-1 w-[80%] h-[75%] origin-center"
                               style={{ transform: "rotate(-3.5deg)" }}
                             >
-                              <span className="text-[clamp(12px,2.4vw,15px)] md:text-[clamp(15px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
+                              <span className="text-[13px] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                                 {bankName}
                               </span>
-                              <span className="text-[clamp(17px,3.5vw,21px)] md:text-[clamp(22px,1.8vw,26px)] font-normal text-[#4A3E3D] mt-1 mb-1.5 md:mt-2 md:mb-2 tracking-wide truncate max-w-full">
+                              <span className="text-[18px] font-normal text-[#4A3E3D] mt-0.5 mb-1 tracking-wide truncate max-w-full">
                                 {ownerName}
                               </span>
-                              <span className="font-lekton italic text-[clamp(14px,2.8vw,18px)] md:text-[clamp(17px,1.4vw,20px)] text-[#4A3E3D] tracking-[0.12em] mb-3 md:mb-4 select-text">
+                              <span className="font-lekton italic text-[15px] text-[#4A3E3D] tracking-[0.12em] mb-2 select-text">
                                 {accountNo}
                               </span>
                               <button
                                 onClick={() => copyToClipboard(accountNo)}
-                                className="font-lekton text-white text-[clamp(11px,2.2vw,13px)] md:text-[clamp(13px,1.1vw,15px)] tracking-[0.2em] uppercase px-6 py-1.5 md:px-10 md:py-2.5 bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md"
+                                className="font-lekton text-white text-[11px] tracking-[0.2em] uppercase px-7 py-1.5 bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md"
                               >
                                 Copy
                               </button>
@@ -983,6 +1105,13 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                     });
                   })()}
                 </div>
+              </div>
+
+              {/* Bottom decorative element */}
+              <div className="flex items-center gap-3 w-full max-w-[200px] mt-2 mb-4">
+                <div className="flex-1 h-[0.5px] bg-[#4A3E3D]/15"></div>
+                <span className="text-[#4A3E3D]/25 text-[8px] tracking-[0.3em] font-lekton uppercase">with love</span>
+                <div className="flex-1 h-[0.5px] bg-[#4A3E3D]/15"></div>
               </div>
             </div>
           </section>

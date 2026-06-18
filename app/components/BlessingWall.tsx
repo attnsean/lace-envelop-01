@@ -427,7 +427,7 @@ export default function BlessingWall({
     <>
       {/* SECTION 1: ATTENDANCE (SIMPLE & ELEGANT REDESIGN) */}
       {hasRsvp && (
-        <section id="rsvp" className="relative w-full min-h-screen snap-start shrink-0 flex flex-col items-center justify-center py-16 md:py-12 overflow-hidden">
+        <section id="rsvp" className="relative w-full min-h-screen snap-start shrink-0 flex flex-col items-center justify-center py-16 pb-44 md:py-12 md:pb-12 overflow-hidden">
           {/* Beautiful Soft Background */}
           <div className="absolute inset-0 z-0">
             <Image 
