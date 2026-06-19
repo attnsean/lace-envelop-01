@@ -75,11 +75,18 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [[page, direction], setPage] = useState([0, 0]);
+  const [showLoveFiles, setShowLoveFiles] = useState(false);
 
   const groomPhotoPosition = useSmartPosition(project?.groom_photo_url || priaImg);
   const bridePhotoPosition = useSmartPosition(project?.bride_photo_url || wanitaImg);
   const [showQRModal, setShowQRModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const meetCoupleRef = useRef<HTMLDivElement>(null);
+  const videoSectionRef = useRef<HTMLDivElement>(null);
+  const brideGroomSectionRef = useRef<HTMLDivElement>(null);
+  const loveStorySectionRef = useRef<HTMLDivElement>(null);
+  const bgMusicWasPlayingRef = useRef(false);
 
   const [giftItems, setGiftItems] = useState<GiftItem[]>([]);
   const [giftLoading, setGiftLoading] = useState(true);
@@ -96,6 +103,73 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
       setSealSrc(defaultSealSrc);
     }
   }, [project, defaultSealSrc]);
+
+  // Video Autoplay/Pause Intersection Observer
+  useEffect(() => {
+    if (!showLoveFiles) {
+      // Pause video when overlay is closed
+      if (videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+      // Resume background music if it was paused by the video
+      if (bgMusicWasPlayingRef.current && audioRef.current) {
+        audioRef.current.play().catch(e => console.error("Error playing audio:", e));
+        bgMusicWasPlayingRef.current = false;
+        setIsPlaying(true);
+      }
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = videoRef.current;
+          if (!video) return;
+
+          if (entry.isIntersecting) {
+            // Autoplay the video when scrolled in
+            video.play()
+              .then(() => {
+                // Pause background music if video is playing
+                if (audioRef.current && !audioRef.current.paused) {
+                  audioRef.current.pause();
+                  bgMusicWasPlayingRef.current = true;
+                  setIsPlaying(false);
+                }
+              })
+              .catch((err) => {
+                console.log("Autoplay blocked, attempting muted:", err);
+                video.muted = true;
+                video.play().catch((e) => console.error("Muted play failed:", e));
+              });
+          } else {
+            // Pause the video when scrolled out
+            if (!video.paused) {
+              video.pause();
+            }
+            // Resume background music
+            if (bgMusicWasPlayingRef.current && audioRef.current) {
+              audioRef.current.play().catch(e => console.error("Error playing audio:", e));
+              bgMusicWasPlayingRef.current = false;
+              setIsPlaying(true);
+            }
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    const target = videoSectionRef.current;
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => {
+      if (target) {
+        observer.unobserve(target);
+      }
+    };
+  }, [showLoveFiles]);
 
   useEffect(() => {
     async function fetchGifts() {
@@ -532,7 +606,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             <FadeIn delay={1.0} className="pt-8 sm:pt-10">
               <motion.button
                 onClick={() => {
-                  document.getElementById("love-story")?.scrollIntoView({ behavior: "smooth" });
+                  setShowLoveFiles(true);
                 }}
                 whileHover={{ scale: 1.06 }}
                 animate={{ 
@@ -2017,6 +2091,352 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 Close
               </motion.button>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen Overlay View: Meet The Couple & Video Teaser */}
+      <AnimatePresence>
+        {showLoveFiles && (
+          <motion.div
+            key="love-files-view"
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+            className="fixed inset-0 z-[120] w-full h-[100dvh] overflow-hidden bg-[#363D22] flex items-center justify-center shadow-[0_30px_60px_rgba(0,0,0,0.9)]"
+          >
+            {/* The Meet The Couple page content */}
+            {(() => {
+              const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+              const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+              const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+              console.log("Meet The Couple Video Render. project:", !!project, "user_id:", project?.user_id, "id:", project?.id);
+
+              const danceImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-dance.jpg`;
+              const pigeonsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-pigeons.jpg`;
+              const flowersImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/gallery-24.jpg`;
+              const runImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-run.jpg`;
+
+              return (
+                <div className="w-full h-full overflow-y-auto no-scrollbar snap-y snap-mandatory flex flex-col scrollbar-hide bg-[#363D22] relative">
+                  
+                  {/* Floating Back Button - Fixed position so it stays on top of both slides */}
+                  <button
+                    onClick={() => setShowLoveFiles(false)}
+                    className="fixed top-6 left-6 z-[140] flex items-center gap-2 text-white/80 hover:text-white bg-black/35 hover:bg-black/50 backdrop-blur-md border border-white/20 rounded-full px-4 py-2.5 text-[10px] font-sans uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    Back
+                  </button>
+
+                  {/* SLIDE 1: Meet The Couple */}
+                  <div ref={meetCoupleRef} className="relative w-full h-[100dvh] snap-start shrink-0 flex items-center justify-center overflow-hidden">
+                    {/* Corner images arrangement */}
+                    {/* Top-Left */}
+                    <FadeIn 
+                      delay={0.1} 
+                      className="absolute top-[8%] sm:top-[12%] left-[4%] sm:left-[8%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[4/3] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                    >
+                      <Image
+                        src={danceImgUrl}
+                        alt="Couple walking"
+                        fill
+                        sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
+                        className="object-cover pointer-events-none w-full h-full"
+                        unoptimized
+                      />
+                    </FadeIn>
+
+                    {/* Top-Right */}
+                    <FadeIn 
+                      delay={0.3} 
+                      className="absolute top-[12%] sm:top-[16%] right-[4%] sm:right-[8%] w-[35vw] sm:w-[26vw] md:w-[14vw] lg:w-[15vw] xl:w-[15vw] max-w-[230px] sm:max-w-[290px] md:max-w-[165px] lg:max-w-[205px] xl:max-w-[240px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                    >
+                      <Image
+                        src={pigeonsImgUrl}
+                        alt="Fountain"
+                        fill
+                        sizes="(max-width: 768px) 230px, (max-width: 1024px) 205px, 250px"
+                        className="object-cover pointer-events-none w-full h-full"
+                        unoptimized
+                      />
+                    </FadeIn>
+
+                    {/* Bottom-Left */}
+                    <FadeIn 
+                      delay={0.5} 
+                      className="absolute bottom-[12%] sm:bottom-[16%] left-[6%] sm:left-[12%] w-[32vw] sm:w-[24vw] md:w-[12vw] lg:w-[14vw] xl:w-[15vw] max-w-[195px] sm:max-w-[265px] md:max-w-[150px] lg:max-w-[195px] xl:max-w-[225px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                    >
+                      <Image
+                        src={flowersImgUrl}
+                        alt="Tree leaves"
+                        fill
+                        sizes="(max-width: 768px) 195px, (max-width: 1024px) 195px, 240px"
+                        className="object-cover pointer-events-none w-full h-full"
+                        unoptimized
+                      />
+                    </FadeIn>
+
+                    {/* Bottom-Right */}
+                    <FadeIn 
+                      delay={0.7} 
+                      className="absolute bottom-[8%] sm:bottom-[12%] right-[6%] sm:right-[12%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[4/3] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                    >
+                      <Image
+                        src={runImgUrl}
+                        alt="Hand with ring"
+                        fill
+                        sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
+                        className="object-cover pointer-events-none w-full h-full"
+                        unoptimized
+                      />
+                    </FadeIn>
+
+                    {/* Center Text */}
+                    <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-2xl mx-auto h-full select-none">
+                      <FadeIn delay={0.4}>
+                        <h2 className="font-altesse text-white text-[clamp(44px,9vw,76px)] md:text-[clamp(56px,5.5vw,90px)] font-light tracking-wide leading-none whitespace-nowrap drop-shadow-md">
+                          Meet The Couple
+                        </h2>
+                      </FadeIn>
+
+                      {/* Scroll down indicator */}
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 0.7, y: [0, 8, 0] }}
+                        transition={{ opacity: { delay: 1.5, duration: 1 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                        className="absolute bottom-8 flex flex-col items-center gap-1 cursor-pointer z-20"
+                        onClick={() => {
+                          videoSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      >
+                        <span className="text-[9px] font-sans tracking-[0.25em] text-white/40 uppercase">Scroll Down to Play video</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white/40">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </motion.div>
+                    </div>
+                  </div>
+
+                  {/* SLIDE 2: Video Player Section */}
+                  <div
+                    ref={videoSectionRef}
+                    className="relative w-full h-[100dvh] snap-start shrink-0 flex flex-col items-center justify-center bg-black overflow-hidden px-4 sm:px-6"
+                  >
+                    {/* Background blurry glow effect */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] rounded-full bg-[#363D22]/30 blur-[120px] pointer-events-none z-0"></div>
+
+                    <div className="relative z-10 w-full max-w-4xl flex flex-col items-center justify-center gap-6">
+                      <FadeIn delay={0.2} className="text-center">
+                        <span className="text-[10px] font-bold tracking-[0.35em] text-[#979e6c] uppercase block mb-1">Teaser Video</span>
+                        <h3 className="font-seasons text-white text-[clamp(24px,5vw,36px)] font-normal uppercase tracking-wider mb-2">Our Love Story</h3>
+                        <div className="h-[1px] w-12 bg-white/20 mx-auto"></div>
+                      </FadeIn>
+
+                      <FadeIn delay={0.4} className="w-full relative rounded-2xl sm:rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_30px_70px_rgba(0,0,0,0.8)] aspect-video">
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full object-cover"
+                          controls
+                          playsInline
+                          preload="metadata"
+                        >
+                          <source
+                            src="/video-teaser.mp4"
+                            type="video/mp4"
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      </FadeIn>
+
+                      {/* Scroll up indicator to Slide 1 */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 0.6, y: [0, -5, 0] }}
+                        transition={{ opacity: { delay: 1.2 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                        className="absolute top-24 flex flex-col items-center gap-1 cursor-pointer z-20"
+                        onClick={() => {
+                          meetCoupleRef.current?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white/30">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                        </svg>
+                        <span className="text-[8px] font-sans tracking-[0.25em] text-white/30 uppercase">Scroll Up</span>
+                      </motion.div>
+
+                      {/* Scroll down indicator to Slide 3 */}
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 0.6, y: [0, 5, 0] }}
+                        transition={{ opacity: { delay: 1.2 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                        className="absolute bottom-6 flex flex-col items-center gap-1 cursor-pointer z-20"
+                        onClick={() => {
+                          brideGroomSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      >
+                        <span className="text-[8px] font-sans tracking-[0.25em] text-white/30 uppercase">Scroll Down</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white/30">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </motion.div>
+                    </div>
+                  </div>
+
+                  {/* SLIDE 3: Bride & Groom Cards */}
+                  <div
+                    ref={brideGroomSectionRef}
+                    className="relative w-full h-[100dvh] snap-start shrink-0 grid grid-cols-1 md:grid-cols-2 bg-[#e2ddc7] overflow-hidden"
+                  >
+                    {/* Left Half: Bride */}
+                    <div className="w-full h-[50dvh] md:h-full flex items-center justify-center p-3 md:p-12 relative border-b md:border-b-0 md:border-r border-[#4a3525]/10">
+                      <FadeIn delay={0.2} className="w-[85vw] xs:w-[75vw] sm:w-[60vw] md:w-[85%] lg:w-[80%] max-w-[550px] max-h-[44dvh] md:max-h-none aspect-[517/533] relative drop-shadow-[0_20px_40px_rgba(74,53,37,0.18)] hover:scale-[1.04] hover:rotate-[-1.5deg] transition-all duration-500">
+                        <Image
+                          src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/bride-card.png`}
+                          alt="Jovita Lola Edria Card"
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 768px) 85vw, 45vw"
+                          priority
+                        />
+                      </FadeIn>
+                    </div>
+
+                    {/* Right Half: Groom */}
+                    <div className="w-full h-[50dvh] md:h-full flex items-center justify-center p-3 md:p-12 relative">
+                      <FadeIn delay={0.4} className="w-[85vw] xs:w-[75vw] sm:w-[60vw] md:w-[85%] lg:w-[80%] max-w-[550px] max-h-[44dvh] md:max-h-none aspect-[530/538] relative drop-shadow-[0_20px_40px_rgba(74,53,37,0.18)] hover:scale-[1.04] hover:rotate-[1.5deg] transition-all duration-500">
+                        <Image
+                          src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/groom-card.png`}
+                          alt="M. Luqman Fikri Card"
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 768px) 85vw, 45vw"
+                          priority
+                        />
+                      </FadeIn>
+                    </div>
+
+                    {/* Scroll up indicator to Video */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 0.6, y: [0, -5, 0] }}
+                      transition={{ opacity: { delay: 1.0 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                      className="absolute top-24 flex flex-col items-center gap-1 cursor-pointer z-30"
+                      onClick={() => {
+                        videoSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#4a3525]/40">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                      </svg>
+                      <span className="text-[8px] font-sans tracking-[0.25em] text-[#4a3525]/40 uppercase">Back to Video</span>
+                    </motion.div>
+
+                    {/* Scroll down indicator to Slide 4 */}
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 0.6, y: [0, 5, 0] }}
+                      transition={{ opacity: { delay: 1.0 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                      className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer z-30"
+                      onClick={() => {
+                        loveStorySectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      <span className="text-[8px] font-sans tracking-[0.25em] text-[#4a3525]/40 uppercase">Scroll Down</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#4a3525]/40">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </motion.div>
+                  </div>
+
+                  {/* SLIDE 4: Love Story */}
+                  <div
+                    ref={loveStorySectionRef}
+                    className="relative w-full h-[100dvh] snap-start shrink-0 flex flex-col items-center justify-center bg-black overflow-hidden px-6 sm:px-12 py-16"
+                  >
+                    {/* Background image with warm/dark sepia overlay */}
+                    <div className="absolute inset-0 z-0 overflow-hidden bg-black shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
+                      <Image
+                        src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/love-story-bg.jpg`}
+                        alt="Love Story Background"
+                        fill
+                        className="object-cover brightness-[0.55] select-none"
+                        draggable={false}
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply"></div>
+                    </div>
+
+                    <div className="relative z-10 flex flex-col items-center justify-center max-w-3xl mx-auto h-full text-center text-white/95 select-none relative">
+                      
+                      {/* Title */}
+                      <FadeIn delay={0.2}>
+                        <h2 className="font-altesse text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-light tracking-wide leading-none mb-8 drop-shadow-md">
+                          Love Story
+                        </h2>
+                      </FadeIn>
+
+                      {/* Paragraphs */}
+                      <div className="flex flex-col gap-5 md:gap-6">
+                        <FadeIn delay={0.4}>
+                          <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                            If someone had told us years ago that all the little moments would lead us here, we probably wouldn’t have believed them.
+                          </p>
+                        </FadeIn>
+
+                        <FadeIn delay={0.6}>
+                          <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                            Back then, we were simply part of each other’s daily routines &mdash; just coworkers sharing ordinary days at the office before life eventually moved us onto different paths. When Luqman left to study abroad, we never imagined our story would continue beyond that chapter.
+                          </p>
+                        </FadeIn>
+
+                        <FadeIn delay={0.8}>
+                          <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                            But years later, two familiar people meeting again in a completely different season of life. What started as simple conversations slowly became the best part of our days. Somewhere along the way, familiarity turned into comfort, comfort turned into love, and being together began to feel like the most natural thing in the world.
+                          </p>
+                        </FadeIn>
+
+                        <FadeIn delay={1.0}>
+                          <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                            Looking back now, it’s hard not to believe that some people are simply meant to find their way back to one another.
+                          </p>
+                        </FadeIn>
+                      </div>
+
+                      {/* HOME PAGE >> button on bottom right of the container */}
+                      <FadeIn delay={1.2} className="absolute bottom-0 right-0 sm:right-4">
+                        <button
+                          onClick={() => setShowLoveFiles(false)}
+                          className="font-lekton text-[#e2ddc7] text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.25em] border-b border-[#e2ddc7]/60 pb-1 hover:text-[#e2ddc7]/80 hover:border-[#e2ddc7]/80 transition-all cursor-pointer"
+                        >
+                          Home Page &gt;&gt;
+                        </button>
+                      </FadeIn>
+
+                      {/* Scroll up indicator to cards */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.5 }}
+                        transition={{ delay: 1.2 }}
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer"
+                        onClick={() => {
+                          brideGroomSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#e2ddc7]/30">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                        </svg>
+                        <span className="text-[8px] font-sans tracking-[0.25em] text-[#e2ddc7]/30 uppercase">Back to Cards</span>
+                      </motion.div>
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>
