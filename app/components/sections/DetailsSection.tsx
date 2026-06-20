@@ -1,0 +1,98 @@
+"use client";
+
+import React from "react";
+import Image from "next/image";
+import { DbProject } from "../../../lib/resolveProject";
+import FadeIn from "../FadeIn";
+
+interface Props {
+  project?: DbProject | null;
+  setShowRundownOverlay: (val: boolean) => void;
+}
+
+export default function DetailsSection({ project, setShowRundownOverlay }: Props) {
+  const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+  const detailsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec6-details.jpg`;
+
+  return (
+    <section id="details" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col md:flex-row bg-[#E1D8CC]">
+      {/* Left Column (Foot-in-grass photo) */}
+      <div className="relative w-full md:w-[50%] h-[42%] md:h-full shrink-0 overflow-hidden">
+        <FadeIn className="w-full h-full" delay={0.2}>
+          <Image
+            src={detailsImgUrl}
+            alt="Wedding Details Foot Photo"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover pointer-events-none w-full h-full select-none"
+            unoptimized
+          />
+        </FadeIn>
+      </div>
+
+      {/* Right Column (Beige detail card) */}
+      <div className="w-full md:w-[50%] h-[58%] md:h-full flex flex-col items-center justify-center overflow-y-auto no-scrollbar p-4 xs:p-6 md:p-12 text-[#4A3E3D] select-none text-center bg-[#E1D8CC]">
+        {/* The Details Title */}
+        <FadeIn delay={0.3}>
+          <div className="flex flex-col items-center mb-4 sm:mb-8 md:mb-12 select-none relative">
+            <span className="font-parfumerie text-[#4A3E3D] text-[clamp(65px,14vw,95px)] md:text-[clamp(85px,6vw,120px)] leading-none italic font-light z-10 -mb-3 md:-mb-5">
+              The
+            </span>
+            <h3 className="font-seasons text-[#4A3E3D] text-[clamp(36px,8vw,56px)] md:text-[clamp(48px,4.5vw,68px)] font-normal uppercase leading-none tracking-[0.2em]">
+              DETAILS
+            </h3>
+          </div>
+        </FadeIn>
+
+        {/* Date & Location */}
+        <FadeIn delay={0.5}>
+          <div className="flex flex-col items-center mb-3 sm:mb-5 md:mb-8">
+            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(15px,3vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.25em] mb-2 md:mb-3">
+              DATE & LOCATION
+            </h4>
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
+              Saturday, 8 August 2026
+            </p>
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
+              Openaire Resto Bar Market Semarang
+            </p>
+          </div>
+        </FadeIn>
+
+        {/* Thin Divider */}
+        <FadeIn delay={0.6} className="w-full flex justify-center">
+          <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-2 sm:my-4 md:my-5"></div>
+        </FadeIn>
+
+        {/* Akad & Reception */}
+        <FadeIn delay={0.7}>
+          <div className="flex flex-col items-center mb-3 sm:mb-5 md:mb-8">
+            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(15px,3vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.25em] mb-2 md:mb-3">
+              AKAD & RECEPTION
+            </h4>
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
+              13.15-18.00
+            </p>
+          </div>
+        </FadeIn>
+
+        {/* Thin Divider */}
+        <FadeIn delay={0.8} className="w-full flex justify-center">
+          <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-2 sm:my-4 md:my-5"></div>
+        </FadeIn>
+
+        {/* Action Button */}
+        <FadeIn delay={0.9} className="mt-1 sm:mt-3">
+          <button
+            onClick={() => setShowRundownOverlay(true)}
+            className="font-lekton text-[#4A3E3D] text-[clamp(12px,2.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] tracking-wider px-8 md:px-10 py-3 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
+          >
+            Detailed Info & Rundown
+          </button>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}

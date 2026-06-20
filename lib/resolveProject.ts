@@ -89,21 +89,22 @@ export interface DbProject {
   subscriptions?: {
     status: string;
     expires_at?: string | null;
-    packages: {
-      has_rsvp: boolean;
-      has_amplop_digital: boolean;
-      has_guestbook: boolean;
-      has_live_slideshow: boolean;
-      has_ganti_warna: boolean;
-      has_ganti_font: boolean;
-      has_kombinasi_desain: boolean;
-      has_rsvp_custom: boolean;
-      has_rundown: boolean;
-      has_love_story: boolean;
-      has_hitung_mundur: boolean;
-      has_request_musik: boolean;
-      has_free_reschedule: boolean;
-    } | null;
+      packages: {
+        has_rsvp: boolean;
+        has_amplop_digital: boolean;
+        has_guestbook: boolean;
+        has_live_slideshow: boolean;
+        has_ganti_warna: boolean;
+        has_ganti_font: boolean;
+        has_kombinasi_desain: boolean;
+        has_rsvp_custom: boolean;
+        has_rundown: boolean;
+        has_love_story: boolean;
+        has_hitung_mundur: boolean;
+        has_request_musik: boolean;
+        has_free_reschedule: boolean;
+        has_wedding_program?: boolean;
+      } | null;
   } | null;
 }
 
