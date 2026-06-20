@@ -194,6 +194,70 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
     }
   }, [isOpen]);
 
+  // Thank You Video Autoplay/Pause Intersection Observer
+  useEffect(() => {
+    if (!isOpen) {
+      if (thankYouVideoRef.current && !thankYouVideoRef.current.paused) {
+        thankYouVideoRef.current.pause();
+      }
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = thankYouVideoRef.current;
+          if (!video) return;
+
+          if (entry.isIntersecting) {
+            // Autoplay the thank you video when scrolled in
+            video.play()
+              .then(() => {
+                // Pause background music if video is playing
+                if (audioRef.current && !audioRef.current.paused) {
+                  audioRef.current.pause();
+                  bgMusicWasPlayingRef.current = true;
+                  setIsPlaying(false);
+                }
+                // Pause other video
+                if (videoRef.current && !videoRef.current.paused) {
+                  videoRef.current.pause();
+                }
+              })
+              .catch((err) => {
+                console.log("Thank you video autoplay blocked, attempting muted:", err);
+                video.muted = true;
+                video.play().catch((e) => console.error("Muted thank you video play failed:", e));
+              });
+          } else {
+            // Pause the video when scrolled out
+            if (!video.paused) {
+              video.pause();
+            }
+            // Resume background music
+            if (bgMusicWasPlayingRef.current && audioRef.current) {
+              audioRef.current.play().catch(e => console.error("Error playing audio:", e));
+              bgMusicWasPlayingRef.current = false;
+              setIsPlaying(true);
+            }
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    const target = thankYouVideoRef.current;
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => {
+      if (target) {
+        observer.unobserve(target);
+      }
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     async function fetchGifts() {
       if (!project?.id) {
