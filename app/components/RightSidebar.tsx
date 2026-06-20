@@ -76,6 +76,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [[page, direction], setPage] = useState([0, 0]);
   const [showLoveFiles, setShowLoveFiles] = useState(false);
+  const [showRundownOverlay, setShowRundownOverlay] = useState(false);
 
   const groomPhotoPosition = useSmartPosition(project?.groom_photo_url || priaImg);
   const bridePhotoPosition = useSmartPosition(project?.bride_photo_url || wanitaImg);
@@ -86,6 +87,10 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   const videoSectionRef = useRef<HTMLDivElement>(null);
   const brideGroomSectionRef = useRef<HTMLDivElement>(null);
   const loveStorySectionRef = useRef<HTMLDivElement>(null);
+  const rundownSectionRef = useRef<HTMLDivElement>(null);
+  const diningScheduleSectionRef = useRef<HTMLDivElement>(null);
+  const rundownOverlayRundownRef = useRef<HTMLDivElement>(null);
+  const rundownOverlayDiningRef = useRef<HTMLDivElement>(null);
   const bgMusicWasPlayingRef = useRef(false);
 
   const [giftItems, setGiftItems] = useState<GiftItem[]>([]);
@@ -523,7 +528,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 {/* Top-Left: Dance */}
                 <FadeIn 
                   delay={0.1} 
-                  className="absolute top-[8%] sm:top-[12%] left-[4%] sm:left-[8%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                  className="absolute top-[12%] left-[6%] sm:top-[12%] sm:left-[8%] w-[26vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[140px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[3/4] shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                 >
                   <Image
                     src={danceImgUrl}
@@ -538,7 +543,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 {/* Top-Right: Pigeons */}
                 <FadeIn 
                   delay={0.3} 
-                  className="absolute top-[12%] sm:top-[16%] right-[4%] sm:right-[8%] w-[35vw] sm:w-[26vw] md:w-[14vw] lg:w-[15vw] xl:w-[15vw] max-w-[230px] sm:max-w-[290px] md:max-w-[165px] lg:max-w-[205px] xl:max-w-[240px] aspect-square shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                  className="absolute top-[12%] right-[6%] sm:top-[16%] sm:right-[8%] w-[24vw] sm:w-[26vw] md:w-[14vw] lg:w-[15vw] xl:w-[15vw] max-w-[130px] sm:max-w-[290px] md:max-w-[165px] lg:max-w-[205px] xl:max-w-[240px] aspect-square shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                 >
                   <Image
                     src={pigeonsImgUrl}
@@ -553,7 +558,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 {/* Bottom-Left: Flowers */}
                 <FadeIn 
                   delay={0.5} 
-                  className="absolute bottom-[12%] sm:bottom-[16%] left-[6%] sm:left-[12%] w-[32vw] sm:w-[24vw] md:w-[12vw] lg:w-[14vw] xl:w-[15vw] max-w-[195px] sm:max-w-[265px] md:max-w-[150px] lg:max-w-[195px] xl:max-w-[225px] aspect-[4/5] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                  className="absolute bottom-[12%] left-[6%] sm:bottom-[16%] sm:left-[12%] w-[22vw] sm:w-[24vw] md:w-[12vw] lg:w-[14vw] xl:w-[15vw] max-w-[120px] sm:max-w-[265px] md:max-w-[150px] lg:max-w-[195px] xl:max-w-[225px] aspect-[4/5] shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                 >
                   <Image
                     src={flowersImgUrl}
@@ -568,7 +573,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 {/* Bottom-Right: Run */}
                 <FadeIn 
                   delay={0.7} 
-                  className="absolute bottom-[8%] sm:bottom-[12%] right-[6%] sm:right-[12%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                  className="absolute bottom-[12%] right-[6%] sm:bottom-[12%] sm:right-[12%] w-[26vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[140px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[3/4] shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                 >
                   <Image
                     src={runImgUrl}
@@ -793,10 +798,10 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               </div>
 
               {/* Right Column (Beige detail card) */}
-              <div className="w-full md:w-[50%] h-[58%] md:h-full flex flex-col items-center justify-center p-6 md:p-12 text-[#4A3E3D] select-none text-center bg-[#E1D8CC]">
+              <div className="w-full md:w-[50%] h-[58%] md:h-full flex flex-col items-center justify-center overflow-y-auto no-scrollbar p-4 xs:p-6 md:p-12 text-[#4A3E3D] select-none text-center bg-[#E1D8CC]">
                 {/* The Details Title */}
                 <FadeIn delay={0.3}>
-                  <div className="flex flex-col items-center mb-8 md:mb-12 select-none relative">
+                  <div className="flex flex-col items-center mb-4 sm:mb-8 md:mb-12 select-none relative">
                     <span className="font-parfumerie text-[#4A3E3D] text-[clamp(65px,14vw,95px)] md:text-[clamp(85px,6vw,120px)] leading-none italic font-light z-10 -mb-3 md:-mb-5">
                       The
                     </span>
@@ -808,7 +813,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
 
                 {/* Date & Location */}
                 <FadeIn delay={0.5}>
-                  <div className="flex flex-col items-center mb-5 md:mb-8">
+                  <div className="flex flex-col items-center mb-3 sm:mb-5 md:mb-8">
                     <h4 className="font-seasons text-[#4A3E3D] text-[clamp(15px,3vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.25em] mb-2 md:mb-3">
                       DATE & LOCATION
                     </h4>
@@ -823,12 +828,12 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
 
                 {/* Thin Divider */}
                 <FadeIn delay={0.6} className="w-full flex justify-center">
-                  <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-4 md:my-5"></div>
+                  <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-2 sm:my-4 md:my-5"></div>
                 </FadeIn>
 
                 {/* Akad & Reception */}
                 <FadeIn delay={0.7}>
-                  <div className="flex flex-col items-center mb-5 md:mb-8">
+                  <div className="flex flex-col items-center mb-3 sm:mb-5 md:mb-8">
                     <h4 className="font-seasons text-[#4A3E3D] text-[clamp(15px,3vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.25em] mb-2 md:mb-3">
                       AKAD & RECEPTION
                     </h4>
@@ -840,14 +845,14 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
 
                 {/* Thin Divider */}
                 <FadeIn delay={0.8} className="w-full flex justify-center">
-                  <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-4 md:my-5"></div>
+                  <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-2 sm:my-4 md:my-5"></div>
                 </FadeIn>
 
                 {/* Action Button */}
-                <FadeIn delay={0.9} className="mt-3">
+                <FadeIn delay={0.9} className="mt-1 sm:mt-3">
                   <button
                     onClick={() => {
-                      document.getElementById("events-section")?.scrollIntoView({ behavior: "smooth" });
+                      setShowRundownOverlay(true);
                     }}
                     className="font-lekton text-[#4A3E3D] text-[clamp(12px,2.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] tracking-wider px-8 md:px-10 py-3 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
                   >
@@ -860,8 +865,8 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         })()}
 
         {/* NEW SECTION: FAQs */}
-        <section id="faq" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-[#363D22] text-white flex flex-col justify-center items-center select-none">
-          <div className="w-full max-w-2xl px-6 md:px-8 py-8 md:py-12 flex flex-col items-center justify-center text-center h-full space-y-6 md:space-y-8">
+        <section id="faq" className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 bg-[#363D22] text-white flex flex-col justify-start items-center select-none pt-24 pb-16">
+          <div className="w-full max-w-2xl px-6 md:px-8 flex flex-col items-center justify-start text-center space-y-6 md:space-y-8">
             {/* Header */}
             <FadeIn delay={0.1}>
               <h2 className="font-seasons text-[clamp(44px,9vw,64px)] md:text-[clamp(56px,5vw,78px)] font-normal tracking-wide text-white leading-none">
@@ -870,7 +875,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             </FadeIn>
 
             {/* FAQ Q&A Container */}
-            <div className="flex flex-col space-y-6 md:space-y-8 w-full overflow-y-auto no-scrollbar max-h-[80vh] py-2">
+            <div className="flex flex-col space-y-6 md:space-y-8 w-full py-2">
               {/* Q&A Item 1 */}
               <FadeIn delay={0.2} className="w-full">
                 <div className="space-y-1.5 md:space-y-2.5">
@@ -2134,11 +2139,10 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
 
                   {/* SLIDE 1: Meet The Couple */}
                   <div ref={meetCoupleRef} className="relative w-full h-[100dvh] snap-start shrink-0 flex items-center justify-center overflow-hidden">
-                    {/* Corner images arrangement */}
                     {/* Top-Left */}
                     <FadeIn 
                       delay={0.1} 
-                      className="absolute top-[8%] sm:top-[12%] left-[4%] sm:left-[8%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[4/3] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                      className="absolute top-[12%] left-[6%] sm:top-[12%] sm:left-[8%] w-[26vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[140px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[4/3] shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                     >
                       <Image
                         src={danceImgUrl}
@@ -2153,7 +2157,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                     {/* Top-Right */}
                     <FadeIn 
                       delay={0.3} 
-                      className="absolute top-[12%] sm:top-[16%] right-[4%] sm:right-[8%] w-[35vw] sm:w-[26vw] md:w-[14vw] lg:w-[15vw] xl:w-[15vw] max-w-[230px] sm:max-w-[290px] md:max-w-[165px] lg:max-w-[205px] xl:max-w-[240px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                      className="absolute top-[12%] right-[6%] sm:top-[16%] sm:right-[8%] w-[24vw] sm:w-[26vw] md:w-[14vw] lg:w-[15vw] xl:w-[15vw] max-w-[130px] sm:max-w-[290px] md:max-w-[165px] lg:max-w-[205px] xl:max-w-[240px] aspect-[3/4] shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                     >
                       <Image
                         src={pigeonsImgUrl}
@@ -2168,7 +2172,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                     {/* Bottom-Left */}
                     <FadeIn 
                       delay={0.5} 
-                      className="absolute bottom-[12%] sm:bottom-[16%] left-[6%] sm:left-[12%] w-[32vw] sm:w-[24vw] md:w-[12vw] lg:w-[14vw] xl:w-[15vw] max-w-[195px] sm:max-w-[265px] md:max-w-[150px] lg:max-w-[195px] xl:max-w-[225px] aspect-[3/4] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                      className="absolute bottom-[12%] left-[6%] sm:bottom-[16%] sm:left-[12%] w-[22vw] sm:w-[24vw] md:w-[12vw] lg:w-[14vw] xl:w-[15vw] max-w-[120px] sm:max-w-[265px] md:max-w-[150px] lg:max-w-[195px] xl:max-w-[225px] aspect-[3/4] shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                     >
                       <Image
                         src={flowersImgUrl}
@@ -2183,7 +2187,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                     {/* Bottom-Right */}
                     <FadeIn 
                       delay={0.7} 
-                      className="absolute bottom-[8%] sm:bottom-[12%] right-[6%] sm:right-[12%] w-[37vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[250px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[4/3] shadow-2xl border-[3px] sm:border-[6px] border-white/95 rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
+                      className="absolute bottom-[12%] right-[6%] sm:bottom-[12%] sm:right-[12%] w-[26vw] sm:w-[29vw] md:w-[15vw] lg:w-[16vw] xl:w-[17vw] max-w-[140px] sm:max-w-[320px] md:max-w-[190px] lg:max-w-[225px] xl:max-w-[250px] aspect-[4/3] shadow-2xl border-[2px] sm:border-[6px] border-white/95 rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-300 z-10 overflow-hidden"
                     >
                       <Image
                         src={runImgUrl}
@@ -2243,6 +2247,27 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                           controls
                           playsInline
                           preload="metadata"
+                          onPlay={() => {
+                            if (audioRef.current && !audioRef.current.paused) {
+                              audioRef.current.pause();
+                              bgMusicWasPlayingRef.current = true;
+                              setIsPlaying(false);
+                            }
+                          }}
+                          onPause={() => {
+                            if (bgMusicWasPlayingRef.current && audioRef.current) {
+                              audioRef.current.play().catch(e => console.error("Error resuming audio on pause:", e));
+                              bgMusicWasPlayingRef.current = false;
+                              setIsPlaying(true);
+                            }
+                          }}
+                          onEnded={() => {
+                            if (bgMusicWasPlayingRef.current && audioRef.current) {
+                              audioRef.current.play().catch(e => console.error("Error resuming audio on end:", e));
+                              bgMusicWasPlayingRef.current = false;
+                              setIsPlaying(true);
+                            }
+                          }}
                         >
                           <source
                             src="/video-teaser.mp4"
@@ -2289,42 +2314,14 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                   {/* SLIDE 3: Bride & Groom Cards */}
                   <div
                     ref={brideGroomSectionRef}
-                    className="relative w-full h-[100dvh] snap-start shrink-0 grid grid-cols-1 md:grid-cols-2 bg-[#e2ddc7] overflow-hidden"
+                    className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 flex flex-col justify-start bg-[#e2ddc7] px-4 sm:px-8 pt-24 pb-16 lg:py-16"
                   >
-                    {/* Left Half: Bride */}
-                    <div className="w-full h-[50dvh] md:h-full flex items-center justify-center p-3 md:p-12 relative border-b md:border-b-0 md:border-r border-[#4a3525]/10">
-                      <FadeIn delay={0.2} className="w-[85vw] xs:w-[75vw] sm:w-[60vw] md:w-[85%] lg:w-[80%] max-w-[550px] max-h-[44dvh] md:max-h-none aspect-[517/533] relative drop-shadow-[0_20px_40px_rgba(74,53,37,0.18)] hover:scale-[1.04] hover:rotate-[-1.5deg] transition-all duration-500">
-                        <Image
-                          src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/bride-card.png`}
-                          alt="Jovita Lola Edria Card"
-                          fill
-                          className="object-contain"
-                          sizes="(max-width: 768px) 85vw, 45vw"
-                          priority
-                        />
-                      </FadeIn>
-                    </div>
-
-                    {/* Right Half: Groom */}
-                    <div className="w-full h-[50dvh] md:h-full flex items-center justify-center p-3 md:p-12 relative">
-                      <FadeIn delay={0.4} className="w-[85vw] xs:w-[75vw] sm:w-[60vw] md:w-[85%] lg:w-[80%] max-w-[550px] max-h-[44dvh] md:max-h-none aspect-[530/538] relative drop-shadow-[0_20px_40px_rgba(74,53,37,0.18)] hover:scale-[1.04] hover:rotate-[1.5deg] transition-all duration-500">
-                        <Image
-                          src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/groom-card.png`}
-                          alt="M. Luqman Fikri Card"
-                          fill
-                          className="object-contain"
-                          sizes="(max-width: 768px) 85vw, 45vw"
-                          priority
-                        />
-                      </FadeIn>
-                    </div>
-
-                    {/* Scroll up indicator to Video */}
+                    {/* Back to Video at the top of the Slide 3 flow */}
                     <motion.div
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 0.6, y: [0, -5, 0] }}
                       transition={{ opacity: { delay: 1.0 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
-                      className="absolute top-24 flex flex-col items-center gap-1 cursor-pointer z-30"
+                      className="w-full flex flex-col items-center gap-1 cursor-pointer z-30 mb-8"
                       onClick={() => {
                         videoSectionRef.current?.scrollIntoView({ behavior: "smooth" });
                       }}
@@ -2335,12 +2332,97 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                       <span className="text-[8px] font-sans tracking-[0.25em] text-[#4a3525]/40 uppercase">Back to Video</span>
                     </motion.div>
 
-                    {/* Scroll down indicator to Slide 4 */}
+                    <div className="flex flex-col justify-center items-center gap-6 lg:gap-12 xl:gap-16 max-w-6xl w-full mx-auto text-[#4a3525] select-none lg:py-0">
+                      
+                      {/* Bride Column — mobile: stacked centered | desktop: photo LEFT, text RIGHT */}
+                      <FadeIn delay={0.2} className="flex flex-col lg:flex-row items-center lg:items-center justify-center gap-4 lg:gap-10 xl:gap-14 w-full h-auto">
+                        {/* Photo inside Lace Frame */}
+                        <div className="relative w-[65vw] h-[65vw] max-w-[270px] max-h-[270px] xs:w-[70vw] xs:h-[70vw] sm:w-[360px] sm:h-[360px] lg:w-[28vw] lg:h-[28vw] lg:max-w-[340px] lg:max-h-[340px] xl:w-[22vw] xl:h-[22vw] xl:max-w-[360px] xl:max-h-[360px] flex-shrink-0">
+                          <Image
+                            src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/lace-frame.png?v=2`}
+                            alt="Lace frame"
+                            fill
+                            className="object-contain filter drop-shadow-[0_8px_16px_rgba(74,53,37,0.18)]"
+                            unoptimized
+                          />
+                          <div 
+                            style={{ top: "17%", left: "17%", width: "66%", height: "66%" }}
+                            className="absolute overflow-hidden rounded-[8px] sm:rounded-[12px] md:rounded-[16px]"
+                          >
+                            <Image
+                              src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/bride-photo.jpg?v=2`}
+                              alt="Jovita Lola Edria"
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                        </div>
+
+                        {/* Bride Details Text */}
+                        <div className="flex flex-col items-center lg:items-start text-center lg:text-left max-w-xs sm:max-w-md lg:max-w-lg">
+                          <span className="font-altesse text-[#4a3525] text-[clamp(28px,6vw,44px)] font-light leading-none mb-1 md:mb-2">
+                            The Bride
+                          </span>
+                          <span className="font-seasons text-[#4a3525] text-[clamp(16px,4vw,26px)] font-bold tracking-wide leading-tight mb-2 sm:mb-3">
+                            Jovita Lola Edria
+                          </span>
+                          <p className="font-lekton text-[#4a3525]/80 text-[clamp(9px,2.2vw,12px)] leading-relaxed tracking-wide sm:tracking-wider">
+                            Putri dari Bp. Joko Sulistyo U.<br />& Ibu Evi Rita Sari
+                          </p>
+                        </div>
+                      </FadeIn>
+
+                      {/* Divider for mobile to look clean */}
+                      <div className="h-[1px] w-1/3 bg-[#4a3525]/10 mx-auto lg:hidden"></div>
+
+                      {/* Groom Column — mobile: stacked centered | desktop: text LEFT, photo RIGHT (reversed) */}
+                      <FadeIn delay={0.4} className="flex flex-col lg:flex-row-reverse items-center lg:items-center justify-center gap-4 lg:gap-10 xl:gap-14 w-full h-auto">
+                        {/* Photo inside Lace Frame */}
+                        <div className="relative w-[65vw] h-[65vw] max-w-[270px] max-h-[270px] xs:w-[70vw] xs:h-[70vw] sm:w-[360px] sm:h-[360px] lg:w-[28vw] lg:h-[28vw] lg:max-w-[340px] lg:max-h-[340px] xl:w-[22vw] xl:h-[22vw] xl:max-w-[360px] xl:max-h-[360px] flex-shrink-0">
+                          <Image
+                            src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/lace-frame.png?v=2`}
+                            alt="Lace frame"
+                            fill
+                            className="object-contain filter drop-shadow-[0_8px_16px_rgba(74,53,37,0.18)]"
+                            unoptimized
+                          />
+                          <div 
+                            style={{ top: "17%", left: "17%", width: "66%", height: "66%" }}
+                            className="absolute overflow-hidden rounded-[8px] sm:rounded-[12px] md:rounded-[16px]"
+                          >
+                            <Image
+                              src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/groom-photo.jpg?v=2`}
+                              alt="Muhammad Luqman Fikri"
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                        </div>
+
+                        {/* Groom Details Text */}
+                        <div className="flex flex-col items-center lg:items-end text-center lg:text-right max-w-xs sm:max-w-md lg:max-w-lg">
+                          <span className="font-altesse text-[#4a3525] text-[clamp(28px,6vw,44px)] font-light leading-none mb-1 md:mb-2">
+                            The Groom
+                          </span>
+                          <span className="font-seasons text-[#4a3525] text-[clamp(16px,4vw,26px)] font-bold tracking-wide leading-tight mb-2 sm:mb-3">
+                            Muhammad Luqman Fikri
+                          </span>
+                          <p className="font-lekton text-[#4a3525]/80 text-[clamp(9px,2.2vw,12px)] leading-relaxed tracking-wide sm:tracking-wider">
+                            Putra dari Bp. (Alm) Mudin<br />& Ibu Marlia Masdiarti
+                          </p>
+                        </div>
+                      </FadeIn>
+
+                    </div>
+
+                    {/* Scroll down indicator to Slide 4 in the natural flow */}
                     <motion.div
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 0.6, y: [0, 5, 0] }}
                       transition={{ opacity: { delay: 1.0 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
-                      className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer z-30"
+                      className="w-full flex flex-col items-center gap-1 cursor-pointer z-30 mt-12"
                       onClick={() => {
                         loveStorySectionRef.current?.scrollIntoView({ behavior: "smooth" });
                       }}
@@ -2355,7 +2437,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                   {/* SLIDE 4: Love Story */}
                   <div
                     ref={loveStorySectionRef}
-                    className="relative w-full h-[100dvh] snap-start shrink-0 flex flex-col items-center justify-center bg-black overflow-hidden px-6 sm:px-12 py-16"
+                    className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 flex flex-col items-center justify-start bg-black px-6 sm:px-12 pt-24 pb-16 lg:py-16"
                   >
                     {/* Background image with warm/dark sepia overlay */}
                     <div className="absolute inset-0 z-0 overflow-hidden bg-black shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
@@ -2370,17 +2452,33 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                       <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply"></div>
                     </div>
 
-                    <div className="relative z-10 flex flex-col items-center justify-center max-w-3xl mx-auto h-full text-center text-white/95 select-none relative">
+                    {/* Back to Cards at the top of Slide 4 flow */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 0.5 }}
+                      transition={{ delay: 1.2 }}
+                      className="w-full flex flex-col items-center gap-1 cursor-pointer z-30 mb-8"
+                      onClick={() => {
+                        brideGroomSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#e2ddc7]/30">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                      </svg>
+                      <span className="text-[8px] font-sans tracking-[0.25em] text-[#e2ddc7]/30 uppercase">Back to Cards</span>
+                    </motion.div>
+
+                    <div className="relative z-10 flex flex-col items-center justify-center max-w-3xl mx-auto text-center text-white/95 select-none lg:py-0">
                       
                       {/* Title */}
                       <FadeIn delay={0.2}>
-                        <h2 className="font-altesse text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-light tracking-wide leading-none mb-8 drop-shadow-md">
+                        <h2 className="font-altesse text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-light tracking-wide leading-none mb-4 lg:mb-8 drop-shadow-md">
                           Love Story
                         </h2>
                       </FadeIn>
 
                       {/* Paragraphs */}
-                      <div className="flex flex-col gap-5 md:gap-6">
+                      <div className="flex flex-col gap-3 lg:gap-5">
                         <FadeIn delay={0.4}>
                           <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
                             If someone had told us years ago that all the little moments would lead us here, we probably wouldn’t have believed them.
@@ -2406,32 +2504,260 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                         </FadeIn>
                       </div>
 
-                      {/* HOME PAGE >> button on bottom right of the container */}
-                      <FadeIn delay={1.2} className="absolute bottom-0 right-0 sm:right-4">
-                        <button
-                          onClick={() => setShowLoveFiles(false)}
-                          className="font-lekton text-[#e2ddc7] text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.25em] border-b border-[#e2ddc7]/60 pb-1 hover:text-[#e2ddc7]/80 hover:border-[#e2ddc7]/80 transition-all cursor-pointer"
-                        >
-                          Home Page &gt;&gt;
-                        </button>
+                      {/* Footer controls in Slide 4 flow */}
+                      <div className="w-full flex flex-col items-center gap-6 mt-12 z-30">
+                        <FadeIn delay={1.2}>
+                          <button
+                            onClick={() => setShowLoveFiles(false)}
+                            className="font-lekton text-[#e2ddc7] text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.25em] border-b border-[#e2ddc7]/60 pb-1 hover:text-[#e2ddc7]/80 hover:border-[#e2ddc7]/80 transition-all cursor-pointer"
+                          >
+                            Home Page &gt;&gt;
+                          </button>
+                        </FadeIn>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })()}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen Overlay: Rundown & Dining Schedule */}
+      <AnimatePresence>
+        {showRundownOverlay && (
+          <motion.div
+            key="rundown-overlay-view"
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+            className="fixed inset-0 z-[120] w-full h-[100dvh] overflow-hidden bg-[#e2ddc7] flex items-center justify-center shadow-[0_30px_60px_rgba(0,0,0,0.9)]"
+          >
+            {(() => {
+              const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+              const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+              const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+
+              return (
+                <div className="w-full h-full overflow-y-auto no-scrollbar snap-y snap-mandatory flex flex-col scrollbar-hide relative">
+                  
+                  {/* Floating Back Button */}
+                  <button
+                    onClick={() => setShowRundownOverlay(false)}
+                    className="fixed top-6 left-6 z-[140] flex items-center gap-2 text-[#4a3525]/80 hover:text-[#4a3525] bg-white/40 hover:bg-white/60 backdrop-blur-md border border-[#4a3525]/20 rounded-full px-4 py-2.5 text-[10px] font-sans uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    Back
+                  </button>
+
+                  {/* SLIDE 1: Wedding Rundown */}
+                  <div
+                    ref={rundownOverlayRundownRef}
+                    className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 flex flex-col justify-start bg-[#e2ddc7] px-4 sm:px-6 md:px-8 pt-24 pb-16 lg:py-16"
+                  >
+                    {/* Content wrapper */}
+                    <div className="relative z-10 flex flex-col items-center justify-center max-w-4xl w-full mx-auto text-center text-[#4a3525] select-none lg:py-0">
+                      
+                      {/* Title */}
+                      <FadeIn delay={0.2}>
+                        <h2 className="font-altesse text-[#4a3525] text-[clamp(36px,8.5vw,64px)] font-light tracking-wide leading-none mb-4 xs:mb-6 sm:mb-12 md:mb-16 drop-shadow-sm">
+                          Wedding Rundown
+                        </h2>
                       </FadeIn>
 
-                      {/* Scroll up indicator to cards */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.5 }}
-                        transition={{ delay: 1.2 }}
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer"
-                        onClick={() => {
-                          brideGroomSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#e2ddc7]/30">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                        </svg>
-                        <span className="text-[8px] font-sans tracking-[0.25em] text-[#e2ddc7]/30 uppercase">Back to Cards</span>
-                      </motion.div>
+                      {/* Rundown Grid */}
+                      <div className="grid grid-cols-3 gap-x-2 xs:gap-x-4 sm:gap-x-10 md:gap-x-16 gap-y-4 xs:gap-y-6 sm:gap-y-12 md:gap-y-14 w-full max-w-4xl px-2 sm:px-6">
+                        {(() => {
+                          const rundownItems = [
+                            {
+                              time: "14.00",
+                              title: "Akad Ceremony",
+                              icon: "rundown-rings.png"
+                            },
+                            {
+                              time: "15.00",
+                              title: "Reception Opens",
+                              icon: "rundown-table.png"
+                            },
+                            {
+                              time: "15.10",
+                              title: "Our Story Screening",
+                              icon: "rundown-doves.png"
+                            },
+                            {
+                              time: "15.55",
+                              title: "Toast Session",
+                              icon: "rundown-toast.png"
+                            },
+                            {
+                              time: "16.10",
+                              title: "Photo Session",
+                              icon: "rundown-camera.png"
+                            },
+                            {
+                              time: "17.00",
+                              title: "Couple Send-Off",
+                              icon: "rundown-hands.png"
+                            }
+                          ];
+
+                          return rundownItems.map((item, idx) => {
+                            const imgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/${item.icon}?v=5`;
+                            return (
+                              <FadeIn key={idx} delay={0.3 + idx * 0.1} className="flex flex-col items-center text-center gap-2 sm:gap-3 group">
+                                {/* Icon Container */}
+                                <div className="relative w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 flex items-center justify-center mix-blend-multiply transition-transform duration-300 group-hover:scale-110">
+                                  <Image
+                                    src={imgUrl}
+                                    alt={item.title}
+                                    fill
+                                    className="object-contain"
+                                    sizes="(max-width: 640px) 64px, (max-width: 1024px) 96px, 112px"
+                                    unoptimized
+                                  />
+                                </div>
+
+                                {/* Time */}
+                                <p className="font-seasons text-[#4a3525] text-[clamp(11px,2.2vw,16px)] sm:text-base md:text-lg font-bold tracking-widest leading-none mt-1 sm:mt-2">
+                                  {item.time}
+                                </p>
+
+                                {/* Activity Title */}
+                                <p className="font-lekton italic text-[#4a3525]/90 text-[clamp(9px,1.8vw,13px)] sm:text-[11px] md:text-xs lg:text-sm tracking-wide leading-tight px-1">
+                                  {item.title}
+                                </p>
+                              </FadeIn>
+                            );
+                          });
+                        })()}
+                      </div>
+
+                      {/* Footer controls to navigate to Dining */}
+                      <div className="w-full flex flex-col items-center gap-6 mt-12 z-30">
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 0.6, y: [0, 5, 0] }}
+                          transition={{ delay: 1.1, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                          className="flex flex-col items-center gap-1 cursor-pointer"
+                          onClick={() => {
+                            rundownOverlayDiningRef.current?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                        >
+                          <span className="text-[8px] font-sans tracking-[0.25em] text-[#4a3525]/40 uppercase">Scroll Down</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#4a3525]/40">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </motion.div>
+
+                        <FadeIn delay={1.1}>
+                          <button
+                            onClick={() => rundownOverlayDiningRef.current?.scrollIntoView({ behavior: "smooth" })}
+                            className="font-lekton text-[#4a3525] text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.25em] border-b border-[#4a3525]/60 pb-1 hover:text-[#4a3525]/80 hover:border-[#4a3525]/80 transition-all cursor-pointer"
+                          >
+                            Dining &gt;&gt;
+                          </button>
+                        </FadeIn>
+                      </div>
+
                     </div>
+                  </div>
+
+                  {/* SLIDE 2: Dining Schedule */}
+                  <div
+                    ref={rundownOverlayDiningRef}
+                    className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 flex flex-col justify-start bg-[#363D22] px-4 sm:px-6 md:px-8 pt-24 pb-16 lg:py-16"
+                  >
+                    {/* Back to Rundown at the top of Dining slide */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 0.6, y: [0, -5, 0] }}
+                      transition={{ delay: 1.1, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                      className="w-full flex flex-col items-center gap-1 cursor-pointer z-30 mb-8"
+                      onClick={() => {
+                        rundownOverlayRundownRef.current?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#e2ddc7]/40">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                      </svg>
+                      <span className="text-[8px] font-sans tracking-[0.25em] text-[#e2ddc7]/40 uppercase">Back to Rundown</span>
+                    </motion.div>
+
+                    {/* Content wrapper */}
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center max-w-5xl w-full mx-auto gap-4 sm:gap-6 md:gap-16 px-4 md:px-8 lg:py-0">
+                      
+                      {/* Left Column: Title & Schedule */}
+                      <div className="flex flex-col items-start w-full md:w-[50%] select-none">
+                        {/* Title */}
+                        <FadeIn delay={0.2} className="text-left mb-4 sm:mb-8 md:mb-10">
+                          <h2 className="font-seasons text-[#e2ddc7] text-[clamp(32px,6.5vw,56px)] font-normal uppercase tracking-[0.1em] leading-[1.1]">
+                            DINING<br />SCHEDULE
+                          </h2>
+                        </FadeIn>
+
+                        {/* Dining Schedule List */}
+                        <div className="flex flex-col w-full text-[#e2ddc7]/95 text-left border-t border-[#e2ddc7]/20 pt-1">
+                          {(() => {
+                            const diningItems = [
+                              { time: "15.00", title: "Canapés & Welcome Drinks" },
+                              { time: "15.20", title: "Starter Served" },
+                              { time: "15.45", title: "Main Course Served" },
+                              { time: "16.15", title: "Dessert" }
+                            ];
+
+                            return diningItems.map((item, idx) => (
+                              <FadeIn
+                                key={idx}
+                                delay={0.3 + idx * 0.1}
+                                className="flex justify-between items-center py-2.5 sm:py-4.5 border-b border-[#e2ddc7]/20"
+                              >
+                                <span className="font-seasons text-[clamp(12px,2vw,16px)] sm:text-base font-bold tracking-widest text-[#e2ddc7] w-[20%]">
+                                  {item.time}
+                                </span>
+                                <span className="font-seasons text-[clamp(11px,1.8vw,15px)] sm:text-md tracking-wider text-[#e2ddc7]/90 w-[80%] text-left pl-4 sm:pl-8">
+                                  {item.title}
+                                </span>
+                              </FadeIn>
+                            ));
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Right Column: Portrait Couple Photo */}
+                      <div className="w-full md:w-[50%] flex items-center justify-center select-none overflow-hidden max-h-[35dvh] md:max-h-none">
+                        <FadeIn
+                          delay={0.4}
+                          className="relative w-[75vw] sm:w-[60vw] md:w-full max-w-[420px] aspect-[3/4] overflow-hidden rounded-2xl md:rounded-[2.5rem]"
+                        >
+                          <Image
+                            src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/dining-schedule-photo.jpg`}
+                            alt="Couple dining preview"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 75vw, 45vw"
+                            unoptimized
+                          />
+                        </FadeIn>
+                      </div>
+
+                    </div>
+
+                    {/* Home Page control */}
+                    <FadeIn delay={1.1} className="w-full flex justify-center mt-12 z-40">
+                      <button
+                        onClick={() => setShowRundownOverlay(false)}
+                        className="font-lekton text-[#e2ddc7] text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.25em] border-b border-[#e2ddc7]/60 pb-1 hover:text-[#e2ddc7]/80 hover:border-[#e2ddc7]/80 transition-all cursor-pointer"
+                      >
+                        Home Page &gt;&gt;
+                      </button>
+                    </FadeIn>
+
                   </div>
 
                 </div>
