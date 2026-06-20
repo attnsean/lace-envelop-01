@@ -10,7 +10,6 @@ const wanitaImg = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=8
 const bgImg12 = "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop";
 const bgImg3 = "https://images.unsplash.com/photo-1519225495810-7517c24a2ed3?q=80&w=1200&auto=format&fit=crop"; // Used for Reception
 const bgImgCeremony = "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop"; // Used for Ceremony
-const bgImg4 = "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=1200&auto=format&fit=crop"; // Used for Wedding Gift
 const slide4Img = "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1200&auto=format&fit=crop"; // Used for Dress Code
 
 import Slideshow from "./Slideshow";
