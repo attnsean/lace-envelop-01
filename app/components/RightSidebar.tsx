@@ -945,7 +945,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             {/* Desktop: side-by-side layout */}
             <div className="hidden md:flex w-full h-[100dvh] flex-row">
               {/* Left Column (Registry title and bird) - Desktop */}
-              <div className="w-[45%] h-full flex flex-col items-center justify-center p-12 text-center relative">
+              <div className="w-[40%] xl:w-[45%] h-full flex flex-col items-center justify-center p-8 xl:p-12 text-center relative">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -981,7 +981,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               </div>
 
               {/* Right Column (Message and Doily bank details card) - Desktop */}
-              <div className="w-[55%] h-full flex flex-col items-start justify-center p-12 text-left space-y-8">
+              <div className="w-[60%] xl:w-[55%] h-full flex flex-col items-start justify-center p-8 xl:p-12 text-left space-y-6 xl:space-y-8">
                 <div className="space-y-4 max-w-md lg:max-w-lg">
                   <FadeIn delay={0.3}>
                     <h4 className="font-seasons text-[clamp(26px,2vw,36px)] leading-[1.3] text-[#4A3E3D] font-normal">
@@ -996,12 +996,13 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 </div>
 
                 <div className="w-full flex justify-start">
-                  <div className="flex flex-col sm:flex-row gap-4 w-full justify-start overflow-x-auto no-scrollbar">
+                  <div className="flex flex-row gap-4 xl:gap-6 w-full justify-start">
                     {(() => {
                       const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
                         ? project.payment_accounts
                         : [
-                            { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" }
+                            { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" },
+                            { bank_name: "BCA", bank_account: "0131800826", owner_name: "JOVITA LOLA E" }
                           ]) as PaymentAccount[];
 
                       return paymentAccounts.map((acc, i) => {
@@ -1016,39 +1017,39 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 * i }}
-                            className="relative shrink-0"
+                            className="relative flex-1 min-w-[240px] max-w-[480px]"
                           >
                             <motion.div
                               animate={{ y: [-4, 4, -4] }}
                               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
-                              className="relative w-[560px] h-[345px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
+                              className="relative w-full aspect-[560/345] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
                             >
                               <Image
                                 src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
                                 alt="Lace Card Frame"
                                 fill
-                                sizes="560px"
+                                sizes="(max-width: 1280px) 400px, 480px"
                                 className="object-contain pointer-events-none select-none"
                                 unoptimized
                               />
                               <div 
-                                className="relative z-10 flex flex-col items-center justify-center text-center p-4 -mt-2 w-[80%] h-[75%] origin-center"
+                                className="relative z-10 flex flex-col items-center justify-center text-center p-4 -mt-2 w-[85%] h-[80%] origin-center"
                                 style={{ transform: "rotate(-3.5deg)" }}
                               >
-                                <span className="text-[clamp(15px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
+                                <span className="text-[clamp(11px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                                   {bankName}
                                 </span>
-                                <span className="text-[clamp(22px,1.8vw,26px)] font-normal text-[#4A3E3D] mt-2 mb-2 tracking-wide truncate max-w-full">
+                                <span className="text-[clamp(15px,1.8vw,26px)] font-normal text-[#4A3E3D] mt-[clamp(4px,0.6vw,12px)] mb-[clamp(4px,0.6vw,12px)] tracking-wide truncate max-w-full">
                                   {ownerName}
                                 </span>
-                                <span className="font-lekton italic text-[clamp(17px,1.4vw,20px)] text-[#4A3E3D] tracking-[0.12em] mb-4 select-text">
+                                <span className="font-lekton italic text-[clamp(13px,1.4vw,20px)] text-[#4A3E3D] tracking-[0.12em] mb-[clamp(6px,1vw,20px)] select-text">
                                   {accountNo}
                                 </span>
                                 <button
                                   onClick={() => copyToClipboard(accountNo)}
-                                  className="font-lekton text-white text-[clamp(13px,1.1vw,15px)] tracking-[0.2em] uppercase px-10 py-2.5 bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md"
+                                  className="font-lekton text-white text-[clamp(10px,1vw,14px)] tracking-[0.2em] uppercase px-[clamp(16px,2.5vw,40px)] py-[clamp(6px,0.8vw,10px)] bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md mt-1 xl:mt-3"
                                 >
                                   Copy
                                 </button>
@@ -1127,7 +1128,8 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                     const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
                       ? project.payment_accounts
                       : [
-                          { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" }
+                          { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" },
+                          { bank_name: "BCA", bank_account: "0131800826", owner_name: "JOVITA LOLA E" }
                         ]) as PaymentAccount[];
 
                     return paymentAccounts.map((acc, i) => {
