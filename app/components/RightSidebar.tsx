@@ -83,6 +83,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   const [showQRModal, setShowQRModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const thankYouVideoRef = useRef<HTMLVideoElement>(null);
   const meetCoupleRef = useRef<HTMLDivElement>(null);
   const videoSectionRef = useRef<HTMLDivElement>(null);
   const brideGroomSectionRef = useRef<HTMLDivElement>(null);
@@ -90,13 +91,19 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   const rundownSectionRef = useRef<HTMLDivElement>(null);
   const diningScheduleSectionRef = useRef<HTMLDivElement>(null);
   const rundownOverlayRundownRef = useRef<HTMLDivElement>(null);
+  const rundownOverlaySummaryRef = useRef<HTMLDivElement>(null);
   const rundownOverlayDiningRef = useRef<HTMLDivElement>(null);
+  const gallerySectionRef = useRef<HTMLDivElement>(null);
   const bgMusicWasPlayingRef = useRef(false);
 
   const [giftItems, setGiftItems] = useState<GiftItem[]>([]);
   const [giftLoading, setGiftLoading] = useState(true);
   const [activeGiftIndex, setActiveGiftIndex] = useState(0);
   const [selectedGiftForQR, setSelectedGiftForQR] = useState<GiftItem | null>(null);
+
+  const [leftGalleryIdx, setLeftGalleryIdx] = useState(0);
+  const [rightGalleryIdx, setRightGalleryIdx] = useState(0);
+
 
   const defaultSealSrc = `https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/c6d00359-becb-4f70-ab00-ff8f8530d546/f93ad18d-cba2-4de0-a86b-b1fadf2783a2/wax-seal.png`;
   const [sealSrc, setSealSrc] = useState(defaultSealSrc);
@@ -177,6 +184,17 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
   }, [showLoveFiles]);
 
   useEffect(() => {
+    if (!isOpen) {
+      if (videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+      if (thankYouVideoRef.current && !thankYouVideoRef.current.paused) {
+        thankYouVideoRef.current.pause();
+      }
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     async function fetchGifts() {
       if (!project?.id) {
         setGiftLoading(false);
@@ -217,6 +235,16 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
       .map((p) => typeof p === 'string' ? p : p?.url || p?.public_url)
       .filter((url): url is string => typeof url === 'string' && !!url)
     : (project ? [] : fragments);
+
+  const leftImages = React.useMemo(() => {
+    return galleryImages.length > 0 ? galleryImages.slice(0, Math.min(7, galleryImages.length)) : [];
+  }, [galleryImages]);
+
+  const rightImages = React.useMemo(() => {
+    return galleryImages.length > 7 
+      ? galleryImages.slice(7, Math.min(12, galleryImages.length)) 
+      : (galleryImages.length > 1 ? galleryImages.slice(1, Math.min(6, galleryImages.length)) : []);
+  }, [galleryImages]);
 
   const slideshowImages = React.useMemo(() => {
     const list: string[] = [];
@@ -277,6 +305,21 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
     const wDate = dateStr ? new Date(dateStr) : new Date("2026-04-25");
     if (isNaN(wDate.getTime())) return "Saturday, 25 April 2026";
     return wDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  const formatIndonesianDate = (dateStr?: string | null) => {
+    const wDate = dateStr ? new Date(dateStr) : new Date("2026-08-08");
+    if (isNaN(wDate.getTime())) return "Sabtu, 8 Agustus 2026";
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const months = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const dayName = days[wDate.getDay()];
+    const day = wDate.getDate();
+    const monthName = months[wDate.getMonth()];
+    const year = wDate.getFullYear();
+    return `${dayName}, ${day} ${monthName} ${year}`;
   };
 
   const formatEventDate = (dateStr: string) => {
@@ -954,10 +997,10 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                   className="flex flex-col items-center select-none"
                 >
                   <span className="font-parfumerie text-[#4A3E3D] text-[clamp(100px,8vw,140px)] leading-none italic font-light z-10 -mb-6">
-                    Gift
+                    Hadiah
                   </span>
                   <h3 className="font-seasons text-[#4A3E3D] text-[clamp(55px,5vw,85px)] font-normal uppercase leading-none tracking-[0.08em] mb-8">
-                    REGISTRY
+                    PERNIKAHAN
                   </h3>
                   
                   {/* Bird illustration */}
@@ -981,28 +1024,28 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               </div>
 
               {/* Right Column (Message and Doily bank details card) - Desktop */}
-              <div className="w-[60%] xl:w-[55%] h-full flex flex-col items-start justify-center p-8 xl:p-12 text-left space-y-6 xl:space-y-8">
+              <div className="w-[60%] xl:w-[55%] h-full flex flex-col items-start justify-center pt-8 pb-8 pr-8 pl-2 xl:pt-12 xl:pb-12 xl:pr-12 xl:pl-4 text-left space-y-6 xl:space-y-8">
                 <div className="space-y-4 max-w-md lg:max-w-lg">
                   <FadeIn delay={0.3}>
-                    <h4 className="font-seasons text-[clamp(26px,2vw,36px)] leading-[1.3] text-[#4A3E3D] font-normal">
-                      Your presence at our wedding is the greatest gift of all.
+                    <h4 className="font-seasons text-[clamp(24px,2vw,32px)] leading-[1.3] text-[#4A3E3D] font-normal">
+                      Kehadiran Anda merupakan kebahagiaan terbesar bagi kami.
                     </h4>
                   </FadeIn>
                   <FadeIn delay={0.4}>
-                    <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(14px,1.2vw,16px)] leading-relaxed font-light text-left">
-                      For family and friends who have kindly asked about wedding gifts, we truly appreciate your generosity and thoughtfulness. Should you wish to bless us with a gift, a contribution through the following registry would be warmly appreciated as we begin this new chapter together.
+                    <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(13px,1.1vw,15px)] leading-relaxed font-light text-left">
+                      Bagi keluarga dan sahabat yang berkenan memberikan tanda kasih untuk pernikahan kami, kami mengucapkan terima kasih atas segala doa, perhatian, dan kebaikan yang diberikan. Apabila Anda ingin memberikan hadiah, kami dengan senang hati menerima melalui informasi berikut:
                     </p>
                   </FadeIn>
                 </div>
 
                 <div className="w-full flex justify-start">
-                  <div className="flex flex-row gap-4 xl:gap-6 w-full justify-start">
+                  <div className="flex flex-row gap-2 xl:gap-2.5 w-full justify-start">
                     {(() => {
                       const paymentAccounts = (project?.payment_accounts && Array.isArray(project.payment_accounts) && project.payment_accounts.length > 0
                         ? project.payment_accounts
                         : [
                             { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" },
-                            { bank_name: "BCA", bank_account: "0131800826", owner_name: "JOVITA LOLA E" }
+                            { bank_name: "BCA", bank_account: "0131800826", owner_name: "JOVITA LOLA EDRIA" }
                           ]) as PaymentAccount[];
 
                       return paymentAccounts.map((acc, i) => {
@@ -1017,7 +1060,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 * i }}
-                            className="relative flex-1 min-w-[240px] max-w-[480px]"
+                            className="relative w-[304px] xl:w-[330px] flex-none"
                           >
                             <motion.div
                               animate={{ y: [-4, 4, -4] }}
@@ -1038,18 +1081,18 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                                 className="relative z-10 flex flex-col items-center justify-center text-center p-4 -mt-2 w-[85%] h-[80%] origin-center"
                                 style={{ transform: "rotate(-3.5deg)" }}
                               >
-                                <span className="text-[clamp(11px,1.2vw,18px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
+                                <span className="text-[clamp(10px,1.1vw,13px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                                   {bankName}
                                 </span>
-                                <span className="text-[clamp(15px,1.8vw,26px)] font-normal text-[#4A3E3D] mt-[clamp(4px,0.6vw,12px)] mb-[clamp(4px,0.6vw,12px)] tracking-wide truncate max-w-full">
+                                <span className="text-[clamp(11px,1.2vw,15px)] font-normal text-[#4A3E3D] mt-[clamp(1px,0.2vw,4px)] mb-[clamp(1px,0.2vw,4px)] tracking-wide text-center w-full whitespace-normal break-words px-2 leading-tight">
                                   {ownerName}
                                 </span>
-                                <span className="font-lekton italic text-[clamp(13px,1.4vw,20px)] text-[#4A3E3D] tracking-[0.12em] mb-[clamp(6px,1vw,20px)] select-text">
+                                <span className="font-lekton italic text-[clamp(11px,1.2vw,14px)] text-[#4A3E3D] tracking-[0.12em] mb-[clamp(2px,0.4vw,8px)] select-text">
                                   {accountNo}
                                 </span>
                                 <button
                                   onClick={() => copyToClipboard(accountNo)}
-                                  className="font-lekton text-white text-[clamp(10px,1vw,14px)] tracking-[0.2em] uppercase px-[clamp(16px,2.5vw,40px)] py-[clamp(6px,0.8vw,10px)] bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-md mt-1 xl:mt-3"
+                                  className="font-lekton text-white text-[clamp(7px,0.75vw,10px)] tracking-[0.2em] uppercase px-[clamp(10px,1.5vw,22px)] py-[clamp(1.5px,0.25vw,4px)] bg-[#4A2511] hover:bg-[#3D1E0E] active:scale-95 rounded-full transition-all duration-300 cursor-pointer shadow-sm mt-0.5"
                                 >
                                   Copy
                                 </button>
@@ -1075,10 +1118,10 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                 className="flex flex-col items-center select-none"
               >
                 <span className="font-parfumerie text-[#4A3E3D] text-[56px] leading-none italic font-light z-10 -mb-2">
-                  Gift
+                  Hadiah
                 </span>
                 <h3 className="font-seasons text-[#4A3E3D] text-[32px] font-normal uppercase leading-none tracking-[0.08em]">
-                  REGISTRY
+                  PERNIKAHAN
                 </h3>
               </motion.div>
 
@@ -1110,13 +1153,13 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               {/* Message */}
               <div className="space-y-3 max-w-xs text-center">
                 <FadeIn delay={0.3}>
-                  <h4 className="font-seasons text-[20px] leading-[1.35] text-[#4A3E3D] font-normal">
-                    Your presence at our wedding is the greatest gift of all.
+                  <h4 className="font-seasons text-[18px] leading-[1.35] text-[#4A3E3D] font-normal">
+                    Kehadiran Anda merupakan kebahagiaan terbesar bagi kami.
                   </h4>
                 </FadeIn>
                 <FadeIn delay={0.4}>
                   <p className="font-lekton text-[#4A3E3D]/80 text-[12px] leading-[1.7] font-light text-justify">
-                    For family and friends who have kindly asked about wedding gifts, we truly appreciate your generosity and thoughtfulness. Should you wish to bless us with a gift, a contribution through the following registry would be warmly appreciated as we begin this new chapter together.
+                    Bagi keluarga dan sahabat yang berkenan memberikan tanda kasih untuk pernikahan kami, kami mengucapkan terima kasih atas segala doa, perhatian, dan kebaikan yang diberikan. Apabila Anda ingin memberikan hadiah, kami dengan senang hati menerima melalui informasi berikut.
                   </p>
                 </FadeIn>
               </div>
@@ -1129,7 +1172,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                       ? project.payment_accounts
                       : [
                           { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" },
-                          { bank_name: "BCA", bank_account: "0131800826", owner_name: "JOVITA LOLA E" }
+                          { bank_name: "BCA", bank_account: "0131800826", owner_name: "JOVITA LOLA EDRIA" }
                         ]) as PaymentAccount[];
 
                     return paymentAccounts.map((acc, i) => {
@@ -1167,7 +1210,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                               <span className="text-[13px] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                                 {bankName}
                               </span>
-                              <span className="text-[18px] font-normal text-[#4A3E3D] mt-0.5 mb-1 tracking-wide truncate max-w-full">
+                              <span className="text-[18px] font-normal text-[#4A3E3D] mt-0.5 mb-1 tracking-wide text-center w-full truncate px-2">
                                 {ownerName}
                               </span>
                               <span className="font-lekton italic text-[15px] text-[#4A3E3D] tracking-[0.12em] mb-2 select-text">
@@ -1706,35 +1749,81 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
         {/* === HIDDEN SECTIONS END === */}
 
         {/* SECTION 12: Closing & Copyright */}
-        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center bg-neutral-950 px-8 text-center border-t border-white/5">
-          <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-serif text-[#979e6c] tracking-widest mb-8 uppercase drop-shadow-[0_0_15px_rgba(151, 158, 108,0.3)]">Thank You</h2>
-          </FadeIn>
+        <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-between bg-neutral-950 px-8 py-10 md:py-16 text-center border-t border-white/5">
+          <div className="flex flex-col items-center justify-center flex-grow gap-4 md:gap-6 w-full max-w-2xl mx-auto">
+            <FadeIn>
+              <h2 className="text-2xl md:text-4xl font-serif text-[#979e6c] tracking-widest uppercase drop-shadow-[0_0_15px_rgba(151, 158, 108,0.3)]">Thank You</h2>
+            </FadeIn>
 
-          <FadeIn delay={0.2} className="max-w-md">
-            <p className="text-xs md:text-sm font-sans font-light leading-relaxed text-gray-300 mb-12">
-              It is a joy to share this beautiful chapter of our lives with you. Your presence and blessings mean the world to us.
-            </p>
-          </FadeIn>
-
-          <FadeIn delay={0.4}>
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 uppercase font-bold">With Love</span>
-              <p className="text-2xl md:text-3xl font-script text-white mt-2">
-                {project?.groom_nickname || "Luqman"} & {project?.bride_nickname || "Jovita"}
+            <FadeIn delay={0.2} className="max-w-md">
+              <p className="text-[11px] md:text-sm font-sans font-light leading-relaxed text-gray-300">
+                It is a joy to share this beautiful chapter of our lives with you. Your presence and blessings mean the world to us.
               </p>
-            </div>
-          </FadeIn>
+            </FadeIn>
 
-          <FadeIn delay={0.6} className="absolute bottom-10 left-0 right-0 flex flex-col items-center opacity-60 hover:opacity-100 transition-opacity duration-500">
-            <div className="h-[1px] w-12 bg-white/30 mb-4"></div>
+            <FadeIn delay={0.4}>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[9px] md:text-xs tracking-[0.4em] text-white/50 uppercase font-bold">With Love</span>
+                <p className="text-2xl md:text-3xl font-script text-white mt-1">
+                  {project?.groom_nickname || "Luqman"} & {project?.bride_nickname || "Jovita"}
+                </p>
+                <p className="font-seasons text-xs tracking-[0.3em] text-[#979e6c] font-semibold mt-2">
+                  #MANtracinTA
+                </p>
+              </div>
+            </FadeIn>
+
+            {/* Video Player */}
+            <FadeIn delay={0.5} className="w-full max-w-[280px] xs:max-w-[320px] sm:max-w-[400px] md:max-w-[480px] aspect-video relative rounded-xl overflow-hidden border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
+              <video
+                ref={thankYouVideoRef}
+                className="w-full h-full object-cover"
+                controls
+                playsInline
+                preload="metadata"
+                onPlay={() => {
+                  if (audioRef.current && !audioRef.current.paused) {
+                    audioRef.current.pause();
+                    bgMusicWasPlayingRef.current = true;
+                    setIsPlaying(false);
+                  }
+                  if (videoRef.current && !videoRef.current.paused) {
+                    videoRef.current.pause();
+                  }
+                }}
+                onPause={() => {
+                  if (bgMusicWasPlayingRef.current && audioRef.current) {
+                    audioRef.current.play().catch(e => console.error("Error resuming audio on pause:", e));
+                    bgMusicWasPlayingRef.current = false;
+                    setIsPlaying(true);
+                  }
+                }}
+                onEnded={() => {
+                  if (bgMusicWasPlayingRef.current && audioRef.current) {
+                    audioRef.current.play().catch(e => console.error("Error resuming audio on end:", e));
+                    bgMusicWasPlayingRef.current = false;
+                    setIsPlaying(true);
+                  }
+                }}
+              >
+                <source
+                  src="/video-teaser.mp4"
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+            </FadeIn>
+          </div>
+
+          <FadeIn delay={0.6} className="w-full flex flex-col items-center opacity-60 hover:opacity-100 transition-opacity duration-500 mt-6">
+            <div className="h-[1px] w-12 bg-white/30 mb-3"></div>
             <p className="text-[8px] md:text-[9px] font-sans tracking-[0.3em] text-white uppercase font-bold">
               Designed & Crafted by
             </p>
-            <p className="text-[10px] md:text-xs font-serif tracking-widest text-[#979e6c] mt-1.5 font-bold">
+            <p className="text-[10px] md:text-xs font-serif tracking-widest text-[#979e6c] mt-1 font-bold">
               SERA STORY
             </p>
-            <p className="text-[7px] md:text-[8px] font-sans tracking-[0.2em] text-white/50 mt-1 uppercase">
+            <p className="text-[7px] md:text-[8px] font-sans tracking-[0.2em] text-white/50 mt-0.5 uppercase">
               © {new Date().getFullYear()} All Rights Reserved.
             </p>
           </FadeIn>
@@ -1830,6 +1919,9 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               >
                 Entry Code
               </button>
+              <p className="font-seasons text-[11px] tracking-[0.25em] text-white/70 font-semibold mt-8 select-none">
+                #MANtracinTA
+              </p>
             </motion.div>
           </div>
         </div>
@@ -1902,7 +1994,7 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl"
+            className="fixed inset-0 z-[150] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl"
           >
             {/* Top Bar with Close Button */}
             <div className="absolute top-0 w-full p-4 md:p-6 flex justify-between items-center z-50">
@@ -2255,6 +2347,9 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                               bgMusicWasPlayingRef.current = true;
                               setIsPlaying(false);
                             }
+                            if (thankYouVideoRef.current && !thankYouVideoRef.current.paused) {
+                              thankYouVideoRef.current.pause();
+                            }
                           }}
                           onPause={() => {
                             if (bgMusicWasPlayingRef.current && audioRef.current) {
@@ -2506,18 +2601,223 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                         </FadeIn>
                       </div>
 
-                      {/* Footer controls in Slide 4 flow */}
-                      <div className="w-full flex flex-col items-center gap-6 mt-12 z-30">
-                        <FadeIn delay={1.2}>
-                          <button
-                            onClick={() => setShowLoveFiles(false)}
-                            className="font-lekton text-[#e2ddc7] text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.25em] border-b border-[#e2ddc7]/60 pb-1 hover:text-[#e2ddc7]/80 hover:border-[#e2ddc7]/80 transition-all cursor-pointer"
-                          >
-                            Home Page &gt;&gt;
-                          </button>
-                        </FadeIn>
+                      {/* Scroll down indicator to Slide 5 (Gallery) */}
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 0.6, y: [0, 5, 0] }}
+                        transition={{ opacity: { delay: 1.0 }, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                        className="w-full flex flex-col items-center gap-1 cursor-pointer z-30 mt-12"
+                        onClick={() => {
+                          gallerySectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      >
+                        <span className="text-[8px] font-sans tracking-[0.25em] text-[#e2ddc7]/40 uppercase">Scroll Down to Gallery</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#e2ddc7]/40">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </motion.div>
+
+                    </div>
+                  </div>
+
+                  {/* SLIDE 5: Our Gallery */}
+                  <div
+                    ref={gallerySectionRef}
+                    className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 flex flex-col items-center justify-start bg-[#5E3D22] px-6 sm:px-12 pt-24 pb-16"
+                  >
+                    <div className="relative z-10 flex flex-col items-center justify-center max-w-4xl mx-auto text-center select-none w-full">
+                      {/* Title */}
+                      <FadeIn delay={0.2}>
+                        <h2 className="font-parfumerie text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-light tracking-wide leading-none mb-2 drop-shadow-md">
+                          Our Gallery
+                        </h2>
+                        <p className="font-seasons text-[#e2ddc7]/85 font-semibold text-[clamp(11px,2.2vw,14px)] tracking-[0.2em] mb-8">
+                          #MANtracinTA
+                        </p>
+                      </FadeIn>
+
+                      {/* Two Columns for Desktop / Stacked for Mobile */}
+                      <div className="flex flex-col md:flex-row gap-8 justify-center items-center w-full mt-4">
+                        {/* Left Card: 7 photos slider */}
+                        {leftImages.length > 0 && (
+                          <FadeIn delay={0.4} className="w-full max-w-[320px]">
+                            <div className="relative w-full aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group bg-black/25">
+                              {/* Active Image */}
+                              <Image
+                                src={leftImages[leftGalleryIdx]}
+                                alt={`Gallery left ${leftGalleryIdx + 1}`}
+                                fill
+                                className="object-cover transition-all duration-700 select-none pointer-events-none"
+                                unoptimized={typeof leftImages[leftGalleryIdx] === 'string'}
+                                sizes="320px"
+                              />
+
+                              {/* Dark Bottom Overlay */}
+                              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/45 to-transparent pointer-events-none z-10" />
+
+                              {/* Controls */}
+                              <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col z-20">
+                                {/* Story progress indicators */}
+                                <div className="flex gap-1 w-full mb-3">
+                                  {leftImages.map((_, idx) => (
+                                    <div 
+                                      key={idx} 
+                                      className={`h-[2px] flex-1 rounded-full transition-all duration-300 ${idx === leftGalleryIdx ? 'bg-white' : 'bg-white/30'}`}
+                                    />
+                                  ))}
+                                </div>
+
+                                <div className="flex flex-row justify-between items-center text-white">
+                                  {/* Left/Right Page controls */}
+                                  <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm text-[11px] font-sans">
+                                    <button 
+                                      onClick={() => setLeftGalleryIdx((prev) => (prev === 0 ? leftImages.length - 1 : prev - 1))}
+                                      className="hover:scale-125 transition-transform cursor-pointer p-0.5 active:scale-95"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                      </svg>
+                                    </button>
+                                    <span className="min-w-[28px] text-center select-none font-medium">
+                                      {leftGalleryIdx + 1} / {leftImages.length}
+                                    </span>
+                                    <button 
+                                      onClick={() => setLeftGalleryIdx((prev) => (prev === leftImages.length - 1 ? 0 : prev + 1))}
+                                      className="hover:scale-125 transition-transform cursor-pointer p-0.5 active:scale-95"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                      </svg>
+                                    </button>
+                                  </div>
+
+                                  {/* Right side helper icons */}
+                                  <div className="flex items-center gap-3 text-white/80">
+                                    <button 
+                                      onClick={() => {
+                                        const globalIdx = galleryImages.indexOf(leftImages[leftGalleryIdx]);
+                                        if (globalIdx !== -1) openLightbox(globalIdx);
+                                      }}
+                                      className="hover:text-white transition-colors cursor-pointer"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                                      </svg>
+                                    </button>
+                                    <span className="opacity-50 select-none">• • •</span>
+                                    <button 
+                                      onClick={() => {
+                                        const globalIdx = galleryImages.indexOf(leftImages[leftGalleryIdx]);
+                                        if (globalIdx !== -1) openLightbox(globalIdx);
+                                      }}
+                                      className="hover:text-white transition-colors cursor-pointer"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v6.5m0-6.5h6.5m-6.5 0L9 9M20.25 3.75v6.5m0-6.5h-6.5m6.5 0l-5.25 5.25m-11.25 11.25v-6.5m0 6.5h6.5m-6.5 0l5.25-5.25m11.25 11.25v-6.5m0 6.5h-6.5m6.5 0l-5.25-5.25" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </FadeIn>
+                        )}
+
+                        {/* Right Card: 5 photos slider */}
+                        {rightImages.length > 0 && (
+                          <FadeIn delay={0.6} className="w-full max-w-[320px]">
+                            <div className="relative w-full aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group bg-black/25">
+                              {/* Active Image */}
+                              <Image
+                                src={rightImages[rightGalleryIdx]}
+                                alt={`Gallery right ${rightGalleryIdx + 1}`}
+                                fill
+                                className="object-cover transition-all duration-700 select-none pointer-events-none"
+                                unoptimized={typeof rightImages[rightGalleryIdx] === 'string'}
+                                sizes="320px"
+                              />
+
+                              {/* Dark Bottom Overlay */}
+                              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/45 to-transparent pointer-events-none z-10" />
+
+                              {/* Controls */}
+                              <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col z-20">
+                                {/* Story progress indicators */}
+                                <div className="flex gap-1 w-full mb-3">
+                                  {rightImages.map((_, idx) => (
+                                    <div 
+                                      key={idx} 
+                                      className={`h-[2px] flex-1 rounded-full transition-all duration-300 ${idx === rightGalleryIdx ? 'bg-white' : 'bg-white/30'}`}
+                                    />
+                                  ))}
+                                </div>
+
+                                <div className="flex flex-row justify-between items-center text-white">
+                                  {/* Left/Right Page controls */}
+                                  <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm text-[11px] font-sans">
+                                    <button 
+                                      onClick={() => setRightGalleryIdx((prev) => (prev === 0 ? rightImages.length - 1 : prev - 1))}
+                                      className="hover:scale-125 transition-transform cursor-pointer p-0.5 active:scale-95"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                      </svg>
+                                    </button>
+                                    <span className="min-w-[28px] text-center select-none font-medium">
+                                      {rightGalleryIdx + 1} / {rightImages.length}
+                                    </span>
+                                    <button 
+                                      onClick={() => setRightGalleryIdx((prev) => (prev === rightImages.length - 1 ? 0 : prev + 1))}
+                                      className="hover:scale-125 transition-transform cursor-pointer p-0.5 active:scale-95"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                      </svg>
+                                    </button>
+                                  </div>
+
+                                  {/* Right side helper icons */}
+                                  <div className="flex items-center gap-3 text-white/80">
+                                    <button 
+                                      onClick={() => {
+                                        const globalIdx = galleryImages.indexOf(rightImages[rightGalleryIdx]);
+                                        if (globalIdx !== -1) openLightbox(globalIdx);
+                                      }}
+                                      className="hover:text-white transition-colors cursor-pointer"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                                      </svg>
+                                    </button>
+                                    <span className="opacity-50 select-none">• • •</span>
+                                    <button 
+                                      onClick={() => {
+                                        const globalIdx = galleryImages.indexOf(rightImages[rightGalleryIdx]);
+                                        if (globalIdx !== -1) openLightbox(globalIdx);
+                                      }}
+                                      className="hover:text-white transition-colors cursor-pointer"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v6.5m0-6.5h6.5m-6.5 0L9 9M20.25 3.75v6.5m0-6.5h-6.5m6.5 0l-5.25 5.25m-11.25 11.25v-6.5m0 6.5h6.5m-6.5 0l5.25-5.25m11.25 11.25v-6.5m0 6.5h-6.5m6.5 0l-5.25-5.25" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </FadeIn>
+                        )}
                       </div>
 
+                      {/* Footer Link: Halaman Utama */}
+                      <FadeIn delay={0.8} className="w-full flex flex-col items-center mt-12 z-30">
+                        <button
+                          onClick={() => setShowLoveFiles(false)}
+                          className="font-lekton text-[#e2ddc7] text-[clamp(11px,1.8vw,14px)] uppercase tracking-[0.25em] border-b border-[#e2ddc7]/60 pb-1 hover:text-[#e2ddc7]/80 hover:border-[#e2ddc7]/80 transition-all cursor-pointer"
+                        >
+                          HALAMAN UTAMA &gt;&gt;
+                        </button>
+                      </FadeIn>
                     </div>
                   </div>
 
@@ -2543,6 +2843,22 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
               const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
               const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
               const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+              
+              const pigeonsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-pigeons.jpg`;
+              const firstEvent = events?.[0] || null;
+              const venueName = project?.venue_name || firstEvent?.venue_name || "Openaire Resto Bar Market Semarang";
+              const eventDateRaw = project?.wedding_date || firstEvent?.event_date || "2026-08-08";
+              const formattedIndoDate = formatIndonesianDate(eventDateRaw);
+              const latitude = firstEvent?.latitude;
+              const longitude = firstEvent?.longitude;
+              
+              const mapIframeSrc = latitude && longitude
+                ? `https://maps.google.com/maps?q=${latitude},${longitude}&hl=id&z=15&output=embed`
+                : firstEvent?.venue_maps_url || `https://maps.google.com/maps?q=-6.9538467,110.3767627&hl=id&z=15&output=embed`;
+              
+              const mapLinkUrl = firstEvent?.venue_maps_url || (latitude && longitude
+                ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+                : `https://www.google.com/maps/search/?api=1&query=-6.9538467,110.3767627`);
 
               return (
                 <div className="w-full h-full overflow-y-auto no-scrollbar snap-y snap-mandatory flex flex-col scrollbar-hide relative">
@@ -2558,11 +2874,140 @@ export default function RightSidebar({ guestName, guest, project, events, wishes
                     Back
                   </button>
 
-                  {/* SLIDE 1: Wedding Rundown */}
+                  {/* SLIDE 1: Detail Acara & Lokasi */}
+                  <div
+                    ref={rundownOverlaySummaryRef}
+                    className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 flex flex-col justify-center items-center bg-neutral-950 px-4 sm:px-6 md:px-8 py-16"
+                  >
+                    <div className="absolute inset-0 z-0 bg-black">
+                      <Image
+                        src={pigeonsImgUrl}
+                        alt="Background Acara & Lokasi"
+                        fill
+                        className="object-cover brightness-[0.45] select-none"
+                        draggable={false}
+                        unoptimized
+                      />
+                    </div>
+
+                    <div className="relative z-10 w-full flex flex-col items-center justify-between h-full py-12 px-6 sm:px-8 text-center text-white min-h-[100dvh]">
+                      <div className="h-6"></div> {/* spacer to avoid overlapping with floating back button */}
+
+                      <FadeIn>
+                        <h2 className="font-parfumerie text-[#e2ddc7] text-[clamp(36px,7.5vw,52px)] md:text-[clamp(56px,5vw,78px)] drop-shadow-md leading-none mb-2">
+                          Detail Acara & Lokasi
+                        </h2>
+                      </FadeIn>
+
+                      <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-16 w-full max-w-4xl flex-grow overflow-y-auto no-scrollbar py-4">
+                        {/* Left Column: Map with lace border */}
+                        <FadeIn delay={0.2} className="relative w-[70vw] h-[70vw] max-w-[240px] max-h-[240px] xs:max-w-[270px] xs:max-h-[270px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[350px] md:max-h-[350px] flex items-center justify-center drop-shadow-2xl">
+                          <Image
+                            src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/lace-frame.png`}
+                            alt="Lace Frame"
+                            fill
+                            className="object-contain pointer-events-none select-none z-10"
+                            unoptimized
+                          />
+                          <div 
+                            style={{ top: "17%", left: "17%", width: "66%", height: "66%" }}
+                            className="absolute overflow-hidden rounded-[8px] sm:rounded-[12px] md:rounded-[16px] z-30"
+                          >
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              style={{ border: 0 }}
+                              loading="lazy"
+                              allowFullScreen
+                              referrerPolicy="no-referrer-when-downgrade"
+                              src={mapIframeSrc}
+                            ></iframe>
+                          </div>
+                        </FadeIn>
+
+                        {/* Right Column: Text & Buttons */}
+                        <FadeIn delay={0.4} className="flex flex-col items-center justify-center text-center gap-4 max-w-md">
+                          <div className="flex flex-col items-center gap-2">
+                            <p className="font-seasons text-white/95 text-[clamp(14px,3vw,18px)] md:text-[clamp(18px,1.5vw,22px)] leading-relaxed tracking-wider font-medium">
+                              {venueName}
+                            </p>
+                            <a
+                              href={mapLinkUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block py-2.5 px-8 rounded-full bg-[#EAE3D2] text-[#333333] hover:bg-[#D8C4A9] transition-all duration-300 font-seasons text-[11px] tracking-[0.15em] uppercase shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 cursor-pointer mt-1"
+                            >
+                              Google Map
+                            </a>
+                          </div>
+
+                          <div className="w-12 h-[1px] bg-white/20 my-1"></div>
+
+                          <div className="flex flex-col items-center gap-2">
+                            <p className="font-seasons text-white/95 text-[clamp(14px,3vw,18px)] md:text-[clamp(18px,1.5vw,22px)] leading-relaxed tracking-wider font-medium">
+                              {formattedIndoDate}
+                            </p>
+                            <a
+                              href={getGoogleCalendarLink()}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block py-2.5 px-8 rounded-full bg-[#EAE3D2] text-[#333333] hover:bg-[#D8C4A9] transition-all duration-300 font-seasons text-[11px] tracking-[0.15em] uppercase shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 cursor-pointer mt-1"
+                            >
+                              Tambah ke Kalender
+                            </a>
+                          </div>
+                        </FadeIn>
+                      </div>
+
+                      {/* Footer controls to navigate to Rundown */}
+                      <div className="w-full flex flex-col items-center gap-4 z-30 mt-4">
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 0.6, y: [0, 5, 0] }}
+                          transition={{ delay: 0.8, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                          className="flex flex-col items-center gap-1 cursor-pointer"
+                          onClick={() => {
+                            rundownOverlayRundownRef.current?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                        >
+                          <span className="text-[8px] font-sans tracking-[0.25em] text-white/40 uppercase">Scroll Down</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white/40">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </motion.div>
+
+                        <FadeIn delay={0.8}>
+                          <button
+                            onClick={() => rundownOverlayRundownRef.current?.scrollIntoView({ behavior: "smooth" })}
+                            className="font-lekton text-white text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.25em] border-b border-white/60 pb-1 hover:text-white/80 hover:border-white/80 transition-all cursor-pointer"
+                          >
+                            Rundown &gt;&gt;
+                          </button>
+                        </FadeIn>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SLIDE 2: Wedding Rundown */}
                   <div
                     ref={rundownOverlayRundownRef}
                     className="relative w-full h-auto min-h-[100dvh] snap-start shrink-0 flex flex-col justify-start bg-[#e2ddc7] px-4 sm:px-6 md:px-8 pt-24 pb-16 lg:py-16"
                   >
+                    {/* Back to Location Summary at the top of Rundown slide */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 0.6, y: [0, -5, 0] }}
+                      transition={{ delay: 1.1, y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" } }}
+                      className="w-full flex flex-col items-center gap-1 cursor-pointer z-30 mb-8"
+                      onClick={() => {
+                        rundownOverlaySummaryRef.current?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-[#4a3525]/40">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                      </svg>
+                      <span className="text-[8px] font-sans tracking-[0.25em] text-[#4a3525]/40 uppercase">Back to Location</span>
+                    </motion.div>
                     {/* Content wrapper */}
                     <div className="relative z-10 flex flex-col items-center justify-center max-w-4xl w-full mx-auto text-center text-[#4a3525] select-none lg:py-0">
                       
