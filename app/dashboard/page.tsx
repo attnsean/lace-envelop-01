@@ -2196,12 +2196,13 @@ export default function RSVPDashboard() {
                           <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">Guest Name</th>
                           <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">{project?.question01_rsvp || "Are you coming?"}</th>
                           <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">{project?.question02_rsvp || "Dietary Restrictions"}</th>
+                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">Song Nomination</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-50">
                         {rsvpResponses.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300">
+                            <td colSpan={5} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300">
                               No custom responses found
                             </td>
                           </tr>
@@ -2221,7 +2222,18 @@ export default function RSVPDashboard() {
                               return msg;
                             };
 
+                            const parseSong = (msg: string) => {
+                              if (!msg) return "-";
+                              const match = msg.match(/Song:\s*(.*)/i);
+                              if (match) {
+                                const val = match[1].trim();
+                                return val === "-" ? "" : val;
+                              }
+                              return "";
+                            };
+
                             const answer2 = parseDietary(r.wishes || "");
+                            const answer3 = parseSong(r.wishes || "");
 
                             return (
                               <tr key={r.rsvp_id} className="group hover:bg-white/80 transition-all duration-300">
@@ -2237,6 +2249,7 @@ export default function RSVPDashboard() {
                                   </span>
                                 </td>
                                 <td className="p-6 text-neutral-600 font-semibold text-xs">{answer2 || "-"}</td>
+                                <td className="p-6 text-neutral-600 font-semibold text-xs">{answer3 || "-"}</td>
                               </tr>
                             );
                           })
