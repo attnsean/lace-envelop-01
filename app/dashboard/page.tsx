@@ -190,9 +190,7 @@ export default function RSVPDashboard() {
         const bNick = projectData.bride_nickname || "Bride";
         const gNick = projectData.groom_nickname || "Groom";
 
-        setMessageTemplate(
-          `*WEDDING INVITATION*\n\nShalom / Salam Sejahtera,\n\n“Two are better than one, because they have a good reward for their toil. For if they fall, one will lift up his fellow. But woe to him who is alone when he falls and has not another to lift him up.”\n(Ecclesiastes 4:9-10)\n\nWith great joy and without diminishing our respect, we would like to invite you to attend and give your blessings on the occasion of our wedding celebration:\n\n*${gName} & ${bName}*💍\n\nGod willing, the ceremony will be held on:\n\n*Holy Matrimony*\nSaturday, 25 April 2026\n10.00 WIB\n\n*Wedding Reception*\nSaturday, 25 April 2026\n12.00 WIB\n\nPlease visit the link below for complete wedding details:\n\n[wedding link]\n\nIt would be a great honor and happiness for us if you could attend and celebrate this special day with us.\n\nWarm regards,\n\n*${gNick} & ${bNick}*🤍`
-        );
+        setMessageTemplate("");
       }
 
       // 2. Fetch guests
