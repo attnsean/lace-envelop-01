@@ -106,6 +106,11 @@ export default function BlessingWall({
   const sec5Envelope = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projId}/sec5-envelope.png`;
   const sec5Couple = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projId}/sec5-couple.jpg`;
 
+  const q1Rsvp = project?.question01_rsvp || "Are you coming?";
+  const q2Rsvp = project?.question02_rsvp || "Let us know if you have any dietary restrictions.";
+  const a1Rsvp = project?.answer01_rsvp || "Absolutely, wouldn't miss it!";
+  const a2Rsvp = project?.answer02_rsvp || "Sadly cannot make it";
+
   // States
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -572,7 +577,7 @@ export default function BlessingWall({
                         {/* Attendance Options */}
                         <div className="space-y-2 md:space-y-1">
                           <label className="block font-sans text-xs md:text-[11px] font-medium text-[#3d332a] select-none">
-                            Are you coming?
+                            {q1Rsvp}
                           </label>
                           
                           {hasRsvpSubmitted ? (
@@ -592,7 +597,7 @@ export default function BlessingWall({
                                           : "bg-[#e4ded5] text-[#3d332a]"
                                       }`}
                                     >
-                                      <span>Absolutely, wouldn't miss it!</span>
+                                      <span>{a1Rsvp}</span>
                                       <span className="font-bold">{yesPercent}%</span>
                                     </div>
                                     
@@ -603,7 +608,7 @@ export default function BlessingWall({
                                           : "bg-[#e4ded5] text-[#3d332a]"
                                       }`}
                                     >
-                                      <span>Sadly cannot make it</span>
+                                      <span>{a2Rsvp}</span>
                                       <span className="font-bold">{noPercent}%</span>
                                     </div>
                                   </>
@@ -622,7 +627,7 @@ export default function BlessingWall({
                                     : "bg-[#e4ded5] text-[#3d332a] hover:bg-[#dcd7cb]"
                                 }`}
                               >
-                                Absolutely, wouldn't miss it!
+                                {a1Rsvp}
                               </button>
                               <button
                                 type="button"
@@ -633,7 +638,7 @@ export default function BlessingWall({
                                     : "bg-[#e4ded5] text-[#3d332a] hover:bg-[#dcd7cb]"
                                 }`}
                               >
-                                Sadly cannot make it
+                                {a2Rsvp}
                               </button>
                             </div>
                           )}
@@ -642,7 +647,7 @@ export default function BlessingWall({
                         {/* Dietary restrictions */}
                         <div className="space-y-1 md:space-y-0.5">
                           <label className="block font-sans text-xs md:text-[11px] font-medium text-[#3d332a] select-none">
-                            Let us know if you have any dietary restrictions.
+                            {q2Rsvp}
                           </label>
                           <input
                             type="text"

@@ -95,6 +95,10 @@ export interface DbProject {
   quote_intro_line1_highlight?: string | null;
   quote_intro_line2?: string | null;
   quote_intro_line2_highlight?: string | null;
+  question01_rsvp?: string | null;
+  question02_rsvp?: string | null;
+  answer01_rsvp?: string | null;
+  answer02_rsvp?: string | null;
   subscriptions?: {
     status: string;
     expires_at?: string | null;
