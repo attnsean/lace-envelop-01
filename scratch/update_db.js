@@ -20,22 +20,23 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const projectIds = ['6d889fed-efb5-4a32-97ce-16f74bce763c', 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'];
 
+const loveStoryText = `If someone had told us years ago that all the little moments would lead us here, we probably wouldn’t have believed them.
+
+Back then, we were simply part of each other’s daily routines   just coworkers sharing ordinary days at the office before life eventually moved us onto different paths. When Luqman left to study abroad, we never imagined our story would continue beyond that chapter.
+
+But years later, two familiar people meeting again in a completely different season of life. What started as simple conversations slowly became the best part of our days..Somewhere along the way, familiarity turned into comfort, comfort turned into love, and being together began to feel like the most natural thing in the world.
+
+Looking back now, it’s hard not to believe that some people are simply meant to find their way back to one another.`;
+
 async function run() {
-  console.log('Starting Supabase parent details update...');
+  console.log('Starting Supabase love story update...');
 
   for (const id of projectIds) {
-    console.log(`Updating parents info for project ${id}...`);
+    console.log(`Updating love story for project ${id}...`);
     const { data, error } = await supabase
       .from('projects')
       .update({
-        bride_father: 'Joko Sulistyo U.',
-        bride_mother: 'Evi Rita Sari',
-        bride_father_deceased: false,
-        bride_mother_deceased: false,
-        groom_father: 'Mudin',
-        groom_mother: 'Marlia Masdiarti',
-        groom_father_deceased: true,
-        groom_mother_deceased: false
+        love_story: loveStoryText
       })
       .eq('id', id);
 

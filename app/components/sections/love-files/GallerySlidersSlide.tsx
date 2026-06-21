@@ -33,8 +33,8 @@ export default function GallerySlidersSlide({
     return galleryImages.length > 7
       ? galleryImages.slice(7, Math.min(12, galleryImages.length))
       : galleryImages.length > 1
-      ? galleryImages.slice(1, Math.min(6, galleryImages.length))
-      : [];
+        ? galleryImages.slice(1, Math.min(6, galleryImages.length))
+        : [];
   }, [galleryImages]);
 
   return (
@@ -74,8 +74,8 @@ export default function GallerySlidersSlide({
 
         {/* Title */}
         <FadeIn delay={0.2}>
-          <h2 className="font-parfumerie text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-light tracking-wide leading-none mb-2 drop-shadow-md">
-            Our Gallery
+          <h2 className="font-parfumerie text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-semibold tracking-wide leading-none mb-2 drop-shadow-md">
+            The Couple’s Gallery
           </h2>
           <p className="font-seasons text-[#e2ddc7]/85 font-semibold text-[clamp(11px,2.2vw,14px)] tracking-[0.2em] mb-8">
             #MANtracinTA
@@ -108,9 +108,8 @@ export default function GallerySlidersSlide({
                     {leftImages.map((_, idx) => (
                       <div
                         key={idx}
-                        className={`h-[2px] flex-1 rounded-full transition-all duration-300 ${
-                          idx === leftGalleryIdx ? "bg-white" : "bg-white/30"
-                        }`}
+                        className={`h-[2px] flex-1 rounded-full transition-all duration-300 ${idx === leftGalleryIdx ? "bg-white" : "bg-white/30"
+                          }`}
                       />
                     ))}
                   </div>
@@ -251,9 +250,8 @@ export default function GallerySlidersSlide({
                     {rightImages.map((_, idx) => (
                       <div
                         key={idx}
-                        className={`h-[2px] flex-1 rounded-full transition-all duration-300 ${
-                          idx === rightGalleryIdx ? "bg-white" : "bg-white/30"
-                        }`}
+                        className={`h-[2px] flex-1 rounded-full transition-all duration-300 ${idx === rightGalleryIdx ? "bg-white" : "bg-white/30"
+                          }`}
                       />
                     ))}
                   </div>

@@ -101,7 +101,7 @@ export default function LoveFilesOverlay({
               gallerySectionRef={gallerySectionRef}
             />
 
-            {/* SLIDE 4: Our Gallery */}
+            {/* SLIDE 4: Our The Couple’s Gallery */}
             <GallerySlidersSlide
               galleryImages={galleryImages}
               openLightbox={openLightbox}
