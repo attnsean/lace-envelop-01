@@ -49,10 +49,10 @@ export default function IntroSection({ project, isOpen, formattedWeddingDate, fo
             transition={{ duration: 1, delay: 1.0 }}
             className="relative z-10 flex flex-col items-center justify-center text-center -mt-1 w-[85%]"
           >
-            <span className="font-parfumerie text-[#5b3b1e] text-[clamp(50px,12.5vw,76px)] xs:text-[clamp(56px,12vw,82px)] md:text-[clamp(68px,7vw,104px)] leading-[1.0] font-medium block whitespace-nowrap">
+            <span className="font-parfumerie text-[#5b3b1e] text-[clamp(42.5px,10.6vw,64.6px)] xs:text-[clamp(47.6px,10.2vw,69.7px)] md:text-[clamp(57.8px,5.95vw,88.4px)] leading-[1.0] font-medium block whitespace-nowrap">
               Jovita &
             </span>
-            <span className="font-parfumerie text-[#5b3b1e] text-[clamp(50px,12.5vw,76px)] xs:text-[clamp(56px,12vw,82px)] md:text-[clamp(68px,7vw,104px)] leading-[1.0] font-medium block whitespace-nowrap mt-1">
+            <span className="font-parfumerie text-[#5b3b1e] text-[clamp(42.5px,10.6vw,64.6px)] xs:text-[clamp(47.6px,10.2vw,69.7px)] md:text-[clamp(57.8px,5.95vw,88.4px)] leading-[1.0] font-medium block whitespace-nowrap mt-1">
               Luqman
             </span>
           </motion.div>

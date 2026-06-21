@@ -4,7 +4,6 @@ import React, { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { DbProject } from "../../../../lib/resolveProject";
 import MeetCoupleSlide from "./MeetCoupleSlide";
-import VideoTeaserSlide from "./VideoTeaserSlide";
 import BrideGroomSlide from "./BrideGroomSlide";
 import StoryTimelineSlide from "./StoryTimelineSlide";
 import GallerySlidersSlide from "./GallerySlidersSlide";
@@ -13,8 +12,6 @@ interface Props {
   project?: DbProject | null;
   showLoveFiles: boolean;
   onClose: () => void;
-  onVideoPlay: () => void;
-  onVideoPause: () => void;
   galleryImages: string[];
   openLightbox: (idx: number) => void;
 }
@@ -23,19 +20,16 @@ export default function LoveFilesOverlay({
   project,
   showLoveFiles,
   onClose,
-  onVideoPlay,
-  onVideoPause,
   galleryImages,
   openLightbox,
 }: Props) {
   const meetCoupleRef = useRef<HTMLDivElement>(null);
-  const videoSectionRef = useRef<HTMLDivElement>(null);
   const brideGroomSectionRef = useRef<HTMLDivElement>(null);
   const loveStorySectionRef = useRef<HTMLDivElement>(null);
   const gallerySectionRef = useRef<HTMLDivElement>(null);
 
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
-  const projectId = project?.id || "f93ad18d-cba2-4de0-a86b-b1fadf2783a2";
+  const projectId = project?.id || "6d889fed-efb5-4a32-97ce-16f74bce763c";
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
@@ -57,7 +51,7 @@ export default function LoveFilesOverlay({
           className="fixed inset-0 z-[120] w-full h-[100dvh] overflow-hidden bg-[#363D22] flex items-center justify-center shadow-[0_30px_60px_rgba(0,0,0,0.9)]"
         >
           <div className="w-full h-full overflow-y-auto no-scrollbar snap-y snap-mandatory flex flex-col scrollbar-hide bg-[#363D22] relative">
-            {/* Floating Back Button - Fixed position so it stays on top of both slides */}
+            {/* Floating Back Button */}
             <button
               onClick={onClose}
               className="fixed top-6 left-6 z-[140] flex items-center gap-2 text-white/80 hover:text-white bg-black/35 hover:bg-black/50 backdrop-blur-md border border-white/20 rounded-full px-4 py-2.5 text-[10px] font-sans uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 cursor-pointer"
@@ -87,27 +81,19 @@ export default function LoveFilesOverlay({
                 pigeonsImgUrl={pigeonsImgUrl}
                 flowersImgUrl={flowersImgUrl}
                 runImgUrl={runImgUrl}
-                videoSectionRef={videoSectionRef}
+                brideGroomSectionRef={brideGroomSectionRef}
               />
             </div>
 
-            {/* SLIDE 2: Video Player Section */}
-            <VideoTeaserSlide
-              showLoveFiles={showLoveFiles}
-              onVideoPlay={onVideoPlay}
-              onVideoPause={onVideoPause}
-              videoSectionRef={videoSectionRef}
-            />
-
-            {/* SLIDE 3: Bride & Groom Cards */}
+            {/* SLIDE 2: Bride & Groom Cards */}
             <BrideGroomSlide
               project={project}
               slideRef={brideGroomSectionRef}
-              videoSectionRef={videoSectionRef}
+              meetCoupleRef={meetCoupleRef}
               loveStorySectionRef={loveStorySectionRef}
             />
 
-            {/* SLIDE 4: Love Story */}
+            {/* SLIDE 3: Love Story */}
             <StoryTimelineSlide
               project={project}
               slideRef={loveStorySectionRef}
@@ -115,7 +101,7 @@ export default function LoveFilesOverlay({
               gallerySectionRef={gallerySectionRef}
             />
 
-            {/* SLIDE 5: Our Gallery */}
+            {/* SLIDE 4: Our Gallery */}
             <GallerySlidersSlide
               galleryImages={galleryImages}
               openLightbox={openLightbox}

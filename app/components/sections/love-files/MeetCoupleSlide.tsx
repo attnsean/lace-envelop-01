@@ -12,7 +12,7 @@ interface Props {
   pigeonsImgUrl: string;
   flowersImgUrl: string;
   runImgUrl: string;
-  videoSectionRef: React.RefObject<HTMLDivElement | null>;
+  brideGroomSectionRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function MeetCoupleSlide({
@@ -21,7 +21,7 @@ export default function MeetCoupleSlide({
   pigeonsImgUrl,
   flowersImgUrl,
   runImgUrl,
-  videoSectionRef,
+  brideGroomSectionRef,
 }: Props) {
   return (
     <div className="relative w-full h-[100dvh] snap-start shrink-0 flex items-center justify-center overflow-hidden">
@@ -103,11 +103,11 @@ export default function MeetCoupleSlide({
           }}
           className="absolute bottom-8 flex flex-col items-center gap-1 cursor-pointer z-20"
           onClick={() => {
-            videoSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+            brideGroomSectionRef.current?.scrollIntoView({ behavior: "smooth" });
           }}
         >
           <span className="text-[9px] font-sans tracking-[0.25em] text-white/40 uppercase">
-            Scroll Down to Play video
+            Scroll Down
           </span>
           <svg
             xmlns="http://www.w3.org/2000/svg"

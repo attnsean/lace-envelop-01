@@ -9,14 +9,14 @@ import FadeIn from "../../FadeIn";
 interface Props {
   project?: DbProject | null;
   slideRef: React.RefObject<HTMLDivElement | null>;
-  videoSectionRef: React.RefObject<HTMLDivElement | null>;
+  meetCoupleRef: React.RefObject<HTMLDivElement | null>;
   loveStorySectionRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function BrideGroomSlide({
   project,
   slideRef,
-  videoSectionRef,
+  meetCoupleRef,
   loveStorySectionRef,
 }: Props) {
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
@@ -40,7 +40,7 @@ export default function BrideGroomSlide({
         }}
         className="w-full flex flex-col items-center gap-1 cursor-pointer z-30 mb-8"
         onClick={() => {
-          videoSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+          meetCoupleRef.current?.scrollIntoView({ behavior: "smooth" });
         }}
       >
         <svg
@@ -98,8 +98,8 @@ export default function BrideGroomSlide({
               Jovita Lola Edria
             </span>
             <p className="font-lekton text-[#4a3525]/80 text-[clamp(9px,2.2vw,12px)] leading-relaxed tracking-wide sm:tracking-wider">
-              Putri dari Bp. Joko Sulistyo U.
-              <br />& Ibu Evi Rita Sari
+              The daughter of Mr. Joko Sulistyo U.
+              <br />& Mrs. Evi Rita Sari
             </p>
           </div>
         </FadeIn>
@@ -142,8 +142,8 @@ export default function BrideGroomSlide({
               Muhammad Luqman Fikri
             </span>
             <p className="font-lekton text-[#4a3525]/80 text-[clamp(9px,2.2vw,12px)] leading-relaxed tracking-wide sm:tracking-wider">
-              Putra dari Bp. (Alm) Mudin
-              <br />& Ibu Marlia Masdiarti
+              The son of the late Mr. Mudin
+              <br />& Mrs. Marlia Masdiarti
             </p>
           </div>
         </FadeIn>

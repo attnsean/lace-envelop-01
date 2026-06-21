@@ -11,10 +11,9 @@ interface Props {
   guestName: string;
   isOpen: boolean;
   handleOpen: () => void;
-  setShowQRModal: (val: boolean) => void;
 }
 
-export default function CoverSection({ project, guestName, isOpen, handleOpen, setShowQRModal }: Props) {
+export default function CoverSection({ project, guestName, isOpen, handleOpen }: Props) {
   return (
     <section
       className={`absolute inset-0 w-full h-full z-40 transition-transform duration-[1500ms] ease-[cubic-bezier(0.7,0,0.3,1)] ${
@@ -96,12 +95,6 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen, s
               Open Invitation
             </button>
 
-            <button
-              onClick={() => setShowQRModal(true)}
-              className="w-full py-3 px-8 mt-4 rounded-full border border-white/30 text-white/80 hover:text-white hover:border-white/60 hover:bg-white/5 transition-all duration-300 font-seasons text-xs tracking-[0.15em] uppercase"
-            >
-              Entry Code
-            </button>
             <p className="font-seasons text-[11px] tracking-[0.25em] text-white/70 font-semibold mt-8 select-none">
               #MANtracinTA
             </p>

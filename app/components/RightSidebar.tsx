@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import QRCode from "react-qr-code";
 
 import CustomCursor from "./CustomCursor";
 import { DbGuest, DbProject, DbEvent, DbWish } from "../../lib/resolveProject";
-import { useSmartPosition } from "../../lib/useSmartPosition";
 
 // Import sections
 import CoverSection from "./sections/CoverSection";
@@ -18,32 +16,14 @@ import RsvpSection from "./sections/RsvpSection";
 import DetailsSection from "./sections/DetailsSection";
 import FaqSection from "./sections/FaqSection";
 import GiftRegistrySection from "./sections/GiftRegistrySection";
-import GroomSection from "./sections/GroomSection";
-import BrideSection from "./sections/BrideSection";
-import LoveStorySection from "./sections/LoveStorySection";
-import CalendarSection from "./sections/CalendarSection";
-import EventsSection from "./sections/EventsSection";
-import GallerySection from "./sections/GallerySection";
-import DressCodeSection from "./sections/DressCodeSection";
-import GuestbookSection from "./sections/GuestbookSection";
+
 import ClosingSection from "./sections/ClosingSection";
 
 // Import overlays
 import LoveFilesOverlay from "./sections/love-files/LoveFilesOverlay";
 import RundownOverlay from "./sections/rundown/RundownOverlay";
 
-const priaImg =
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";
-const wanitaImg =
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&auto=format&fit=crop";
-const bgImg12 =
-  "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop";
-const bgImg3 =
-  "https://images.unsplash.com/photo-1519225495810-7517c24a2ed3?q=80&w=1200&auto=format&fit=crop"; // Used for Reception
-const bgImgCeremony =
-  "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop"; // Used for Ceremony
-const slide4Img =
-  "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1200&auto=format&fit=crop"; // Used for Dress Code
+
 
 const fragments = [
   "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=400&auto=format&fit=crop",
@@ -81,13 +61,8 @@ export default function RightSidebar({
   const [showLoveFiles, setShowLoveFiles] = useState(false);
   const [showRundownOverlay, setShowRundownOverlay] = useState(false);
 
-  const groomPhotoPosition = useSmartPosition(
-    project?.groom_photo_url || priaImg
-  );
-  const bridePhotoPosition = useSmartPosition(
-    project?.bride_photo_url || wanitaImg
-  );
-  const [showQRModal, setShowQRModal] = useState(false);
+
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const bgMusicWasPlayingRef = useRef(false);
 
@@ -327,57 +302,7 @@ export default function RightSidebar({
 
         <GiftRegistrySection project={project} />
 
-        {/* === HIDDEN SECTIONS START === */}
-        {project?.subscriptions?.packages?.has_wedding_program !== false && (
-          <>
-            <GroomSection
-              project={project}
-              groomPhotoPosition={groomPhotoPosition}
-              priaImg={priaImg}
-            />
 
-            <BrideSection
-              project={project}
-              bridePhotoPosition={bridePhotoPosition}
-              wanitaImg={wanitaImg}
-            />
-
-            <LoveStorySection project={project} />
-
-            <CalendarSection
-              project={project}
-              bgImg12={bgImg12}
-            />
-
-            <EventsSection
-              project={project}
-              events={events}
-              galleryImages={galleryImages}
-              bgImgCeremony={bgImgCeremony}
-              bgImg3={bgImg3}
-            />
-
-            <GallerySection
-              galleryImages={galleryImages}
-              openLightbox={openLightbox}
-            />
-
-            <DressCodeSection
-              project={project}
-              galleryImages={galleryImages}
-              slide4Img={slide4Img}
-            />
-
-            <GuestbookSection
-              project={project}
-              guestName={guestName}
-              guest={guest}
-              wishes={wishes}
-              galleryImages={galleryImages}
-            />
-          </>
-        )}
-        {/* === HIDDEN SECTIONS END === */}
 
         <ClosingSection
           project={project}
@@ -396,81 +321,9 @@ export default function RightSidebar({
         guestName={guestName}
         isOpen={isOpen}
         handleOpen={handleOpen}
-        setShowQRModal={setShowQRModal}
       />
 
-      {/* QR Modal */}
-      <AnimatePresence>
-        {showQRModal && (
-          <motion.div
-            key="entry-qr-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center bg-[#5b3b1e]/90 backdrop-blur-md cursor-pointer p-6"
-            onClick={() => setShowQRModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
-              className="bg-white p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col items-center max-w-sm w-full border border-neutral-100"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="mb-8 bg-neutral-950 rounded-[2rem] border border-neutral-800 overflow-hidden flex flex-col items-center shadow-xl">
-                <div className="p-6 pb-4 w-full flex justify-center bg-white relative z-10">
-                  <div className="relative inline-block w-[220px] h-[220px]">
-                    <QRCode
-                      value={guest?.invitation_slug || guestName || "Guest"}
-                      size={220}
-                      level="H"
-                      bgColor="white"
-                      fgColor="black"
-                      style={{
-                        height: "auto",
-                        maxWidth: "100%",
-                        width: "100%",
-                      }}
-                    />
-                  </div>
-                </div>
 
-                {/* Text Watermark Bottom Centered */}
-                <div className="w-full py-4 flex flex-col items-center justify-center select-none bg-neutral-950 border-t border-white/5 relative z-0">
-                  <span className="text-[12px] font-serif font-bold tracking-[0.15em] text-[#979e6c] uppercase mb-1 drop-shadow-md">
-                    Sera Story
-                  </span>
-                  <span className="text-[6px] font-sans tracking-[0.3em] text-neutral-400 uppercase">
-                    © 2026 All Rights Reserved.
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-center space-y-2">
-                <h2 className="text-[10px] font-bold tracking-[0.4em] text-neutral-400 uppercase">
-                  Your Access Code
-                </h2>
-                <p className="text-2xl font-serif text-black uppercase tracking-tight break-words max-w-full leading-tight">
-                  {guest?.invitation_slug || guestName || "Guest"}
-                </p>
-              </div>
-
-              <p className="text-neutral-400 text-[10px] font-sans mt-8 uppercase tracking-[0.2em] text-center italic">
-                Show this code at the entrance
-              </p>
-
-              <button
-                onClick={() => setShowQRModal(false)}
-                className="mt-10 w-full py-5 bg-neutral-900 text-white text-[10px] font-bold tracking-[0.2em] transition-all uppercase rounded-2xl hover:bg-neutral-800 active:scale-95 shadow-xl"
-              >
-                Return to Invitation
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Lightbox Modal */}
       <AnimatePresence>
@@ -637,8 +490,6 @@ export default function RightSidebar({
         project={project}
         showLoveFiles={showLoveFiles}
         onClose={() => setShowLoveFiles(false)}
-        onVideoPlay={handleVideoPlay}
-        onVideoPause={handleVideoPause}
         galleryImages={galleryImages}
         openLightbox={openLightbox}
       />
