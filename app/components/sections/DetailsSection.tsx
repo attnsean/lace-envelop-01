@@ -98,28 +98,9 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
             <h4 className="font-seasons text-[#4A3E3D] text-[clamp(12px,2.5vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 md:mb-3">
               AKAD & RECEPTION
             </h4>
-            {events && events.length > 0 ? (
-              <div className="flex flex-col gap-1">
-                {events.map((evt, idx) => {
-                  const label = (evt.event_type === "akad" || evt.custom_label === "Pemberkatan Pernikahan" || evt.custom_label === "Akad Nikah")
-                    ? "Holy Matrimony"
-                    : (evt.event_type === "resepsi" || evt.event_type === "reception" || evt.custom_label === "Resepsi Pernikahan")
-                    ? "Wedding Reception"
-                    : evt.custom_label || evt.event_type;
-                  const timeStr = formatTime(evt.event_time) || "13.15";
-                  const endTimeStr = evt.end_time ? ` - ${formatTime(evt.end_time)}` : " - Finish";
-                  return (
-                    <p key={idx} className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
-                      {label} : {timeStr}{endTimeStr}
-                    </p>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
-                {project?.wedding_time || "13.15 - 18.00"}
-              </p>
-            )}
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
+              {project?.wedding_time || "13.15-18.00"}
+            </p>
           </div>
         </FadeIn>
 
