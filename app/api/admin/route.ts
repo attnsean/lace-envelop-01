@@ -155,7 +155,7 @@ export async function POST(request: Request) {
         const { project_id, password } = payload;
         const { data, error } = await supabaseAdmin
           .from('projects')
-          .update({ hashtag: password })
+          .update({ password_dashboard: password })
           .eq('id', project_id)
           .select();
 
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
         const { project_id } = payload;
         const { data, error } = await supabaseAdmin
           .from('projects')
-          .select('id, project_name, status, subscriptions(status, packages(name))')
+          .select('id, project_name, status, hashtag, password_dashboard, subscriptions(status, packages(name))')
           .eq('id', project_id)
           .maybeSingle();
 

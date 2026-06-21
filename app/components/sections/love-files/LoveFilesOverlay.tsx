@@ -103,6 +103,7 @@ export default function LoveFilesOverlay({
 
             {/* SLIDE 4: Our The Couple’s Gallery */}
             <GallerySlidersSlide
+              project={project}
               galleryImages={galleryImages}
               openLightbox={openLightbox}
               slideRef={gallerySectionRef}

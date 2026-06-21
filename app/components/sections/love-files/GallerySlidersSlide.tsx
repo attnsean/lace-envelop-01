@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import FadeIn from "../../FadeIn";
 
 interface Props {
+  project?: any;
   galleryImages: string[];
   openLightbox: (idx: number) => void;
   slideRef: React.RefObject<HTMLDivElement | null>;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function GallerySlidersSlide({
+  project,
   galleryImages,
   openLightbox,
   slideRef,
@@ -78,7 +80,7 @@ export default function GallerySlidersSlide({
             The Couple’s Gallery
           </h2>
           <p className="font-seasons text-[#e2ddc7]/85 font-semibold text-[clamp(11px,2.2vw,14px)] tracking-[0.2em] mb-8">
-            #MANtracinTA
+            {project?.hashtag ? (project.hashtag.startsWith('#') ? project.hashtag : `#${project.hashtag}`) : "#MANtracinTA"}
           </p>
         </FadeIn>
 

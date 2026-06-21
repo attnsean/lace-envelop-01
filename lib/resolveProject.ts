@@ -83,6 +83,7 @@ export interface DbProject {
   wishlist_note?: string | null;
   health_protocol?: string | null;
   hashtag?: string | null;
+  password_dashboard?: string | null;
   countdown_target?: string | null;
   wizard_step: number;
   wizard_completed: boolean;

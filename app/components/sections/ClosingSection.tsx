@@ -81,7 +81,7 @@ export default function ClosingSection({ project, isOpen, onVideoPlay, onVideoPa
               {project?.groom_nickname || "Luqman"} & {project?.bride_nickname || "Jovita"}
             </p>
             <p className="font-seasons text-xs tracking-[0.3em] text-[#979e6c] font-semibold mt-2">
-              #MANtracinTA
+              {project?.hashtag ? (project.hashtag.startsWith('#') ? project.hashtag : `#${project.hashtag}`) : "#MANtracinTA"}
             </p>
           </div>
         </FadeIn>

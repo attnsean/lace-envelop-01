@@ -26,8 +26,9 @@ export default function StoryTimelineSlide({
     "https://xnruifsptjsafctjwqdh.supabase.co";
 
   const storyItems = project?.love_story_items as any[] | undefined;
-  const firstStoryItem = storyItems?.[0];
-  const rawLoveStory = firstStoryItem?.desc || firstStoryItem?.description || (project?.love_story && !project.love_story.trim().startsWith('{') ? project.love_story : '');
+  const useSingleStoryItem = storyItems && storyItems.length === 1;
+  const storyItem = useSingleStoryItem ? storyItems[0] : null;
+  const rawLoveStory = storyItem?.desc || storyItem?.description || (project?.love_story && !project.love_story.trim().startsWith('{') ? project.love_story : '');
 
   return (
     <div

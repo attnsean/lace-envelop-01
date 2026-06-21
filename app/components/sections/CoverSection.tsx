@@ -101,7 +101,7 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
 
             {project?.hashtag && (
               <p className="font-seasons text-[11px] tracking-[0.25em] text-white/70 font-semibold mt-8 select-none">
-                {project.hashtag}
+                {project.hashtag.startsWith('#') ? project.hashtag : `#${project.hashtag}`}
               </p>
             )}
           </motion.div>

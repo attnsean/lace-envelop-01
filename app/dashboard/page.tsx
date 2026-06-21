@@ -174,7 +174,7 @@ export default function RSVPDashboard() {
 
       if (projectData) {
         setProject(projectData);
-        setDbPassword(projectData.hashtag || "serastory");
+        setDbPassword(projectData.password_dashboard || projectData.hashtag || "serastory");
 
         try {
           if (projectData.love_story) {
@@ -344,10 +344,11 @@ export default function RSVPDashboard() {
 
       const isLaceEnvelop = projectData?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || projectData?.project_name?.includes('lace-envelop');
       if (isLaceEnvelop) {
-        if (mappedStory.length > 0) {
-          setSingleLoveStoryText(mappedStory[0].desc || "");
-        } else if (projectData?.love_story && !projectData.love_story.trim().startsWith('{')) {
+        const hasRawLoveStory = projectData?.love_story && !projectData.love_story.trim().startsWith('{');
+        if (hasRawLoveStory) {
           setSingleLoveStoryText(projectData.love_story);
+        } else if (mappedStory.length > 0) {
+          setSingleLoveStoryText(mappedStory[0].desc || "");
         }
       }
 
@@ -501,8 +502,8 @@ export default function RSVPDashboard() {
         if (planRes.ok) {
           const { data } = await planRes.json();
           if (data) {
-            if (data.hashtag) {
-              setDbPassword(data.hashtag);
+            if (data.password_dashboard || data.hashtag) {
+              setDbPassword(data.password_dashboard || data.hashtag);
             }
             if (data.subscriptions?.packages?.name?.toLowerCase() === 'basic') {
               setIsBasicPlan(true);
