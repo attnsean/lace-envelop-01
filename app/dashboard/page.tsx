@@ -2169,6 +2169,84 @@ export default function RSVPDashboard() {
                 </div>
               )}
             </motion.div>
+
+            {/* Custom Questions Answers Table */}
+            {(() => {
+              const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
+              if (!isLaceEnvelop) return null;
+
+              const rsvpResponses = rsvps.filter(r => r.rsvp_id);
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white/60 backdrop-blur-xl overflow-hidden rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-white/60 mt-8 p-8"
+                >
+                  <div className="border-b border-neutral-100 pb-4 mb-6">
+                    <h3 className="text-xl font-serif text-neutral-800">RSVP Custom Questions Answers</h3>
+                    <p className="text-sm text-neutral-400 mt-1">Detailed answers submitted by guests for custom RSVP questions.</p>
+                  </div>
+
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <table className="w-full text-left border-collapse min-w-[700px]">
+                      <thead>
+                        <tr className="bg-neutral-50/30 text-neutral-500 border-b border-neutral-100">
+                          <th className="p-6 w-16 text-[9px] font-bold tracking-[0.2em] uppercase">No</th>
+                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">Guest Name</th>
+                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">{project?.question01_rsvp || "Are you coming?"}</th>
+                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">{project?.question02_rsvp || "Dietary Restrictions"}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-50">
+                        {rsvpResponses.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300">
+                              No custom responses found
+                            </td>
+                          </tr>
+                        ) : (
+                          rsvpResponses.map((r, idx) => {
+                            const answer1 = r.isAttending
+                              ? (project?.answer01_rsvp || "Absolutely, wouldn't miss it!")
+                              : (project?.answer02_rsvp || "Sadly cannot make it");
+
+                            const parseDietary = (msg: string) => {
+                              if (!msg) return "-";
+                              const match = msg.match(/Dietary:\s*(.*?)(?:\s*\|\s*Song:|$)/i);
+                              if (match) {
+                                const val = match[1].trim();
+                                return val === "-" ? "" : val;
+                              }
+                              return msg;
+                            };
+
+                            const answer2 = parseDietary(r.wishes || "");
+
+                            return (
+                              <tr key={r.rsvp_id} className="group hover:bg-white/80 transition-all duration-300">
+                                <td className="p-6 text-neutral-400 font-medium text-xs">{idx + 1}</td>
+                                <td className="p-6 font-bold text-neutral-800 text-xs">{r.name}</td>
+                                <td className="p-6">
+                                  <span className={`px-3 py-1.5 rounded-full text-[9px] font-bold tracking-wider uppercase inline-block border ${
+                                    r.isAttending
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                      : "bg-rose-50 text-rose-700 border-rose-200/80"
+                                  }`}>
+                                    {answer1}
+                                  </span>
+                                </td>
+                                <td className="p-6 text-neutral-600 font-semibold text-xs">{answer2 || "-"}</td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              );
+            })()}
           </>
         ) : activeTab === 'gifts' ? (
           <div className="space-y-8">
