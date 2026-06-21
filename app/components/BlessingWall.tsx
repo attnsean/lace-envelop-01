@@ -376,7 +376,7 @@ export default function BlessingWall({
       setShowSuccess(true);
     } catch (err) {
       console.error('Error submitting RSVP:', err);
-      alert('Gagal mengirim RSVP. Silakan coba lagi.');
+      alert('Failed to submit RSVP. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -417,7 +417,7 @@ export default function BlessingWall({
       await fetchWishes();
     } catch (err) {
       console.error('Error submitting wish:', err);
-      alert('Gagal mengirim ucapan. Silakan coba lagi.');
+      alert('Failed to submit blessing. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -650,7 +650,7 @@ export default function BlessingWall({
                         <div className="pt-3 md:pt-1">
                           {hasRsvpSubmitted ? (
                             <div className="text-[#3d332a] font-sans text-sm md:text-[10px] font-bold text-center py-2 md:py-1 select-none uppercase tracking-wide">
-                              Respons tercatat
+                              RSVP Submitted
                             </div>
                           ) : (
                             <button

@@ -24,31 +24,31 @@ export default function RundownOverlay({
   const rundownOverlayRundownRef = useRef<HTMLDivElement>(null);
   const rundownOverlayDiningRef = useRef<HTMLDivElement>(null);
 
-  const formatIndonesianDate = (dateStr?: string | null) => {
+  const formatEnglishDate = (dateStr?: string | null) => {
     const wDate = dateStr ? new Date(dateStr) : new Date("2026-08-08");
-    if (isNaN(wDate.getTime())) return "Sabtu, 8 Agustus 2026";
+    if (isNaN(wDate.getTime())) return "Saturday, 8 August 2026";
     const days = [
-      "Minggu",
-      "Senin",
-      "Selasa",
-      "Rabu",
-      "Kamis",
-      "Jumat",
-      "Sabtu",
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
     ];
     const months = [
-      "Januari",
-      "Februari",
-      "Maret",
+      "January",
+      "February",
+      "March",
       "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
+      "May",
+      "June",
+      "July",
+      "August",
       "September",
-      "Oktober",
+      "October",
       "November",
-      "Desember",
+      "December",
     ];
     const dayName = days[wDate.getDay()];
     const day = wDate.getDate();
@@ -78,7 +78,7 @@ export default function RundownOverlay({
   const firstEvent = events?.[0] || null;
   const eventDateRaw =
     project?.wedding_date || firstEvent?.event_date || "2026-08-08";
-  const formattedIndoDate = formatIndonesianDate(eventDateRaw);
+  const formattedIndoDate = formatEnglishDate(eventDateRaw);
   const latitude = firstEvent?.latitude;
   const longitude = firstEvent?.longitude;
 

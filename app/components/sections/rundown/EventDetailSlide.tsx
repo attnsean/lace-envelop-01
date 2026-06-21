@@ -61,7 +61,7 @@ export default function EventDetailSlide({
         {/* spacer to avoid overlapping with floating back button */}
         <FadeIn>
           <h2 className="font-parfumerie text-[#e2ddc7] text-[clamp(36px,7.5vw,52px)] md:text-[clamp(56px,5vw,78px)] drop-shadow-md leading-none mb-2">
-            Detail Acara & Lokasi
+            Event Details & Location
           </h2>
         </FadeIn>
         <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-16 w-full max-w-4xl flex-grow overflow-y-auto no-scrollbar py-4">
@@ -124,7 +124,7 @@ export default function EventDetailSlide({
                 rel="noopener noreferrer"
                 className="inline-block py-2.5 px-8 rounded-full bg-[#EAE3D2] text-[#333333] hover:bg-[#D8C4A9] transition-all duration-300 font-seasons text-[11px] tracking-[0.15em] uppercase shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 cursor-pointer mt-1"
               >
-                Tambah ke Kalender
+                Add To Calendar
               </a>
             </div>
           </FadeIn>

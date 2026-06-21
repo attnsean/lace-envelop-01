@@ -55,10 +55,10 @@ export default function GiftRegistrySection({ project }: Props) {
             className="flex flex-col items-center select-none"
           >
             <span className="font-parfumerie text-[#4A3E3D] text-[clamp(100px,8vw,140px)] leading-none italic font-light z-10 -mb-6">
-              Hadiah
+              Wedding
             </span>
             <h3 className="font-seasons text-[#4A3E3D] text-[clamp(55px,5vw,85px)] font-normal uppercase leading-none tracking-[0.08em] mb-8">
-              PERNIKAHAN
+              GIFT
             </h3>
             
             {/* Bird illustration */}
@@ -86,12 +86,12 @@ export default function GiftRegistrySection({ project }: Props) {
           <div className="space-y-4 max-w-md lg:max-w-lg">
             <FadeIn delay={0.3}>
               <h4 className="font-seasons text-[clamp(24px,2vw,32px)] leading-[1.3] text-[#4A3E3D] font-normal">
-                Kehadiran Anda merupakan kebahagiaan terbesar bagi kami.
+                Your presence is the greatest gift of all.
               </h4>
             </FadeIn>
             <FadeIn delay={0.4}>
               <p className="font-lekton text-[#4A3E3D]/90 text-[clamp(13px,1.1vw,15px)] leading-relaxed font-light text-left">
-                Bagi keluarga dan sahabat yang berkenan memberikan tanda kasih untuk pernikahan kami, kami mengucapkan terima kasih atas segala doa, perhatian, dan kebaikan yang diberikan. Apabila Anda ingin memberikan hadiah, kami dengan senang hati menerima melalui informasi berikut:
+                For family and friends who wish to express their love and blessings through a wedding gift, we would like to express our deepest gratitude for your prayers, warmth, and kindness. Should you wish to send a gift, we kindly accept it through the following details:
               </p>
             </FadeIn>
           </div>
@@ -167,10 +167,10 @@ export default function GiftRegistrySection({ project }: Props) {
           className="flex flex-col items-center select-none"
         >
           <span className="font-parfumerie text-[#4A3E3D] text-[56px] leading-none italic font-light z-10 -mb-2">
-            Hadiah
+            Wedding
           </span>
           <h3 className="font-seasons text-[#4A3E3D] text-[32px] font-normal uppercase leading-none tracking-[0.08em]">
-            PERNIKAHAN
+            GIFT
           </h3>
         </motion.div>
 
@@ -203,12 +203,12 @@ export default function GiftRegistrySection({ project }: Props) {
         <div className="space-y-3 max-w-xs text-center">
           <FadeIn delay={0.3}>
             <h4 className="font-seasons text-[18px] leading-[1.35] text-[#4A3E3D] font-normal">
-              Kehadiran Anda merupakan kebahagiaan terbesar bagi kami.
+              Your presence is the greatest gift of all.
             </h4>
           </FadeIn>
           <FadeIn delay={0.4}>
             <p className="font-lekton text-[#4A3E3D]/80 text-[12px] leading-[1.7] font-light text-justify">
-              Bagi keluarga dan sahabat yang berkenan memberikan tanda kasih untuk pernikahan kami, kami mengucapkan terima kasih atas segala doa, perhatian, dan kebaikan yang diberikan. Apabila Anda ingin memberikan hadiah, kami dengan senang hati menerima melalui informasi berikut.
+              For family and friends who wish to express their love and blessings through a wedding gift, we would like to express our deepest gratitude for your prayers, warmth, and kindness. Should you wish to send a gift, we kindly accept it through the following details.
             </p>
           </FadeIn>
         </div>
