@@ -295,6 +295,7 @@ export default function RightSidebar({
 
         <DetailsSection
           project={project}
+          events={events}
           setShowRundownOverlay={setShowRundownOverlay}
         />
 

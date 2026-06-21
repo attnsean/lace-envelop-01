@@ -68,7 +68,11 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
           transition={{ duration: 1.2, ease: "easeOut", delay: 0.8 }}
           className="text-6xl md:text-8xl lg:text-9xl font-parfumerie text-white mb-6 leading-none drop-shadow-2xl font-light"
         >
-          Jovita & Luqman
+          {project?.bride_nickname && project?.groom_nickname ? (
+            `${project.bride_nickname} & ${project.groom_nickname}`
+          ) : (
+            "Jovita & Luqman"
+          )}
         </motion.h1>
 
         {/* Excitedly request your presence in The Seasons */}
@@ -95,9 +99,11 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
               Open Invitation
             </button>
 
-            <p className="font-seasons text-[11px] tracking-[0.25em] text-white/70 font-semibold mt-8 select-none">
-              #MANtracinTA
-            </p>
+            {project?.hashtag && (
+              <p className="font-seasons text-[11px] tracking-[0.25em] text-white/70 font-semibold mt-8 select-none">
+                {project.hashtag}
+              </p>
+            )}
           </motion.div>
         </div>
       </div>

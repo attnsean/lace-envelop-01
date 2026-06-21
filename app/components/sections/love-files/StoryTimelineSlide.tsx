@@ -82,40 +82,52 @@ export default function StoryTimelineSlide({
 
         {/* Paragraphs */}
         <div className="flex flex-col gap-3 lg:gap-5">
-          <FadeIn delay={0.4}>
-            <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
-              If someone had told us years ago that all the little moments would
-              lead us here, we probably wouldn’t have believed them.
-            </p>
-          </FadeIn>
+          {project?.love_story ? (
+            project.love_story.split("\n").filter(p => p.trim() !== "").map((para, idx) => (
+              <FadeIn key={idx} delay={0.4 + idx * 0.15}>
+                <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                  {para}
+                </p>
+              </FadeIn>
+            ))
+          ) : (
+            <>
+              <FadeIn delay={0.4}>
+                <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                  If someone had told us years ago that all the little moments would
+                  lead us here, we probably wouldn’t have believed them.
+                </p>
+              </FadeIn>
 
-          <FadeIn delay={0.6}>
-            <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
-              Back then, we were simply part of each other’s daily routines
-              &mdash; just coworkers sharing ordinary days at the office before
-              life eventually moved us onto different paths. When Luqman left to
-              study abroad, we never imagined our story would continue beyond
-              that chapter.
-            </p>
-          </FadeIn>
+              <FadeIn delay={0.6}>
+                <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                  Back then, we were simply part of each other’s daily routines
+                  &mdash; just coworkers sharing ordinary days at the office before
+                  life eventually moved us onto different paths. When Luqman left to
+                  study abroad, we never imagined our story would continue beyond
+                  that chapter.
+                </p>
+              </FadeIn>
 
-          <FadeIn delay={0.8}>
-            <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
-              But years later, two familiar people meeting again in a completely
-              different season of life. What started as simple conversations
-              slowly became the best part of our days. Somewhere along the way,
-              familiarity turned into comfort, comfort turned into love, and
-              being together began to feel like the most natural thing in the
-              world.
-            </p>
-          </FadeIn>
+              <FadeIn delay={0.8}>
+                <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                  But years later, two familiar people meeting again in a completely
+                  different season of life. What started as simple conversations
+                  slowly became the best part of our days. Somewhere along the way,
+                  familiarity turned into comfort, comfort turned into love, and
+                  being together began to feel like the most natural thing in the
+                  world.
+                </p>
+              </FadeIn>
 
-          <FadeIn delay={1.0}>
-            <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
-              Looking back now, it’s hard not to believe that some people are
-              simply meant to find their way back to one another.
-            </p>
-          </FadeIn>
+              <FadeIn delay={1.0}>
+                <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
+                  Looking back now, it’s hard not to believe that some people are
+                  simply meant to find their way back to one another.
+                </p>
+              </FadeIn>
+            </>
+          )}
         </div>
 
         {/* Scroll down to Gallery */}

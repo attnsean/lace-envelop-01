@@ -2,19 +2,31 @@
 
 import React from "react";
 import Image from "next/image";
-import { DbProject } from "../../../lib/resolveProject";
+import { DbProject, DbEvent } from "../../../lib/resolveProject";
 import FadeIn from "../FadeIn";
 
 interface Props {
   project?: DbProject | null;
+  events?: DbEvent[] | null;
   setShowRundownOverlay: (val: boolean) => void;
 }
 
-export default function DetailsSection({ project, setShowRundownOverlay }: Props) {
+export default function DetailsSection({ project, events, setShowRundownOverlay }: Props) {
   const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
   const detailsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec6-details.jpg`;
+
+  const formatEnglishDate = (dateStr?: string | null) => {
+    const date = dateStr ? new Date(dateStr) : null;
+    if (!date || isNaN(date.getTime())) return "Saturday, 8 August 2026";
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  const eventDateRaw = project?.wedding_date || events?.[0]?.event_date || "2026-08-08";
+  const formattedDate = formatEnglishDate(eventDateRaw);
 
   return (
     <section id="details" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col md:flex-row bg-[#E1D8CC]">
@@ -53,11 +65,16 @@ export default function DetailsSection({ project, setShowRundownOverlay }: Props
               DATE & LOCATION
             </h4>
             <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
-              Saturday, 8 August 2026
+              {formattedDate}
             </p>
             <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
-              Openaire Resto Bar Market Semarang
+              {project?.venue_name || "Openaire Resto Bar Market Semarang"}
             </p>
+            {project?.venue_address && (
+              <p className="font-lekton text-[#4A3E3D]/80 text-[clamp(10px,1.8vw,13px)] md:text-[clamp(12px,1vw,14px)] leading-relaxed tracking-wider mt-1 px-4 max-w-sm">
+                {project.venue_address}
+              </p>
+            )}
           </div>
         </FadeIn>
 
@@ -72,9 +89,28 @@ export default function DetailsSection({ project, setShowRundownOverlay }: Props
             <h4 className="font-seasons text-[#4A3E3D] text-[clamp(15px,3vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.25em] mb-2 md:mb-3">
               AKAD & RECEPTION
             </h4>
-            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
-              13.15-18.00
-            </p>
+            {events && events.length > 0 ? (
+              <div className="flex flex-col gap-1.5">
+                {events.map((evt, idx) => {
+                  const label = evt.event_type === "akad" 
+                    ? "Akad Nikah" 
+                    : evt.event_type === "reception" 
+                    ? "Resepsi" 
+                    : evt.custom_label || evt.event_type;
+                  const timeStr = evt.event_time || "13.15";
+                  const endTimeStr = evt.end_time ? ` - ${evt.end_time}` : " - Selesai";
+                  return (
+                    <p key={idx} className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
+                      {label} : {timeStr}{endTimeStr}
+                    </p>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
+                {project?.wedding_time || "13.15-18.00"}
+              </p>
+            )}
           </div>
         </FadeIn>
 

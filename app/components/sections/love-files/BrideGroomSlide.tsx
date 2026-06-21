@@ -82,7 +82,7 @@ export default function BrideGroomSlide({
             >
               <Image
                 src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/bride-photo.jpg?v=2`}
-                alt="Jovita Lola Edria"
+                alt={project?.bride_name || "Jovita Lola Edria"}
                 fill
                 className="object-cover"
                 unoptimized
@@ -95,11 +95,20 @@ export default function BrideGroomSlide({
               The Bride
             </span>
             <span className="font-seasons text-[#4a3525] text-[clamp(16px,4vw,26px)] font-bold tracking-wide leading-tight mb-2 sm:mb-3">
-              Jovita Lola Edria
+              {project?.bride_name || "Jovita Lola Edria"}
             </span>
             <p className="font-lekton text-[#4a3525]/80 text-[clamp(9px,2.2vw,12px)] leading-relaxed tracking-wide sm:tracking-wider">
-              The daughter of Mr. Joko Sulistyo U.
-              <br />& Mrs. Evi Rita Sari
+              {project?.bride_father && project?.bride_mother ? (
+                <>
+                  The daughter of {project.bride_father_deceased ? "the late " : ""}Mr. {project.bride_father}
+                  <br />& Mrs. {project.bride_mother}
+                </>
+              ) : (
+                <>
+                  The daughter of Mr. Joko Sulistyo U.
+                  <br />& Mrs. Evi Rita Sari
+                </>
+              )}
             </p>
           </div>
         </FadeIn>
@@ -126,7 +135,7 @@ export default function BrideGroomSlide({
             >
               <Image
                 src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/groom-photo.jpg?v=2`}
-                alt="Muhammad Luqman Fikri"
+                alt={project?.groom_name || "Muhammad Luqman Fikri"}
                 fill
                 className="object-cover"
                 unoptimized
@@ -139,11 +148,20 @@ export default function BrideGroomSlide({
               The Groom
             </span>
             <span className="font-seasons text-[#4a3525] text-[clamp(16px,4vw,26px)] font-bold tracking-wide leading-tight mb-2 sm:mb-3">
-              Muhammad Luqman Fikri
+              {project?.groom_name || "Muhammad Luqman Fikri"}
             </span>
             <p className="font-lekton text-[#4a3525]/80 text-[clamp(9px,2.2vw,12px)] leading-relaxed tracking-wide sm:tracking-wider">
-              The son of the late Mr. Mudin
-              <br />& Mrs. Marlia Masdiarti
+              {project?.groom_father && project?.groom_mother ? (
+                <>
+                  The son of {project.groom_father_deceased ? "the late " : ""}Mr. {project.groom_father}
+                  <br />& Mrs. {project.groom_mother}
+                </>
+              ) : (
+                <>
+                  The son of the late Mr. Mudin
+                  <br />& Mrs. Marlia Masdiarti
+                </>
+              )}
             </p>
           </div>
         </FadeIn>

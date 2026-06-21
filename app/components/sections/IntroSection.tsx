@@ -50,10 +50,10 @@ export default function IntroSection({ project, isOpen, formattedWeddingDate, fo
             className="relative z-10 flex flex-col items-center justify-center text-center -mt-1 w-[85%]"
           >
             <span className="font-parfumerie text-[#5b3b1e] text-[clamp(42.5px,10.6vw,64.6px)] xs:text-[clamp(47.6px,10.2vw,69.7px)] md:text-[clamp(57.8px,5.95vw,88.4px)] leading-[1.0] font-medium block whitespace-nowrap">
-              Jovita &
+              {project?.bride_nickname || "Jovita"} &
             </span>
             <span className="font-parfumerie text-[#5b3b1e] text-[clamp(42.5px,10.6vw,64.6px)] xs:text-[clamp(47.6px,10.2vw,69.7px)] md:text-[clamp(57.8px,5.95vw,88.4px)] leading-[1.0] font-medium block whitespace-nowrap mt-1">
-              Luqman
+              {project?.groom_nickname || "Luqman"}
             </span>
           </motion.div>
         </motion.div>
