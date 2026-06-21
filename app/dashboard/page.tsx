@@ -3018,12 +3018,13 @@ export default function RSVPDashboard() {
                 <div className="border-b border-neutral-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h4 className="text-base font-serif text-neutral-800">Manage Bank Accounts</h4>
-                    <p className="text-xs text-neutral-400 mt-1">Specify bank accounts details where guests can send wedding gifts.</p>
+                    <p className="text-xs text-neutral-400 mt-1">Specify bank accounts details (maximum of 2 accounts) where guests can send wedding gifts.</p>
                   </div>
                   <button
                     type="button"
+                    disabled={paymentAccounts.length >= 2}
                     onClick={() => setPaymentAccounts([...paymentAccounts, { bank_name: "", bank_account: "", owner_name: "" }])}
-                    className="self-start px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                    className="self-start px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50 disabled:hover:bg-neutral-100 disabled:cursor-not-allowed text-neutral-800 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:active:scale-100"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.0} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     Add Account
