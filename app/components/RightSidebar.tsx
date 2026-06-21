@@ -185,6 +185,19 @@ export default function RightSidebar({
     }
   };
 
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === "PAUSE_AUDIO") {
+        if (audioRef.current && isPlaying) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        }
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [isPlaying]);
+
   const handleVideoPlay = () => {
     if (audioRef.current && !audioRef.current.paused) {
       audioRef.current.pause();
