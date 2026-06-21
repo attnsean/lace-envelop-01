@@ -86,6 +86,9 @@ export interface DbProject {
   countdown_target?: string | null;
   wizard_step: number;
   wizard_completed: boolean;
+  quote_arabic?: string | null;
+  quote_translation?: string | null;
+  quote_source?: string | null;
   subscriptions?: {
     status: string;
     expires_at?: string | null;

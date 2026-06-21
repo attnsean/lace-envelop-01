@@ -18,6 +18,16 @@ export default function VerseSection({ project }: Props) {
   const frameImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-frame.png`;
   const coupleImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-couple.jpg`;
 
+  const quoteArabic = project?.quote_arabic !== undefined && project?.quote_arabic !== null
+    ? project.quote_arabic
+    : "وَخَلَقْنَاكُمْ أَزْوَاجًا";
+  const quoteTranslation = project?.quote_translation !== undefined && project?.quote_translation !== null
+    ? project.quote_translation
+    : "“And We created you in pairs.”";
+  const quoteSource = project?.quote_source !== undefined && project?.quote_source !== null
+    ? project.quote_source
+    : "— Surah An-Naba (78:8)";
+
   return (
     <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-neutral-950 flex flex-col items-center justify-center">
       <div className="absolute inset-0 z-0 bg-black">
@@ -73,48 +83,54 @@ export default function VerseSection({ project }: Props) {
         </div>
 
         <div className="flex flex-col items-center space-y-3 sm:space-y-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 15, filter: "blur(6px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 1.0, ease: "easeOut", delay: 0.4 }}
-          >
-            <h3 
-              className="text-white text-[clamp(28px,7.5vw,46px)] leading-relaxed text-center font-normal"
-              style={{ 
-                fontFamily: '"Traditional Arabic", "Amiri", "Scheherazade New", serif', 
-                direction: 'rtl'
-              }}
+          {quoteArabic && (
+            <motion.div 
+              initial={{ opacity: 0, y: 15, filter: "blur(6px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 1.0, ease: "easeOut", delay: 0.4 }}
             >
-              وَخَلَقْنَاكُمْ أَزْوَاجًا
-            </h3>
-          </motion.div>
+              <h3 
+                className="text-white text-[clamp(28px,7.5vw,46px)] leading-relaxed text-center font-normal"
+                style={{ 
+                  fontFamily: '"Traditional Arabic", "Amiri", "Scheherazade New", serif', 
+                  direction: 'rtl'
+                }}
+              >
+                {quoteArabic}
+              </h3>
+            </motion.div>
+          )}
 
-          <motion.div 
-            initial={{ opacity: 0, y: 15, filter: "blur(6px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 1.0, ease: "easeOut", delay: 0.7 }}
-          >
-            <p 
-              className="font-altesse text-white text-[clamp(22px,5vw,36px)] italic font-light tracking-wide text-center leading-normal"
-              style={{ textShadow: '0 0 8px rgba(255, 255, 255, 0.95), 0 0 18px rgba(255, 255, 255, 0.85), 0 0 32px rgba(255, 255, 255, 0.75), 0 0 48px rgba(255, 255, 255, 0.6), 1px 1px 3px rgba(0, 0, 0, 0.95)' }}
+          {quoteTranslation && (
+            <motion.div 
+              initial={{ opacity: 0, y: 15, filter: "blur(6px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 1.0, ease: "easeOut", delay: 0.7 }}
             >
-              “And We created you in pairs.”
-            </p>
-          </motion.div>
+              <p 
+                className="font-altesse text-white text-[clamp(22px,5vw,36px)] italic font-light tracking-wide text-center leading-normal"
+                style={{ textShadow: '0 0 8px rgba(255, 255, 255, 0.95), 0 0 18px rgba(255, 255, 255, 0.85), 0 0 32px rgba(255, 255, 255, 0.75), 0 0 48px rgba(255, 255, 255, 0.6), 1px 1px 3px rgba(0, 0, 0, 0.95)' }}
+              >
+                {quoteTranslation}
+              </p>
+            </motion.div>
+          )}
 
-          <motion.div 
-            initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 1.0, ease: "easeOut", delay: 1.0 }}
-            className="w-full text-right"
-          >
-            <p className="font-seasons text-white/90 text-[clamp(10px,1.8vw,13px)] uppercase tracking-[0.25em] pt-2">
-              — Surah An-Naba (78:8)
-            </p>
-          </motion.div>
+          {quoteSource && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 1.0, ease: "easeOut", delay: 1.0 }}
+              className="w-full text-right"
+            >
+              <p className="font-seasons text-white/90 text-[clamp(10px,1.8vw,13px)] uppercase tracking-[0.25em] pt-2">
+                {quoteSource}
+              </p>
+            </motion.div>
+          )}
         </div>
       </div>
     </section>
