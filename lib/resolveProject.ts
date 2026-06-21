@@ -89,6 +89,12 @@ export interface DbProject {
   quote_arabic?: string | null;
   quote_translation?: string | null;
   quote_source?: string | null;
+  faqs?: unknown;
+  dining_schedule?: unknown;
+  quote_intro_line1?: string | null;
+  quote_intro_line1_highlight?: string | null;
+  quote_intro_line2?: string | null;
+  quote_intro_line2_highlight?: string | null;
   subscriptions?: {
     status: string;
     expires_at?: string | null;

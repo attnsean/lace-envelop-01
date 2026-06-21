@@ -21,6 +21,19 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
   const flowersImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/gallery-24.jpg`;
   const runImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-run.jpg`;
 
+  const quote1 = project?.quote_intro_line1 !== undefined && project?.quote_intro_line1 !== null
+    ? project.quote_intro_line1
+    : "Our next chapter starts";
+  const quote1Highlight = project?.quote_intro_line1_highlight !== undefined && project?.quote_intro_line1_highlight !== null
+    ? project.quote_intro_line1_highlight
+    : "here,";
+  const quote2 = project?.quote_intro_line2 !== undefined && project?.quote_intro_line2 !== null
+    ? project.quote_intro_line2
+    : "And it starts with";
+  const quote2Highlight = project?.quote_intro_line2_highlight !== undefined && project?.quote_intro_line2_highlight !== null
+    ? project.quote_intro_line2_highlight
+    : "love.";
+
   return (
     <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-[#e2ddc7]">
       {/* Top-Left: Dance */}
@@ -87,19 +100,23 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
       <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-2xl mx-auto h-full select-none space-y-3 sm:space-y-4">
         <FadeIn delay={0.4}>
           <p className="font-seasons text-[#4a3525] text-[clamp(16px,4.5vw,36px)] font-medium leading-relaxed tracking-wide">
-            Our next chapter starts{" "}
-            <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
-              here,
-            </span>
+            {quote1}{" "}
+            {quote1Highlight && (
+              <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
+                {quote1Highlight}
+              </span>
+            )}
           </p>
         </FadeIn>
         
         <FadeIn delay={0.7}>
           <p className="font-seasons text-[#4a3525] text-[clamp(16px,4.5vw,36px)] font-medium leading-relaxed tracking-wide">
-            And it starts with{" "}
-            <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
-              love.
-            </span>
+            {quote2}{" "}
+            {quote2Highlight && (
+              <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
+                {quote2Highlight}
+              </span>
+            )}
           </p>
         </FadeIn>
 

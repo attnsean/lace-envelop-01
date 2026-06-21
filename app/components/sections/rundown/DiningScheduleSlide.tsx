@@ -25,12 +25,20 @@ export default function DiningScheduleSlide({
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
 
-  const diningItems = [
+  const defaultDiningItems = [
     { time: "15.00", title: "Canapés & Welcome Drinks" },
     { time: "15.20", title: "Starter Served" },
     { time: "15.45", title: "Main Course Served" },
     { time: "16.15", title: "Dessert" },
   ];
+
+  const rawDining = project?.dining_schedule;
+  const diningItems = Array.isArray(rawDining) && rawDining.length > 0
+    ? rawDining.map((d: any) => ({
+        time: d.time || "",
+        title: d.title || d.activity || ""
+      })).filter(d => d.time && d.title)
+    : defaultDiningItems;
 
   return (
     <div

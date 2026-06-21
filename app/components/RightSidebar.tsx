@@ -329,7 +329,7 @@ export default function RightSidebar({
           setShowRundownOverlay={setShowRundownOverlay}
         />
 
-        <FaqSection />
+        <FaqSection project={project} />
 
         <GiftRegistrySection project={project} />
 

@@ -25,7 +25,7 @@ export default function WeddingRundownSlide({
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
 
-  const rundownItems = [
+  const defaultRundownItems = [
     {
       time: "14.00",
       title: "Akad Ceremony",
@@ -57,6 +57,15 @@ export default function WeddingRundownSlide({
       icon: "rundown-hands.png",
     },
   ];
+
+  const rawRundown = project?.rundown;
+  const rundownItems = Array.isArray(rawRundown) && rawRundown.length > 0
+    ? rawRundown.map((r: any) => ({
+        time: r.time || "",
+        title: r.title || r.activity || "",
+        icon: r.icon || "rundown-rings.png"
+      })).filter(r => r.time && r.title)
+    : defaultRundownItems;
 
   return (
     <div
@@ -107,7 +116,9 @@ export default function WeddingRundownSlide({
         {/* Rundown Grid */}
         <div className="grid grid-cols-3 gap-x-2 xs:gap-x-4 sm:gap-x-10 md:gap-x-16 gap-y-4 xs:gap-y-6 sm:gap-y-12 md:gap-y-14 w-full max-w-4xl px-2 sm:px-6">
           {rundownItems.map((item, idx) => {
-            const imgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/${item.icon}?v=5`;
+            const imgUrl = item.icon.startsWith("http://") || item.icon.startsWith("https://") || item.icon.startsWith("/")
+              ? item.icon
+              : `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/${item.icon}?v=5`;
             return (
               <FadeIn
                 key={idx}
