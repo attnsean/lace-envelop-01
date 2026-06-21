@@ -174,7 +174,7 @@ export default function RSVPDashboard() {
 
       if (projectData) {
         setProject(projectData);
-        setDbPassword(projectData.password_dashboard || projectData.hashtag || "serastory");
+        setDbPassword(projectData.password_dashboard || "serastory");
 
         try {
           if (projectData.love_story) {
@@ -502,9 +502,7 @@ export default function RSVPDashboard() {
         if (planRes.ok) {
           const { data } = await planRes.json();
           if (data) {
-            if (data.password_dashboard || data.hashtag) {
-              setDbPassword(data.password_dashboard || data.hashtag);
-            }
+            setDbPassword(data.password_dashboard || "serastory");
             if (data.subscriptions?.packages?.name?.toLowerCase() === 'basic') {
               setIsBasicPlan(true);
             }
