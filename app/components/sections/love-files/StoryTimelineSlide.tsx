@@ -25,6 +25,10 @@ export default function StoryTimelineSlide({
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
 
+  const storyItems = project?.love_story_items as any[] | undefined;
+  const firstStoryItem = storyItems?.[0];
+  const rawLoveStory = firstStoryItem?.desc || firstStoryItem?.description || (project?.love_story && !project.love_story.trim().startsWith('{') ? project.love_story : '');
+
   return (
     <div
       ref={slideRef}
@@ -82,8 +86,8 @@ export default function StoryTimelineSlide({
 
         {/* Paragraphs */}
         <div className="flex flex-col gap-3 lg:gap-5">
-          {project?.love_story ? (
-            project.love_story.split("\n").filter(p => p.trim() !== "").map((para, idx) => (
+          {rawLoveStory ? (
+            rawLoveStory.split("\n").filter((p: string) => p.trim() !== "").map((para: string, idx: number) => (
               <FadeIn key={idx} delay={0.4 + idx * 0.15}>
                 <p className="font-seasons text-[#e2ddc7]/95 text-[clamp(11px,2.4vw,15px)] md:text-[clamp(13px,1.5vw,16px)] leading-relaxed md:leading-loose tracking-wider max-w-2xl mx-auto drop-shadow-sm">
                   {para}
