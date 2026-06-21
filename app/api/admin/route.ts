@@ -163,6 +163,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, data });
       }
 
+      case 'update_payment_accounts': {
+        const { project_id, payment_accounts } = payload;
+        const { data, error } = await supabaseAdmin
+          .from('projects')
+          .update({ payment_accounts })
+          .eq('id', project_id)
+          .select();
+
+        if (error) throw error;
+        return NextResponse.json({ success: true, data });
+      }
+
       case 'delete_wish': {
         const { project_id, id, rsvp_id, name } = payload;
 

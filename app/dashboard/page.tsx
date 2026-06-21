@@ -65,7 +65,7 @@ export default function RSVPDashboard() {
   const [gifts, setGifts] = useState<GiftItem[]>([]);
   const [storyEvents, setStoryEvents] = useState<StoryEvent[]>([]);
   const [activeTab, setActiveTab] = useState<'rsvp' | 'gifts' | 'links' | 'settings'>('rsvp');
-  const [settingsTab, setSettingsTab] = useState<'password' | 'story'>('password');
+  const [settingsTab, setSettingsTab] = useState<'password' | 'story' | 'payment'>('password');
   const [loading, setLoading] = useState(true);
 
   // Authentication & Security State
@@ -97,6 +97,8 @@ export default function RSVPDashboard() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [paymentAccounts, setPaymentAccounts] = useState<any[]>([]);
+  const [isSavingPaymentAccounts, setIsSavingPaymentAccounts] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all"); // all, attending, declined
   const [filterCheckIn, setFilterCheckIn] = useState("all"); // all, arrived, waiting
@@ -175,6 +177,14 @@ export default function RSVPDashboard() {
       if (projectData) {
         setProject(projectData);
         setDbPassword(projectData.password_dashboard || "serastory");
+
+        const accounts = projectData.payment_accounts && Array.isArray(projectData.payment_accounts) && projectData.payment_accounts.length > 0
+          ? projectData.payment_accounts
+          : [
+              { bank_name: "BRI", bank_account: "125101001997509", owner_name: "M LUQMAN FIKRI" },
+              { bank_name: "BCA", bank_account: "0131800826", owner_name: "JOVITA LOLA EDRIA" }
+            ];
+        setPaymentAccounts(accounts);
 
         try {
           if (projectData.love_story) {
@@ -872,6 +882,39 @@ export default function RSVPDashboard() {
       alert("Failed to save love story: " + error.message);
     } finally {
       setIsSavingLoveStory(false);
+    }
+  };
+
+  const handleSavePaymentAccounts = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingPaymentAccounts(true);
+    try {
+      const cleanAccounts = paymentAccounts.filter(acc => acc.bank_name || acc.bank_account || acc.owner_name);
+
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_payment_accounts',
+          payload: {
+            project_id: projectId,
+            payment_accounts: cleanAccounts
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update bank accounts');
+      }
+
+      alert("Bank accounts updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error("Error saving bank accounts:", error);
+      alert("Failed to save bank accounts: " + error.message);
+    } finally {
+      setIsSavingPaymentAccounts(false);
     }
   };
 
@@ -2782,7 +2825,7 @@ export default function RSVPDashboard() {
             </div>
 
             {/* Card Menu */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <button
                 onClick={() => setSettingsTab('password')}
                 className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'password' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
@@ -2809,6 +2852,17 @@ export default function RSVPDashboard() {
                   </button>
                 );
               })()}
+
+              <button
+                onClick={() => setSettingsTab('payment')}
+                className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'payment' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
+              >
+                <div className={`p-3 rounded-xl mb-4 ${settingsTab === 'payment' ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-600'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
+                </div>
+                <h4 className="text-lg font-serif font-bold mb-1">Bank Accounts</h4>
+                <p className={`text-xs ${settingsTab === 'payment' ? 'text-neutral-400' : 'text-neutral-500'}`}>Edit details of bank account for gift registry</p>
+              </button>
             </div>
 
             {settingsTab === 'password' ? (
@@ -2859,7 +2913,7 @@ export default function RSVPDashboard() {
                   </form>
                 </div>
               </div>
-            ) : (() => {
+            ) : settingsTab === 'story' ? (() => {
               const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
               if (isLaceEnvelop) {
                 return (
@@ -2959,7 +3013,112 @@ export default function RSVPDashboard() {
                   </div>
                 </div>
               );
-            })()}
+            })() : settingsTab === 'payment' ? (
+              <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
+                <div className="border-b border-neutral-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h4 className="text-base font-serif text-neutral-800">Manage Bank Accounts</h4>
+                    <p className="text-xs text-neutral-400 mt-1">Specify bank accounts details where guests can send wedding gifts.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentAccounts([...paymentAccounts, { bank_name: "", bank_account: "", owner_name: "" }])}
+                    className="self-start px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.0} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    Add Account
+                  </button>
+                </div>
+
+                <form onSubmit={handleSavePaymentAccounts} className="space-y-6">
+                  {paymentAccounts.length === 0 ? (
+                    <div className="p-8 text-center border border-dashed border-neutral-200 rounded-2xl text-neutral-400 text-sm">
+                      No bank accounts added. Click "Add Account" to add one.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {paymentAccounts.map((account, idx) => (
+                        <div key={idx} className="p-5 bg-neutral-50 rounded-2xl border border-neutral-150 relative flex flex-col md:flex-row gap-4 items-end md:items-center">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 w-full">
+                            <div>
+                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Bank Name</label>
+                              <input
+                                type="text"
+                                value={account.bank_name || ""}
+                                onChange={(e) => {
+                                  const updated = [...paymentAccounts];
+                                  updated[idx] = { ...updated[idx], bank_name: e.target.value };
+                                  setPaymentAccounts(updated);
+                                }}
+                                placeholder="e.g. BCA, Mandiri, BRI"
+                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Account Number</label>
+                              <input
+                                type="text"
+                                value={account.bank_account || ""}
+                                onChange={(e) => {
+                                  const updated = [...paymentAccounts];
+                                  updated[idx] = { ...updated[idx], bank_account: e.target.value };
+                                  setPaymentAccounts(updated);
+                                }}
+                                placeholder="e.g. 0131800826"
+                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Account Owner</label>
+                              <input
+                                type="text"
+                                value={account.owner_name || ""}
+                                onChange={(e) => {
+                                  const updated = [...paymentAccounts];
+                                  updated[idx] = { ...updated[idx], owner_name: e.target.value };
+                                  setPaymentAccounts(updated);
+                                }}
+                                placeholder="e.g. JOVITA LOLA EDRIA"
+                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                                required
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = paymentAccounts.filter((_, i) => i !== idx);
+                              setPaymentAccounts(updated);
+                            }}
+                            className="p-3 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-all cursor-pointer active:scale-95 sm:mt-6"
+                            title="Remove Account"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSavingPaymentAccounts}
+                    className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  >
+                    {isSavingPaymentAccounts ? (
+                      <>
+                        <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Bank Accounts"
+                    )}
+                  </button>
+                </form>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
