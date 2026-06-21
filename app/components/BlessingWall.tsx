@@ -591,25 +591,23 @@ export default function BlessingWall({
                                 return (
                                   <>
                                     <div 
-                                      className={`w-full flex justify-between items-center py-3 px-5 md:py-2 md:px-3 rounded-md text-xs md:text-[11px] font-sans select-none ${
+                                      className={`w-full text-left py-3 px-5 md:py-2 md:px-3 rounded-md text-xs md:text-[11px] font-sans select-none ${
                                         isAttending === "yes" 
                                           ? "bg-[#6c6355] text-white" 
                                           : "bg-[#e4ded5] text-[#3d332a]"
                                       }`}
                                     >
-                                      <span>{a1Rsvp}</span>
-                                      <span className="font-bold">{yesPercent}%</span>
+                                      {a1Rsvp}
                                     </div>
                                     
                                     <div 
-                                      className={`w-full flex justify-between items-center py-3 px-5 md:py-2 md:px-3 rounded-md text-xs md:text-[11px] font-sans select-none ${
+                                      className={`w-full text-left py-3 px-5 md:py-2 md:px-3 rounded-md text-xs md:text-[11px] font-sans select-none ${
                                         isAttending === "no" 
                                           ? "bg-[#6c6355] text-white" 
                                           : "bg-[#e4ded5] text-[#3d332a]"
                                       }`}
                                     >
-                                      <span>{a2Rsvp}</span>
-                                      <span className="font-bold">{noPercent}%</span>
+                                      {a2Rsvp}
                                     </div>
                                   </>
                                 );
