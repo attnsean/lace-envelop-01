@@ -97,8 +97,38 @@ export default function RightSidebar({
   }, [project?.wedding_date]);
 
   const formattedWeddingLocation = React.useMemo(() => {
-    return project?.venue_name || "SEMARANG";
-  }, [project?.venue_name]);
+    const venue = project?.venue_name || "";
+    const knownCities = [
+      "SEMARANG", "JAKARTA", "BANDUNG", "SURABAYA", "MEDAN", "BALI", 
+      "YOGYAKARTA", "JOGJA", "MAKASSAR", "DENPASAR", "TANGERANG", 
+      "BEKASI", "DEPOK", "BOGOR", "SOLO", "SURAKARTA"
+    ];
+    
+    // Check address first for "Kota [Nama]" or "Kabupaten [Nama]" or known cities
+    const address = (project?.venue_address || "").toUpperCase();
+    for (const city of knownCities) {
+      if (address.includes(city)) {
+        return city;
+      }
+    }
+    
+    // Check venue name next for known cities
+    const venueUpper = venue.toUpperCase();
+    for (const city of knownCities) {
+      if (venueUpper.includes(city)) {
+        return city;
+      }
+    }
+    
+    // Fallback: take the last word of venue_name, clean it
+    if (venue.trim()) {
+      const parts = venue.trim().split(/\s+/);
+      const lastWord = parts[parts.length - 1].toUpperCase().replace(/[.,()]/g, "");
+      if (lastWord) return lastWord;
+    }
+    
+    return "SEMARANG";
+  }, [project?.venue_name, project?.venue_address]);
 
   const openLightbox = (idx: number) => {
     setPage([idx, 0]);

@@ -109,7 +109,8 @@ export default function BlessingWall({
   // States
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [isAttending, setIsAttending] = useState<string>("yes");
+  const [rsvpGuestName, setRsvpGuestName] = useState("");
+  const [isAttending, setIsAttending] = useState<string>("");
   const [guestsCount, setGuestsCount] = useState(1);
   const [wishText, setWishText] = useState("");
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
@@ -129,6 +130,14 @@ export default function BlessingWall({
   const [currentPage, setCurrentPage] = useState(1);
   const wishesPerPage = 5;
   const galleryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (guestName && guestName !== "Guest Name" && guestName !== "Special Guest") {
+      setRsvpGuestName(guestName);
+    } else {
+      setRsvpGuestName("");
+    }
+  }, [guestName]);
 
   // Helper to fetch wishes
   const fetchWishes = useCallback(async () => {
@@ -313,6 +322,17 @@ export default function BlessingWall({
   const handleRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectId || hasRsvpSubmitted) return;
+
+    if (!rsvpGuestName || !rsvpGuestName.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+
+    if (!isAttending) {
+      alert("Please select whether you are coming or not.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -322,7 +342,7 @@ export default function BlessingWall({
         body: JSON.stringify({
           project_id: projectId,
           guest_id: guest?.id || null,
-          guest_name: guestName,
+          guest_name: rsvpGuestName.trim(),
           guest_phone: phone,
           attendance: isAttending === 'yes' ? 'hadir' : 'tidak_hadir',
           pax: isAttending === 'yes' ? guestsCount : 0,
@@ -345,7 +365,7 @@ export default function BlessingWall({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email,
-              name: guestName,
+              name: rsvpGuestName.trim(),
               attendance: isAttending === 'yes' ? 'Hadir' : 'Tidak Hadir',
               pax: guestsCount,
               brideName: project?.bride_nickname || 'Ananda',
@@ -385,6 +405,8 @@ export default function BlessingWall({
   const handleWishSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectId || !wishText || myWishes.length >= 3) return;
+
+    const submitName = rsvpGuestName.trim() || guestName || "Guest Name";
     setIsSubmitting(true);
 
     try {
@@ -394,7 +416,7 @@ export default function BlessingWall({
         body: JSON.stringify({
           project_id: projectId,
           guest_id: guest?.id || null,
-          name: guestName,
+          name: submitName,
           message: wishText
         })
       });
@@ -539,8 +561,9 @@ export default function BlessingWall({
                           </label>
                           <input
                             type="text"
-                            value={guestName}
-                            readOnly
+                            value={rsvpGuestName}
+                            onChange={(e) => setRsvpGuestName(e.target.value)}
+                            placeholder="Guest Name"
                             disabled={hasRsvpSubmitted}
                             className="w-full bg-[#ebe7db]/40 border border-[#b8b3a9] py-2.5 px-4 md:py-1.5 md:px-3 rounded-md text-xs md:text-[11px] text-[#3d332a]/85 font-sans focus:outline-none focus:border-[#6c6355] focus:ring-1 focus:ring-[#6c6355] transition-all"
                           />
