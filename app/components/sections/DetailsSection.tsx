@@ -34,6 +34,31 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
     return timeStr;
   };
 
+  const getWeddingTimeRange = () => {
+    if (events && events.length > 0) {
+      const sortedEvents = [...events].sort((a, b) => {
+        if (a.sort_order !== undefined && b.sort_order !== undefined) {
+          return a.sort_order - b.sort_order;
+        }
+        return (a.event_time || "").localeCompare(b.event_time || "");
+      });
+      const firstEvent = sortedEvents[0];
+      const lastEvent = sortedEvents[sortedEvents.length - 1];
+      const startTime = formatTime(firstEvent.event_time);
+      const endTime = formatTime(lastEvent.end_time || lastEvent.event_time);
+      if (startTime && endTime && startTime !== endTime) {
+        return `${startTime}-${endTime}`;
+      } else if (startTime) {
+        return startTime;
+      }
+    }
+    if (project?.wedding_time) {
+      return formatTime(project.wedding_time);
+    }
+    return "13.15-18.00";
+  };
+
+  const weddingTimeRange = getWeddingTimeRange();
   const eventDateRaw = project?.wedding_date || events?.[0]?.event_date || "2026-08-08";
   const formattedDate = formatEnglishDate(eventDateRaw);
 
@@ -58,10 +83,10 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
         {/* The Details Title */}
         <FadeIn delay={0.3}>
           <div className="flex flex-col items-center mb-4 sm:mb-8 md:mb-14 select-none relative">
-            <span className="font-parfumerie text-[#4A3E3D] text-[clamp(45px,10vw,95px)] md:text-[clamp(85px,6vw,120px)] leading-none italic font-light z-10 -mb-2 md:-mb-5">
+            <span className="font-parfumerie text-[#4A3E3D] text-[clamp(36px,11vw,65px)] md:text-[clamp(75px,5vw,110px)] leading-none italic font-light z-10 -mb-2 md:-mb-5">
               The
             </span>
-            <h3 className="font-seasons text-[#4A3E3D] text-[clamp(26px,6.5vw,56px)] md:text-[clamp(48px,4.5vw,68px)] font-normal uppercase leading-none tracking-[0.15em] md:tracking-[0.2em]">
+            <h3 className="font-seasons text-[#4A3E3D] text-[clamp(20px,6.2vw,38px)] md:text-[clamp(42px,3.8vw,60px)] font-normal uppercase leading-none tracking-[0.15em] md:tracking-[0.2em]">
               DETAILS
             </h3>
           </div>
@@ -70,13 +95,13 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
         {/* Date & Location */}
         <FadeIn delay={0.5}>
           <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-10">
-            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(12px,2.5vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 sm:mb-2">
+            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(16px,1.5vw,22px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 sm:mb-2">
               DATE & LOCATION
             </h4>
-            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(14px,1vw,17px)] leading-tight sm:leading-relaxed tracking-wider">
               {formattedDate}
             </p>
-            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(14px,1vw,17px)] leading-tight sm:leading-relaxed tracking-wider">
               {project?.venue_name || "Openaire Resto Bar Market Semarang"}
             </p>
           </div>
@@ -90,11 +115,11 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
         {/* Akad & Reception */}
         <FadeIn delay={0.7}>
           <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-10">
-            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(12px,2.5vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 sm:mb-2">
+            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(16px,1.5vw,22px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 sm:mb-2">
               AKAD & RECEPTION
             </h4>
-            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
-              {project?.wedding_time || "13.15-18.00"}
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(14px,1vw,17px)] leading-tight sm:leading-relaxed tracking-wider">
+              {weddingTimeRange}
             </p>
           </div>
         </FadeIn>
@@ -108,7 +133,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
         <FadeIn delay={0.9} className="mt-2 sm:mt-4">
           <button
             onClick={() => setShowRundownOverlay(true)}
-            className="font-lekton text-[#4A3E3D] text-[clamp(10px,2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] tracking-wider px-6 md:px-10 py-2.5 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
+            className="font-lekton text-[#4A3E3D] text-[clamp(10px,2.8vw,13px)] md:text-[clamp(13px,1vw,15px)] tracking-wider px-6 md:px-10 py-2.5 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             Detailed Info & Rundown
           </button>
