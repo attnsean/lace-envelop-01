@@ -25,6 +25,15 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
     return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
+  const formatTime = (timeStr?: string | null) => {
+    if (!timeStr) return "";
+    const parts = timeStr.split(":");
+    if (parts.length >= 2) {
+      return `${parts[0]}.${parts[1]}`;
+    }
+    return timeStr;
+  };
+
   const eventDateRaw = project?.wedding_date || events?.[0]?.event_date || "2026-08-08";
   const formattedDate = formatEnglishDate(eventDateRaw);
 
@@ -92,13 +101,13 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
             {events && events.length > 0 ? (
               <div className="flex flex-col gap-1.5">
                 {events.map((evt, idx) => {
-                  const label = evt.event_type === "akad" 
-                    ? "Akad Nikah" 
-                    : evt.event_type === "reception" 
-                    ? "Resepsi" 
+                  const label = (evt.event_type === "akad" || evt.custom_label === "Pemberkatan Pernikahan" || evt.custom_label === "Akad Nikah")
+                    ? "Holy Matrimony"
+                    : (evt.event_type === "resepsi" || evt.event_type === "reception" || evt.custom_label === "Resepsi Pernikahan")
+                    ? "Wedding Reception"
                     : evt.custom_label || evt.event_type;
-                  const timeStr = evt.event_time || "13.15";
-                  const endTimeStr = evt.end_time ? ` - ${evt.end_time}` : " - Selesai";
+                  const timeStr = formatTime(evt.event_time) || "13.15";
+                  const endTimeStr = evt.end_time ? ` - ${formatTime(evt.end_time)}` : " - Finish";
                   return (
                     <p key={idx} className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
                       {label} : {timeStr}{endTimeStr}
@@ -108,7 +117,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
               </div>
             ) : (
               <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(13px,2.5vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-relaxed tracking-wider">
-                {project?.wedding_time || "13.15-18.00"}
+                {project?.wedding_time || "13.15 - 18.00"}
               </p>
             )}
           </div>
