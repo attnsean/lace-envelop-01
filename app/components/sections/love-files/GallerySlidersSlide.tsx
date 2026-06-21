@@ -74,7 +74,7 @@ export default function GallerySlidersSlide({
 
         {/* Title */}
         <FadeIn delay={0.2}>
-          <h2 className="font-parfumerie text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-semibold tracking-wide leading-none mb-2 drop-shadow-md">
+          <h2 className="font-parfumerie text-[#e2ddc7] text-[clamp(44px,9vw,64px)] font-medium tracking-wide leading-none mb-2 drop-shadow-md">
             The Couple’s Gallery
           </h2>
           <p className="font-seasons text-[#e2ddc7]/85 font-semibold text-[clamp(11px,2.2vw,14px)] tracking-[0.2em] mb-8">
@@ -369,13 +369,13 @@ export default function GallerySlidersSlide({
           )}
         </div>
 
-        {/* Footer Link: Halaman Utama */}
+        {/* Footer Link: Home Page */}
         <FadeIn delay={0.8} className="w-full flex flex-col items-center mt-12 z-30">
           <button
             onClick={onClose}
             className="font-lekton text-[#e2ddc7] text-[clamp(11px,1.8vw,14px)] uppercase tracking-[0.25em] border-b border-[#e2ddc7]/60 pb-1 hover:text-[#e2ddc7]/80 hover:border-[#e2ddc7]/80 transition-all cursor-pointer"
           >
-            HALAMAN UTAMA &gt;&gt;
+            Home Page &gt;&gt;
           </button>
         </FadeIn>
       </div>
