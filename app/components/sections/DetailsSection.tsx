@@ -57,7 +57,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
       <div className="w-full md:w-[50%] h-[68%] sm:h-[65%] md:h-full flex flex-col items-center justify-center overflow-y-auto no-scrollbar p-3 xs:p-5 md:p-12 text-[#4A3E3D] select-none text-center bg-[#E1D8CC]">
         {/* The Details Title */}
         <FadeIn delay={0.3}>
-          <div className="flex flex-col items-center mb-2 sm:mb-6 md:mb-12 select-none relative">
+          <div className="flex flex-col items-center mb-4 sm:mb-8 md:mb-14 select-none relative">
             <span className="font-parfumerie text-[#4A3E3D] text-[clamp(45px,10vw,95px)] md:text-[clamp(85px,6vw,120px)] leading-none italic font-light z-10 -mb-2 md:-mb-5">
               The
             </span>
@@ -69,8 +69,8 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
 
         {/* Date & Location */}
         <FadeIn delay={0.5}>
-          <div className="flex flex-col items-center mb-2 sm:mb-4 md:mb-8">
-            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(12px,2.5vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 md:mb-3">
+          <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-10">
+            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(12px,2.5vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 sm:mb-2">
               DATE & LOCATION
             </h4>
             <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
@@ -79,23 +79,18 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
             <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
               {project?.venue_name || "Openaire Resto Bar Market Semarang"}
             </p>
-            {project?.venue_address && (
-              <p className="font-lekton text-[#4A3E3D]/80 text-[clamp(9px,1.6vw,13px)] md:text-[clamp(12px,1vw,14px)] leading-normal tracking-wider mt-0.5 px-4 max-w-sm">
-                {project.venue_address}
-              </p>
-            )}
           </div>
         </FadeIn>
 
         {/* Thin Divider */}
         <FadeIn delay={0.6} className="w-full flex justify-center">
-          <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-1.5 sm:my-3 md:my-5"></div>
+          <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-3.5 sm:my-5 md:my-8"></div>
         </FadeIn>
 
         {/* Akad & Reception */}
         <FadeIn delay={0.7}>
-          <div className="flex flex-col items-center mb-2 sm:mb-4 md:mb-8">
-            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(12px,2.5vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 md:mb-3">
+          <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-10">
+            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(12px,2.5vw,18px)] md:text-[clamp(18px,1.8vw,24px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 sm:mb-2">
               AKAD & RECEPTION
             </h4>
             <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(11px,2.2vw,16px)] md:text-[clamp(15px,1.3vw,19px)] leading-tight sm:leading-relaxed tracking-wider">
@@ -106,11 +101,11 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
 
         {/* Thin Divider */}
         <FadeIn delay={0.8} className="w-full flex justify-center">
-          <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-1.5 sm:my-3 md:my-5"></div>
+          <div className="w-20 md:w-28 h-[1px] bg-[#4A3E3D]/20 my-3.5 sm:my-5 md:my-8"></div>
         </FadeIn>
 
         {/* Action Button */}
-        <FadeIn delay={0.9} className="mt-1 sm:mt-2">
+        <FadeIn delay={0.9} className="mt-2 sm:mt-4">
           <button
             onClick={() => setShowRundownOverlay(true)}
             className="font-lekton text-[#4A3E3D] text-[clamp(10px,2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] tracking-wider px-6 md:px-10 py-2.5 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
