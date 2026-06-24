@@ -216,6 +216,21 @@ export default function RightSidebar({
     }
   };
 
+  const thumbnailsContainerRef = useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (selectedIndex !== null && thumbnailsContainerRef.current) {
+      const activeChild = thumbnailsContainerRef.current.children[selectedIndex] as HTMLElement;
+      if (activeChild) {
+        activeChild.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  }, [selectedIndex]);
+
   return (
     <div className="relative w-full h-[100dvh] z-20 flex-shrink-0 overflow-hidden bg-neutral-950">
       <CustomCursor />
@@ -502,7 +517,15 @@ export default function RightSidebar({
 
             {/* Thumbnails row below */}
             <div className="w-full h-[15vh] mt-4 md:mt-8 px-4 safe-area-x safe-area-b flex flex-col justify-center">
-              <div className="w-full max-w-3xl mx-auto flex items-center gap-2 md:gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-4 px-2">
+              <div
+                ref={thumbnailsContainerRef}
+                onWheel={(e) => {
+                  if (e.deltaY !== 0) {
+                    e.currentTarget.scrollLeft += e.deltaY;
+                  }
+                }}
+                className="w-full max-w-3xl mx-auto flex items-center gap-2 md:gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-4 px-2"
+              >
                 {galleryImages.map((frag, idx) => (
                   <button
                     key={idx}

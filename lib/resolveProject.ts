@@ -210,11 +210,16 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
     if (projectId) {
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
-        .select('*, subscriptions(status, expires_at, packages(*))')
+        .select('*, subscriptions(status, expires_at, packages(*)), wedding_details(*)')
         .eq('id', projectId)
         .maybeSingle();
 
       if (projectData && !projectError) {
+        // Flatten wedding_details fields into the project object
+        const details = (projectData as any).wedding_details;
+        if (details) {
+          Object.assign(projectData, details);
+        }
         result.project = projectData;
 
         // 4. Fetch events
