@@ -169,7 +169,7 @@ export default function RightSidebar({
     setIsOpen(true);
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play();
+      audioRef.current.play().catch((e) => console.log("Audio play interrupted:", e));
       setIsPlaying(true);
     }
   };
@@ -179,7 +179,7 @@ export default function RightSidebar({
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play();
+        audioRef.current.play().catch((e) => console.log("Audio play interrupted:", e));
       }
       setIsPlaying(!isPlaying);
     }
