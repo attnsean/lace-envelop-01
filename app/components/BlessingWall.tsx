@@ -520,10 +520,10 @@ export default function BlessingWall({
                     <div 
                       className="absolute z-10 w-[60%] h-[48%] left-[24%] bottom-[14%] flex items-center justify-center p-2 text-center rotate-[7deg] select-none"
                     >
-                      <p className="font-seasons text-[#4a3f35] text-[13px] xs:text-[14px] sm:text-[15px] md:text-[12px] lg:text-[14px] leading-[1.4] font-medium tracking-wide">
-                        Kindly RSVP by July 30, 2026 <br />
-                        as seating has been specially <br />
-                        arranged for each guest
+                      <p className="font-seasons text-[#4a3f35] text-[12px] xs:text-[13px] sm:text-[14px] md:text-[11px] lg:text-[13px] leading-[1.4] font-medium tracking-wide">
+                        Mohon konfirmasi kehadiran <br />
+                        paling lambat 9 Agustus 2026 <br />
+                        karena tempat duduk telah diatur
                       </p>
                     </div>
                   </div>

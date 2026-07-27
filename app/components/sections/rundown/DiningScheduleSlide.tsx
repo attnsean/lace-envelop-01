@@ -36,12 +36,14 @@ export default function DiningScheduleSlide({
   ];
 
   const rawDining = project?.dining_schedule;
-  const diningItems = Array.isArray(rawDining) && rawDining.length > 0
-    ? rawDining.map((d: any) => ({
-        time: d.time || "",
-        title: d.title || d.activity || ""
-      })).filter(d => d.time && d.title)
-    : defaultDiningItems;
+  if (!rawDining || !Array.isArray(rawDining) || rawDining.length === 0) {
+    return null;
+  }
+
+  const diningItems = rawDining.map((d: any) => ({
+    time: d.time || "",
+    title: d.title || d.activity || ""
+  })).filter(d => d.time && d.title);
 
   return (
     <div

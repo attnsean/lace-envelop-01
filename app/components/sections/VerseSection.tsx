@@ -60,26 +60,14 @@ export default function VerseSection({ project }: Props) {
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               className="relative w-[95vw] sm:w-[90vw] max-w-[540px] sm:max-w-[660px] aspect-[1.7] flex items-center justify-center filter drop-shadow-2xl"
             >
-              {/* Platter Frame */}
-              <div className="absolute w-[55%] h-[158%] z-10 rotate-90">
-                <Image
-                  src={frameImgUrl}
-                  alt="Silver Platter"
-                  fill
-                  sizes="(max-width: 640px) 540px, 660px"
-                  className="object-fill"
-                  unoptimized
-                />
-              </div>
-
               {/* Couple Photo */}
-              <div className="absolute w-[70%] h-[74%] z-20 overflow-hidden" style={{ clipPath: 'ellipse(48% 48% at 50% 50%)' }}>
+              <div className="relative w-[280px] sm:w-[360px] aspect-[4/3] z-20 overflow-hidden rounded-2xl border-2 border-white/60 shadow-2xl">
                 <Image
                   src={coupleImgUrl}
                   alt="Couple under Veil"
                   fill
                   sizes="(max-width: 640px) 380px, 460px"
-                  className="object-cover scale-110"
+                  className="object-cover"
                   unoptimized
                 />
               </div>
