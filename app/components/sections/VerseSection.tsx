@@ -23,13 +23,13 @@ export default function VerseSection({ project }: Props) {
 
   const quoteArabic = project?.quote_arabic !== undefined && project?.quote_arabic !== null && project?.quote_arabic !== ""
     ? project.quote_arabic
-    : "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ";
+    : "وَخَلَقْنَاكُمْ أَزْوَاجًا";
   const quoteTranslation = project?.quote_translation !== undefined && project?.quote_translation !== null && project?.quote_translation !== ""
     ? project.quote_translation
-    : "“Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir.”";
+    : "“And We created you in pairs.”";
   const quoteSource = project?.quote_source !== undefined && project?.quote_source !== null && project?.quote_source !== ""
     ? project.quote_source
-    : "(QS. Ar-Rum [30]: 21)";
+    : "— Surah An-Naba (78:8)";
 
   return (
     <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-neutral-950 flex flex-col items-center justify-center">
@@ -60,17 +60,6 @@ export default function VerseSection({ project }: Props) {
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               className="relative w-[95vw] sm:w-[90vw] max-w-[540px] sm:max-w-[660px] aspect-[1.7] flex items-center justify-center filter drop-shadow-2xl"
             >
-              {/* Frame Overlay */}
-              <Image
-                src={frameImgUrl}
-                alt="Silver Frame"
-                fill
-                sizes="(max-width: 640px) 540px, 660px"
-                className="object-contain z-30 select-none pointer-events-none drop-shadow-xl scale-105 sm:scale-105"
-                draggable={false}
-                unoptimized
-              />
-
               {/* Couple Photo */}
               <div className="relative w-[280px] sm:w-[360px] aspect-[4/3] z-20 overflow-hidden rounded-2xl border-2 border-white/60 shadow-2xl">
                 <Image
