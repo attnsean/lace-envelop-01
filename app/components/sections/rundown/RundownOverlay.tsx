@@ -145,6 +145,7 @@ export default function RundownOverlay({
             {/* SLIDE 2: Wedding Rundown */}
             <WeddingRundownSlide
               project={project}
+              events={events}
               slideRef={rundownOverlayRundownRef}
               prevSlideRef={rundownOverlaySummaryRef}
               nextSlideRef={rundownOverlayDiningRef}

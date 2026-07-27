@@ -40,9 +40,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Generate clean QR Code URL without logo
-    const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(name)}&size=250&ecLevel=H`;
-
     const mailOptions = {
       from: `"Wedding Invitation" <${process.env.GMAIL_USER}>`, 
       to: email,
@@ -62,10 +59,9 @@ export async function POST(request: Request) {
           
           <div style="text-align: center; margin: 40px 0; background: #0a0a0a; border-radius: 30px; overflow: hidden; border: 1px solid #222;">
             <div style="background: #ffffff; padding: 30px;">
-              <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #999; margin-bottom: 20px;">Your Entry Access Code</p>
-              <img src="${qrCodeUrl}" alt="Check-in QR Code" style="width: 200px; height: 200px; border-radius: 10px; border: 10px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);" />
+              <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #999; margin-bottom: 20px;">RSVP CONFIRMED</p>
               <h2 style="margin-top: 20px; font-weight: bold; color: #000; letter-spacing: 1px;">${name.toUpperCase()}</h2>
-              <p style="font-size: 11px; color: #999; font-style: italic; margin-top: 10px;">Please show this QR code at the reception for check-in.</p>
+              <p style="font-size: 13px; color: #666; margin-top: 10px;">We have registered your attendance. We look forward to celebrating with you!</p>
             </div>
             
             <div style="padding: 20px 15px; background: #0a0a0a; border-top: 1px solid #222;">

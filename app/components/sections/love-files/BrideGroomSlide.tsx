@@ -21,6 +21,9 @@ export default function BrideGroomSlide({
 }: Props) {
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
   const projectId = project?.id || "f93ad18d-cba2-4de0-a86b-b1fadf2783a2";
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
@@ -70,7 +73,7 @@ export default function BrideGroomSlide({
         >
           <div className="relative w-[65vw] h-[65vw] max-w-[270px] max-h-[270px] xs:w-[70vw] xs:h-[70vw] sm:w-[360px] sm:h-[360px] lg:w-[28vw] lg:h-[28vw] lg:max-w-[340px] lg:max-h-[340px] xl:w-[22vw] xl:h-[22vw] xl:max-w-[360px] xl:max-h-[360px] flex-shrink-0">
             <Image
-              src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/lace-frame.png?v=2`}
+              src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/lace-frame.png`}
               alt="Lace frame"
               fill
               className="object-contain filter drop-shadow-[0_8px_16px_rgba(74,53,37,0.18)]"
@@ -81,7 +84,7 @@ export default function BrideGroomSlide({
               className="absolute overflow-hidden rounded-[8px] sm:rounded-[12px] md:rounded-[16px]"
             >
               <Image
-                src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/bride-photo.jpg?v=2`}
+                src={project?.bride_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/bride-photo.jpg`}
                 alt={project?.bride_name || "Jovita Lola Edria"}
                 fill
                 className="object-cover"
@@ -123,7 +126,7 @@ export default function BrideGroomSlide({
         >
           <div className="relative w-[65vw] h-[65vw] max-w-[270px] max-h-[270px] xs:w-[70vw] xs:h-[70vw] sm:w-[360px] sm:h-[360px] lg:w-[28vw] lg:h-[28vw] lg:max-w-[340px] lg:max-h-[340px] xl:w-[22vw] xl:h-[22vw] xl:max-w-[360px] xl:max-h-[360px] flex-shrink-0">
             <Image
-              src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/lace-frame.png?v=2`}
+              src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/lace-frame.png`}
               alt="Lace frame"
               fill
               className="object-contain filter drop-shadow-[0_8px_16px_rgba(74,53,37,0.18)]"
@@ -134,7 +137,7 @@ export default function BrideGroomSlide({
               className="absolute overflow-hidden rounded-[8px] sm:rounded-[12px] md:rounded-[16px]"
             >
               <Image
-                src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/groom-photo.jpg?v=2`}
+                src={project?.groom_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/groom-photo.jpg`}
                 alt={project?.groom_name || "Muhammad Luqman Fikri"}
                 fill
                 className="object-cover"

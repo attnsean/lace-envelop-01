@@ -16,10 +16,20 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
   const projectId = project?.id || '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
 
-  const danceImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-dance.jpg`;
-  const pigeonsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-pigeons.jpg`;
-  const flowersImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/gallery-24.jpg`;
-  const runImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-run.jpg`;
+  const gallery = (project as any)?.gallery_photos || [];
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
+
+  const getPhoto = (idx: number, fallbackFilename: string) => {
+    const item = gallery[idx];
+    if (item) return typeof item === 'string' ? item : (item.url || item);
+    return `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/${fallbackFilename}`;
+  };
+
+  const danceImgUrl = getPhoto(0, 'sec2-dance.jpg');
+  const pigeonsImgUrl = getPhoto(1, 'sec2-pigeons.jpg');
+  const flowersImgUrl = getPhoto(2, 'gallery-24.jpg');
+  const runImgUrl = getPhoto(3, 'sec2-run.jpg');
 
   const quote1 = project?.quote_intro_line1 !== undefined && project?.quote_intro_line1 !== null
     ? project.quote_intro_line1

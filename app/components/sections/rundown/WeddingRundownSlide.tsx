@@ -8,6 +8,7 @@ import FadeIn from "../../FadeIn";
 
 interface Props {
   project?: DbProject | null;
+  events?: any[] | null;
   slideRef: React.RefObject<HTMLDivElement | null>;
   prevSlideRef: React.RefObject<HTMLDivElement | null>;
   nextSlideRef: React.RefObject<HTMLDivElement | null>;
@@ -15,12 +16,16 @@ interface Props {
 
 export default function WeddingRundownSlide({
   project,
+  events,
   slideRef,
   prevSlideRef,
   nextSlideRef,
 }: Props) {
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
   const projectId = project?.id || "f93ad18d-cba2-4de0-a86b-b1fadf2783a2";
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
@@ -65,7 +70,13 @@ export default function WeddingRundownSlide({
         title: r.title || r.activity || "",
         icon: r.icon || "rundown-rings.png"
       })).filter(r => r.time && r.title)
-    : defaultRundownItems;
+    : (events && events.length > 0
+        ? events.map((e: any) => ({
+            time: e.event_time ? e.event_time.substring(0, 5).replace(':', '.') : "16.00",
+            title: e.custom_label || (e.event_type === 'akad' ? 'Akad Ceremony' : (e.event_type === 'resepsi' ? 'Resepsi Pernikahan' : e.venue_name || 'Wedding Event')),
+            icon: e.event_type === 'akad' ? 'rundown-rings.png' : 'rundown-table.png'
+          }))
+        : defaultRundownItems);
 
   return (
     <div
@@ -118,7 +129,7 @@ export default function WeddingRundownSlide({
           {rundownItems.map((item, idx) => {
             const imgUrl = item.icon.startsWith("http://") || item.icon.startsWith("https://") || item.icon.startsWith("/")
               ? item.icon
-              : `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/${item.icon}?v=5`;
+              : `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/${item.icon}?v=5`;
             return (
               <FadeIn
                 key={idx}

@@ -25,6 +25,10 @@ interface Props {
 }
 
 export default function GiftRegistrySection({ project }: Props) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+
   if (project?.subscriptions?.packages?.has_amplop_digital === false) {
     return null;
   }
@@ -70,7 +74,7 @@ export default function GiftRegistrySection({ project }: Props) {
               className="relative w-[360px] h-[200px] mt-3 select-none pointer-events-none"
             >
               <Image
-                src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-bird.png`}
+                src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-bird.png`}
                 alt="Bird Illustration"
                 fill
                 sizes="360px"
@@ -120,7 +124,7 @@ export default function GiftRegistrySection({ project }: Props) {
                       className="relative w-full aspect-[560/345] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
                     >
                       <Image
-                        src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
+                        src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-lace.png`}
                         alt="Lace Card Frame"
                         fill
                         sizes="(max-width: 1280px) 400px, 480px"
@@ -183,7 +187,7 @@ export default function GiftRegistrySection({ project }: Props) {
           className="relative w-[140px] h-[80px] select-none pointer-events-none -mt-1"
         >
           <Image
-            src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-bird.png`}
+            src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-bird.png`}
             alt="Bird Illustration"
             fill
             sizes="140px"
@@ -237,7 +241,7 @@ export default function GiftRegistrySection({ project }: Props) {
                     className="relative w-[340px] h-[210px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
                   >
                     <Image
-                      src={`https://xnruifsptjsafctjwqdh.supabase.co/storage/v1/object/public/undangan/${project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf'}/${project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2'}/gift-lace.png`}
+                      src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-lace.png`}
                       alt="Lace Card Frame"
                       fill
                       sizes="340px"

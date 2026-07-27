@@ -21,6 +21,9 @@ export default function DiningScheduleSlide({
 }: Props) {
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
   const projectId = project?.id || "f93ad18d-cba2-4de0-a86b-b1fadf2783a2";
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
@@ -116,7 +119,7 @@ export default function DiningScheduleSlide({
             className="relative w-[75vw] sm:w-[60vw] md:w-full max-w-[420px] aspect-[3/4] overflow-hidden rounded-2xl md:rounded-[2.5rem]"
           >
             <Image
-              src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/dining-schedule-photo.jpg`}
+              src={project?.cover_photo_url || project?.opening_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/dining-schedule-photo.jpg`}
               alt="Couple dining preview"
               fill
               className="object-cover"

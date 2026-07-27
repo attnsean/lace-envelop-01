@@ -12,11 +12,14 @@ interface Props {
 export default function VerseSection({ project }: Props) {
   const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
 
-  const bgImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-bg.jpg`;
-  const frameImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-frame.png`;
-  const coupleImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec3-couple.jpg`;
+  const bgImgUrl = project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec3-bg.jpg`;
+  const frameImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec3-frame.png`;
+  const coupleImgUrl = project?.opening_photo_url || project?.bride_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec3-couple.jpg`;
 
   const quoteArabic = project?.quote_arabic !== undefined && project?.quote_arabic !== null
     ? project.quote_arabic
@@ -36,10 +39,12 @@ export default function VerseSection({ project }: Props) {
           alt="Background"
           fill
           sizes="100vw"
-          className="object-cover opacity-100 select-none"
+          className="object-cover opacity-90 select-none"
           draggable={false}
           unoptimized
         />
+        {/* Dark overlay gradient for contrast against bright background photos */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/75 pointer-events-none" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 max-w-xl mx-auto h-full select-none gap-6 sm:gap-8">
@@ -91,10 +96,11 @@ export default function VerseSection({ project }: Props) {
               transition={{ duration: 1.0, ease: "easeOut", delay: 0.4 }}
             >
               <h3 
-                className="text-white text-[clamp(28px,7.5vw,46px)] leading-relaxed text-center font-normal"
+                className="text-white text-[clamp(28px,7.5vw,46px)] leading-relaxed text-center font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]"
                 style={{ 
                   fontFamily: '"Traditional Arabic", "Amiri", "Scheherazade New", serif', 
-                  direction: 'rtl'
+                  direction: 'rtl',
+                  textShadow: '0 2px 14px rgba(0,0,0,0.95), 0 0 24px rgba(0,0,0,0.9), 0 0 2px #000'
                 }}
               >
                 {quoteArabic}
@@ -110,8 +116,8 @@ export default function VerseSection({ project }: Props) {
               transition={{ duration: 1.0, ease: "easeOut", delay: 0.7 }}
             >
               <p 
-                className="font-altesse text-white text-[clamp(22px,5vw,36px)] italic font-light tracking-wide text-center leading-normal"
-                style={{ textShadow: '0 0 8px rgba(255, 255, 255, 0.95), 0 0 18px rgba(255, 255, 255, 0.85), 0 0 32px rgba(255, 255, 255, 0.75), 0 0 48px rgba(255, 255, 255, 0.6), 1px 1px 3px rgba(0, 0, 0, 0.95)' }}
+                className="font-altesse text-white text-[clamp(22px,5vw,36px)] italic font-light tracking-wide text-center leading-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]"
+                style={{ textShadow: '0 2px 14px rgba(0,0,0,0.95), 0 0 28px rgba(0,0,0,0.9), 0 0 2px #000' }}
               >
                 {quoteTranslation}
               </p>
@@ -126,7 +132,10 @@ export default function VerseSection({ project }: Props) {
               transition={{ duration: 1.0, ease: "easeOut", delay: 1.0 }}
               className="w-full text-right"
             >
-              <p className="font-seasons text-white/90 text-[clamp(10px,1.8vw,13px)] uppercase tracking-[0.25em] pt-2">
+              <p 
+                className="font-lekton text-white/90 text-[clamp(10px,2vw,13px)] tracking-widest uppercase italic drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.9), 0 0 2px #000' }}
+              >
                 {quoteSource}
               </p>
             </motion.div>

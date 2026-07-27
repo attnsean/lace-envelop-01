@@ -90,8 +90,17 @@ export interface DbProject {
   quote_arabic?: string | null;
   quote_translation?: string | null;
   quote_source?: string | null;
+  photo_sec2_dance?: string | null;
+  photo_sec2_pigeons?: string | null;
+  photo_sec2_flowers?: string | null;
+  photo_sec2_run?: string | null;
+  photo_sec3_bg?: string | null;
+  photo_sec3_frame?: string | null;
+  photo_sec3_couple?: string | null;
   faqs?: unknown;
   dining_schedule?: unknown;
+  location_city?: string | null;
+  teaser_video_url?: string | null;
   quote_intro_line1?: string | null;
   quote_intro_line1_highlight?: string | null;
   quote_intro_line2?: string | null;
@@ -219,6 +228,14 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
         const details = (projectData as any).wedding_details;
         if (details) {
           Object.assign(projectData, details);
+          if (details.wishlist_note && details.wishlist_note.trim().startsWith('{')) {
+            try {
+              const quotesData = JSON.parse(details.wishlist_note);
+              Object.assign(projectData, quotesData);
+            } catch (e) {
+              console.error("Error parsing quotes from wishlist_note in resolveProject:", e);
+            }
+          }
         }
         result.project = projectData;
 

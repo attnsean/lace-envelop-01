@@ -29,16 +29,17 @@ export default function EventDetailSlide({
 }: Props) {
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
   const projectId = project?.id || "f93ad18d-cba2-4de0-a86b-b1fadf2783a2";
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
 
-  const pigeonsImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/sec2-pigeons.jpg`;
+  const gallery = (project as any)?.gallery_photos || [];
+  const pigeonsImgUrl = (typeof gallery[1] === 'string' ? gallery[1] : gallery[1]?.url) || project?.opening_photo_url || project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec2-pigeons.jpg`;
   const firstEvent = events?.[0] || null;
-  const venueName =
-    project?.venue_name ||
-    firstEvent?.venue_name ||
-    "Openaire Resto Bar Market Semarang";
+  const venueName = firstEvent?.venue_name || project?.venue_name || "Derich Garden Restaurant";
 
   return (
     <div
@@ -71,7 +72,7 @@ export default function EventDetailSlide({
             className="relative w-[70vw] h-[70vw] max-w-[240px] max-h-[240px] xs:max-w-[270px] xs:max-h-[270px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[350px] md:max-h-[350px] flex items-center justify-center drop-shadow-2xl"
           >
             <Image
-              src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/lace-frame.png`}
+              src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/lace-frame.png`}
               alt="Lace Frame"
               fill
               className="object-contain pointer-events-none select-none z-10"

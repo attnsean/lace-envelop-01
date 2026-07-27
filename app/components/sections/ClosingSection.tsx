@@ -86,25 +86,27 @@ export default function ClosingSection({ project, isOpen, onVideoPlay, onVideoPa
           </div>
         </FadeIn>
 
-        {/* Video Player */}
-        <FadeIn delay={0.5} className="w-full max-w-[280px] xs:max-w-[320px] sm:max-w-[400px] md:max-w-[480px] aspect-video relative rounded-xl overflow-hidden border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
-          <video
-            ref={thankYouVideoRef}
-            className="w-full h-full object-cover"
-            controls
-            playsInline
-            preload="metadata"
-            onPlay={onVideoPlay}
-            onPause={onVideoPause}
-            onEnded={onVideoPause}
-          >
-            <source
-              src="/video-teaser.mp4"
-              type="video/mp4"
-            />
-            Your browser does not support the video tag.
-          </video>
-        </FadeIn>
+        {/* Video Player — Only render if user provided a video */}
+        {((project as any)?.video_url || project?.live_stream_url) ? (
+          <FadeIn delay={0.5} className="w-full max-w-[280px] xs:max-w-[320px] sm:max-w-[400px] md:max-w-[480px] aspect-video relative rounded-xl overflow-hidden border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
+            <video
+              ref={thankYouVideoRef}
+              className="w-full h-full object-cover"
+              controls
+              playsInline
+              preload="metadata"
+              onPlay={onVideoPlay}
+              onPause={onVideoPause}
+              onEnded={onVideoPause}
+            >
+              <source
+                src={(project as any)?.video_url || project?.live_stream_url}
+                type="video/mp4"
+              />
+              Your browser does not support the video tag.
+            </video>
+          </FadeIn>
+        ) : null}
       </div>
 
       <FadeIn delay={0.6} className="w-full flex flex-col items-center opacity-60 hover:opacity-100 transition-opacity duration-500 mt-6">

@@ -66,9 +66,9 @@ export async function POST(request: Request) {
 
       case 'upload_image': {
         const { project_id, file, fileName, fileType } = payload;
-        const base64Data = file.replace(/^data:image\/\w+;base64,/, "");
+        const base64Data = file.replace(/^data:.+;base64,/, "");
         const buffer = Buffer.from(base64Data, 'base64');
-        const filePath = `${project_id}/gifts/${Date.now()}-${fileName}`;
+        const filePath = `${project_id}/assets/${Date.now()}-${fileName}`;
 
         const { data, error } = await supabaseAdmin.storage
           .from('undangan')
@@ -204,6 +204,42 @@ export async function POST(request: Request) {
             .delete()
             .eq('project_id', project_id)
             .eq('name', name);
+        }
+
+        return NextResponse.json({ success: true });
+      }
+
+      case 'update_project_details': {
+        const { project_id, project_fields, wedding_fields, events } = payload;
+        
+        if (project_fields && Object.keys(project_fields).length > 0) {
+          const { error: pError } = await supabaseAdmin
+            .from('projects')
+            .update(project_fields)
+            .eq('id', project_id);
+          if (pError) throw pError;
+        }
+
+        if (wedding_fields && Object.keys(wedding_fields).length > 0) {
+          const { error: wError } = await supabaseAdmin
+            .from('wedding_details')
+            .update(wedding_fields)
+            .eq('project_id', project_id);
+          if (wError) throw wError;
+        }
+
+        if (events && Array.isArray(events)) {
+          for (const ev of events) {
+            const { id, ...evFields } = ev;
+            if (id) {
+              const { error: eError } = await supabaseAdmin
+                .from('project_events')
+                .update(evFields)
+                .eq('id', id)
+                .eq('project_id', project_id);
+              if (eError) throw eError;
+            }
+          }
         }
 
         return NextResponse.json({ success: true });

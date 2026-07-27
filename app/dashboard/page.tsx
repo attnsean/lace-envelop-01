@@ -7,9 +7,33 @@ import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip as Rech
 import { supabase } from "../../lib/supabase";
 import QRCode from "react-qr-code";
 
+const getMapsEmbedUrl = (queryOrUrl: string) => {
+  if (!queryOrUrl) return "";
+  if (queryOrUrl.startsWith("http") && queryOrUrl.includes("output=embed")) {
+    return queryOrUrl;
+  }
+  if (queryOrUrl.startsWith("http")) {
+    if (queryOrUrl.includes("q=")) {
+      const match = queryOrUrl.match(/[?&]q=([^&]+)/);
+      if (match) return `https://maps.google.com/maps?q=${match[1]}&hl=id&z=15&output=embed`;
+    }
+    if (queryOrUrl.includes("query=")) {
+      const match = queryOrUrl.match(/[?&]query=([^&]+)/);
+      if (match) return `https://maps.google.com/maps?q=${match[1]}&hl=id&z=15&output=embed`;
+    }
+  }
+  return `https://maps.google.com/maps?q=${encodeURIComponent(queryOrUrl)}&hl=id&z=15&output=embed`;
+};
+
 interface WishItem {
   text: string;
   createdAt: any;
+}
+
+interface RundownItem {
+  time: string;
+  title: string;
+  icon: string;
 }
 
 interface RSVPData {
@@ -64,9 +88,70 @@ export default function RSVPDashboard() {
   const [rsvps, setRsvps] = useState<RSVPData[]>([]);
   const [gifts, setGifts] = useState<GiftItem[]>([]);
   const [storyEvents, setStoryEvents] = useState<StoryEvent[]>([]);
-  const [activeTab, setActiveTab] = useState<'rsvp' | 'gifts' | 'links' | 'settings'>('rsvp');
-  const [settingsTab, setSettingsTab] = useState<'password' | 'story' | 'payment'>('password');
+  const [activeTab, setActiveTab] = useState<'rsvp' | 'content' | 'settings'>('rsvp');
+  const [settingsTab, setSettingsTab] = useState<'password'>('password');
+  const [activeSection, setActiveSection] = useState<'cover' | 'verse' | 'couple' | 'events' | 'rundown' | 'dining' | 'story' | 'gallery' | 'cashless' | 'faq' | 'video'>('cover');
   const [loading, setLoading] = useState(true);
+
+  // Quote/Verse states
+  const [quoteArabicForm, setQuoteArabicForm] = useState("");
+  const [quoteTranslationForm, setQuoteTranslationForm] = useState("");
+  const [quoteSourceForm, setQuoteSourceForm] = useState("");
+  const [photoSec2Dance, setPhotoSec2Dance] = useState("");
+  const [photoSec2Pigeons, setPhotoSec2Pigeons] = useState("");
+  const [photoSec2Flowers, setPhotoSec2Flowers] = useState("");
+  const [photoSec2Run, setPhotoSec2Run] = useState("");
+  const [photoSec3Bg, setPhotoSec3Bg] = useState("");
+  const [photoSec3Frame, setPhotoSec3Frame] = useState("");
+  const [photoSec3Couple, setPhotoSec3Couple] = useState("");
+
+  // Gallery states
+  const [galleryPhotosForm, setGalleryPhotosForm] = useState<string[]>([]);
+  const [rundownItemsForm, setRundownItemsForm] = useState<RundownItem[]>([]);
+  const [activePreviewImage, setActivePreviewImage] = useState<string | null>(null);
+
+  // Content Editor states
+  const [isSavingDetails, setIsSavingDetails] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState<string | null>(null);
+  const [weddingEvents, setWeddingEvents] = useState<any[]>([]);
+
+  // Form details inputs
+  const [brideNameForm, setBrideNameForm] = useState("");
+  const [brideNicknameForm, setBrideNicknameForm] = useState("");
+  const [brideFatherForm, setBrideFatherForm] = useState("");
+  const [brideMotherForm, setBrideMotherForm] = useState("");
+  const [brideInstagramForm, setBrideInstagramForm] = useState("");
+  const [bridePhotoUrlForm, setBridePhotoUrlForm] = useState("");
+
+  const [groomNameForm, setGroomNameForm] = useState("");
+  const [groomNicknameForm, setGroomNicknameForm] = useState("");
+  const [groomFatherForm, setGroomFatherForm] = useState("");
+  const [groomMotherForm, setGroomMotherForm] = useState("");
+  const [groomInstagramForm, setGroomInstagramForm] = useState("");
+  const [groomPhotoUrlForm, setGroomPhotoUrlForm] = useState("");
+
+  const [weddingDateForm, setWeddingDateForm] = useState("");
+  const [weddingTimeForm, setWeddingTimeForm] = useState("");
+  const [venueNameForm, setVenueNameForm] = useState("");
+  const [venueAddressForm, setVenueAddressForm] = useState("");
+  const [venueMapsUrlForm, setVenueMapsUrlForm] = useState("");
+
+  const [hashtagForm, setHashtagForm] = useState("");
+  const [musicUrlForm, setMusicUrlForm] = useState("");
+  const [countdownTargetForm, setCountdownTargetForm] = useState("");
+  const [religionForm, setReligionForm] = useState("");
+  const [coverPhotoUrlForm, setCoverPhotoUrlForm] = useState("");
+  const [openingPhotoUrlForm, setOpeningPhotoUrlForm] = useState("");
+
+  const [liveStreamLabelForm, setLiveStreamLabelForm] = useState("");
+  const [liveStreamUrlForm, setLiveStreamUrlForm] = useState("");
+  const [wishlistNoteForm, setWishlistNoteForm] = useState("");
+  const [wishlistUrlForm, setWishlistUrlForm] = useState("");
+
+  const [locationCityForm, setLocationCityForm] = useState("");
+  const [teaserVideoUrlForm, setTeaserVideoUrlForm] = useState("");
+  const [diningScheduleForm, setDiningScheduleForm] = useState<{ time: string; title: string }[]>([]);
+  const [faqsForm, setFaqsForm] = useState<{ question: string; answer: string }[]>([]);
 
   // Authentication & Security State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -114,9 +199,9 @@ export default function RSVPDashboard() {
   const [newStoryOrder, setNewStoryOrder] = useState("");
   const [singleLoveStoryText, setSingleLoveStoryText] = useState("");
   const [isSavingLoveStory, setIsSavingLoveStory] = useState(false);
+  const [isAddingStory, setIsAddingStory] = useState(false);
 
-  const [showSlideshow, setShowSlideshow] = useState(false);
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
 
   const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'guestsCount' | 'actualGuestsCount' | null, direction: 'asc' | 'desc' }>({
     key: null,
@@ -148,21 +233,7 @@ export default function RSVPDashboard() {
 
   const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
 
-  const allWishes = rsvps.reduce((acc, rsvp) => {
-    if (rsvp.wishes && rsvp.wishes.trim() !== "" && rsvp.wishes !== "Walk-in registration") {
-      acc.push({ name: rsvp.name, text: rsvp.wishes });
-    }
-    return acc;
-  }, [] as { name: string, text: string }[]);
 
-  useEffect(() => {
-    if (showSlideshow && allWishes.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentSlideIndex((prev) => (prev + 1) % allWishes.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [showSlideshow, allWishes.length]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -171,15 +242,122 @@ export default function RSVPDashboard() {
   const fetchData = async () => {
     try {
       // 1. Fetch project info
-      const { data: projectData } = await supabase
+      const { data: rawProjectData } = await supabase
         .from('projects')
-        .select('*')
+        .select('*, wedding_details(*)')
         .eq('id', projectId)
         .maybeSingle();
 
+      let projectData = rawProjectData;
       if (projectData) {
+        const details = (projectData as any).wedding_details;
+        if (details) {
+          Object.assign(projectData, details);
+        }
         setProject(projectData);
         setDbPassword(projectData.password_dashboard || "serastory");
+
+        // Populate Content Form inputs
+        setBrideNameForm(projectData.bride_name || "");
+        setBrideNicknameForm(projectData.bride_nickname || "");
+        setBrideFatherForm(projectData.bride_father || "");
+        setBrideMotherForm(projectData.bride_mother || "");
+        setBrideInstagramForm(projectData.bride_instagram || "");
+        setBridePhotoUrlForm(projectData.bride_photo_url || "");
+
+        setGroomNameForm(projectData.groom_name || "");
+        setGroomNicknameForm(projectData.groom_nickname || "");
+        setGroomFatherForm(projectData.groom_father || "");
+        setGroomMotherForm(projectData.groom_mother || "");
+        setGroomInstagramForm(projectData.groom_instagram || "");
+        setGroomPhotoUrlForm(projectData.groom_photo_url || "");
+
+        setWeddingDateForm(projectData.wedding_date || "");
+        setWeddingTimeForm(projectData.wedding_time || "");
+        setVenueNameForm(projectData.venue_name || "");
+        setVenueAddressForm(projectData.venue_address || "");
+        setVenueMapsUrlForm(projectData.venue_maps_url || "");
+
+        setHashtagForm(projectData.hashtag || "");
+        setMusicUrlForm(projectData.music_url || "");
+        setCountdownTargetForm(projectData.countdown_target || "");
+        setReligionForm(projectData.religion || "");
+        setCoverPhotoUrlForm(projectData.cover_photo_url || "");
+        setOpeningPhotoUrlForm(projectData.opening_photo_url || "");
+
+        let quotesData: any = {};
+        if (projectData.wishlist_note && projectData.wishlist_note.trim().startsWith('{')) {
+          try {
+            quotesData = JSON.parse(projectData.wishlist_note);
+          } catch (e) {
+            console.error("Error parsing quotes from wishlist_note:", e);
+          }
+        }
+
+        // Build fallback photo URLs (same pattern as QuoteSection.tsx / VerseSection.tsx)
+        const uid = projectData.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+        const pid = projectData.id || projectId;
+        const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+        const storageBase = `${sbUrl}/storage/v1/object/public/undangan/${uid}/${pid}`;
+
+        setQuoteArabicForm(quotesData.quote_arabic || "وَخَلَقْنَاكُمْ أَزْوَاجًا");
+        setQuoteTranslationForm(quotesData.quote_translation || "\u201CAnd We created you in pairs.\u201D");
+        setQuoteSourceForm(quotesData.quote_source || "— Surah An-Naba (78:8)");
+        setPhotoSec2Dance(quotesData.photo_sec2_dance || `${storageBase}/sec2-dance.jpg`);
+        setPhotoSec2Pigeons(quotesData.photo_sec2_pigeons || `${storageBase}/sec2-pigeons.jpg`);
+        setPhotoSec2Flowers(quotesData.photo_sec2_flowers || `${storageBase}/gallery-24.jpg`);
+        setPhotoSec2Run(quotesData.photo_sec2_run || `${storageBase}/sec2-run.jpg`);
+        setPhotoSec3Bg(quotesData.photo_sec3_bg || `${storageBase}/sec3-bg.jpg`);
+        setPhotoSec3Frame(quotesData.photo_sec3_frame || `${storageBase}/sec3-frame.png`);
+        setPhotoSec3Couple(quotesData.photo_sec3_couple || `${storageBase}/sec3-couple.jpg`);
+
+        setLocationCityForm(quotesData.location_city || "");
+        setTeaserVideoUrlForm(quotesData.teaser_video_url || `${storageBase}/video-teaser.mp4`);
+
+        // Default dining schedule (same as DiningScheduleSlide.tsx)
+        const defaultDining = [
+          { time: "15.00", title: "Canapés & Welcome Drinks" },
+          { time: "15.20", title: "Starter Served" },
+          { time: "15.45", title: "Main Course Served" },
+          { time: "16.15", title: "Dessert" }
+        ];
+        setDiningScheduleForm(
+          Array.isArray(quotesData.dining_schedule) && quotesData.dining_schedule.length > 0
+            ? quotesData.dining_schedule
+            : defaultDining
+        );
+
+        // Default FAQs (same as FaqSection.tsx)
+        const defaultFaqs = [
+          { question: "Can I arrive in the middle of the event?", answer: "We kindly recommend arriving on time, as the celebration will feature a seated set-menu dining experience served at specific times throughout the evening. Arriving late may result in missed courses." },
+          { question: "Can I bring a plus one?", answer: "This is an intimate destination wedding with limited seating. Kindly note that only named guests in the invitation are included." },
+          { question: "Can children attend the wedding?", answer: "To maintain the atmosphere and seating arrangements, attendance is limited to guests listed on the invitation." },
+          { question: "Is there a dress code?", answer: "Guests are welcome to wear any style or color they feel comfortable in, as long as it is appropriate for the occasion. We kindly ask guests to avoid white, cream, or overly bright/light colors, and encourage darker tones instead." },
+          { question: "Can I choose my seat/table?", answer: "Seating has been thoughtfully arranged by the couple and families. Your assigned table information will be available upon arrival." }
+        ];
+        setFaqsForm(
+          Array.isArray(quotesData.faqs) && quotesData.faqs.length > 0
+            ? quotesData.faqs
+            : defaultFaqs
+        );
+
+        const rundown = quotesData.rundown && Array.isArray(quotesData.rundown)
+          ? quotesData.rundown
+          : [
+              { time: "10.00 - 11.00", title: "Akad Nikah", icon: "rundown-rings.png" },
+              { time: "11.00 - 11.30", title: "Welcoming Guest & Lunch", icon: "rundown-table.png" },
+              { time: "11.30 - 12.00", title: "Bride & Groom Entrance", icon: "rundown-doves.png" },
+              { time: "12.00 - 12.15", title: "Speech & Toast", icon: "rundown-toast.png" },
+              { time: "12.15 - 13.00", title: "Photo Session", icon: "rundown-camera.png" },
+              { time: "13.00 - selesai", title: "Closing", icon: "rundown-hands.png" }
+            ];
+        setRundownItemsForm(rundown);
+
+        // Handle gallery photos
+        const gallery = projectData.gallery_photos && Array.isArray(projectData.gallery_photos)
+          ? projectData.gallery_photos.map((p: any) => typeof p === 'string' ? p : p?.url || p?.public_url).filter(Boolean)
+          : [];
+        setGalleryPhotosForm(gallery);
 
         const accounts = projectData.payment_accounts && Array.isArray(projectData.payment_accounts) && projectData.payment_accounts.length > 0
           ? projectData.payment_accounts
@@ -208,14 +386,20 @@ export default function RSVPDashboard() {
         setMessageTemplate("");
       }
 
-      // 2. Fetch guests
-      const { data: guestsData, error: guestsError } = await supabase
-        .from('guests')
-        .select('*')
-        .eq('project_id', projectId);
-
-      if (guestsError) {
-        console.error("Error fetching guests:", guestsError);
+      // 2. Fetch guests (safe from missing table error)
+      let guestsData: any[] = [];
+      try {
+        const { data: gData, error: gError } = await supabase
+          .from('guests')
+          .select('*')
+          .eq('project_id', projectId);
+        if (!gError && gData) {
+          guestsData = gData;
+        } else if (gError && gError.code !== 'PGRST205') {
+          console.error("Error fetching guests:", gError);
+        }
+      } catch (e) {
+        console.error("Failed to query guests table:", e);
       }
 
       // 3. Fetch rsvp
@@ -228,15 +412,8 @@ export default function RSVPDashboard() {
         console.error("Error fetching RSVP:", rsvpError);
       }
 
-      // 4. Fetch checkins
-      const { data: checkinsData, error: checkinsError } = await supabase
-        .from('checkins')
-        .select('*')
-        .eq('project_id', projectId);
-
-      if (checkinsError && checkinsError.message) {
-        console.warn("Checkins table not available:", checkinsError.message);
-      }
+      // 4. Fetch checkins (disabled check-in database query, return empty array)
+      const checkinsData: any[] = [];
 
       // 5. Merge data
       const rsvpMap = new Map<string, any>();
@@ -365,6 +542,14 @@ export default function RSVPDashboard() {
         }
       }
 
+      // 7.5 Fetch project events
+      const { data: eventsData } = await supabase
+        .from('project_events')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('sort_order', { ascending: true });
+      setWeddingEvents(eventsData || []);
+
       // 8. Fetch wa_blast_logs queue
       const { data: queueData } = await supabase
         .from('wa_blast_logs')
@@ -380,14 +565,24 @@ export default function RSVPDashboard() {
       });
       setQueuedPhones(activePhones);
 
-      // 9. Fetch wa_blast_logs history
-      const { data: logsData } = await supabase
-        .from('wa_blast_logs')
-        .select('*, guests(name)')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false })
-        .limit(30);
-      setBlastLogs(logsData || []);
+      // 9. Fetch wa_blast_logs history (safe from missing table error)
+      let logsData: any[] = [];
+      try {
+        const { data: lData, error: lError } = await supabase
+          .from('wa_blast_logs')
+          .select('*, guests(name)')
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false })
+          .limit(30);
+        if (!lError && lData) {
+          logsData = lData;
+        } else if (lError && lError.code !== 'PGRST205') {
+          console.error("Error fetching wa_blast_logs:", lError);
+        }
+      } catch (e) {
+        console.error("Failed to query wa_blast_logs table:", e);
+      }
+      setBlastLogs(logsData);
 
     } catch (error) {
       console.error("Firestore RSVP Error:", error);
@@ -398,14 +593,17 @@ export default function RSVPDashboard() {
 
   const fetchBlastLogs = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: lData, error: lError } = await supabase
         .from('wa_blast_logs')
         .select('*, guests(name)')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false })
         .limit(30);
-      if (error) throw error;
-      setBlastLogs(data || []);
+      if (!lError && lData) {
+        setBlastLogs(lData);
+      } else if (lError && lError.code !== 'PGRST205') {
+        console.error("Error fetching blast logs:", lError);
+      }
     } catch (err) {
       console.error("Error fetching blast logs:", err);
     }
@@ -419,21 +617,7 @@ export default function RSVPDashboard() {
       .channel('dashboard-realtime')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'guests' },
-        () => {
-          fetchData();
-        }
-      )
-      .on(
-        'postgres_changes',
         { event: '*', schema: 'public', table: 'rsvp' },
-        () => {
-          fetchData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'checkins' },
         () => {
           fetchData();
         }
@@ -589,14 +773,6 @@ export default function RSVPDashboard() {
       updated[index].status = 'queued';
       setBlastGuests(updated);
 
-      const { data: matchedGuest } = await supabase
-        .from('guests')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('phone', phone.trim())
-        .limit(1)
-        .maybeSingle();
-
       const res = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -607,7 +783,7 @@ export default function RSVPDashboard() {
             blasts: [{
               phone: phone.trim(),
               message: message,
-              guest_id: matchedGuest?.id || null
+              guest_id: null
             }]
           }
         })
@@ -659,23 +835,14 @@ export default function RSVPDashboard() {
     setBlastGuests(updated);
 
     try {
-      const blastsData = await Promise.all(validGuests.map(async (g) => {
+      const blastsData = validGuests.map((g) => {
         const message = renderMessage(messageTemplate, g.name);
-
-        const { data: matchedGuest } = await supabase
-          .from('guests')
-          .select('id')
-          .eq('project_id', projectId)
-          .eq('phone', g.phone.trim())
-          .limit(1)
-          .maybeSingle();
-
         return {
           phone: g.phone.trim(),
           message: message,
-          guest_id: matchedGuest?.id || null
+          guest_id: null
         };
-      }));
+      });
 
       const res = await fetch('/api/admin', {
         method: 'POST',
@@ -795,6 +962,7 @@ export default function RSVPDashboard() {
       return;
     }
     
+    setIsAddingStory(true);
     try {
       const res = await fetch('/api/admin', {
         method: 'POST',
@@ -825,6 +993,8 @@ export default function RSVPDashboard() {
     } catch (error) {
       console.error("Error adding story event:", error);
       alert("Failed to add story event.");
+    } finally {
+      setIsAddingStory(false);
     }
   };
 
@@ -885,6 +1055,373 @@ export default function RSVPDashboard() {
       alert("Failed to save love story: " + error.message);
     } finally {
       setIsSavingLoveStory(false);
+    }
+  };
+
+  const handleSaveCover = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDetails(true);
+    try {
+      const formattedCountdown = countdownTargetForm && !countdownTargetForm.includes('+') && !countdownTargetForm.endsWith('Z')
+        ? `${countdownTargetForm}:00+00:00`
+        : countdownTargetForm;
+
+      const quotesJSON = JSON.stringify({
+        quote_arabic: quoteArabicForm, quote_translation: quoteTranslationForm, quote_source: quoteSourceForm,
+        photo_sec2_dance: photoSec2Dance, photo_sec2_pigeons: photoSec2Pigeons, photo_sec2_flowers: photoSec2Flowers, photo_sec2_run: photoSec2Run,
+        photo_sec3_bg: photoSec3Bg, photo_sec3_frame: photoSec3Frame, photo_sec3_couple: photoSec3Couple,
+        rundown: rundownItemsForm, location_city: locationCityForm, teaser_video_url: teaserVideoUrlForm,
+        dining_schedule: diningScheduleForm, faqs: faqsForm
+      });
+
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_project_details',
+          payload: {
+            project_id: projectId,
+            wedding_fields: {
+              wedding_date: weddingDateForm,
+              countdown_target: formattedCountdown,
+              music_url: musicUrlForm,
+              cover_photo_url: coverPhotoUrlForm,
+              opening_photo_url: openingPhotoUrlForm,
+              hashtag: hashtagForm,
+              wishlist_note: quotesJSON
+            }
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update Cover details');
+      }
+
+      alert("Cover & Opening section updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to save cover: " + (error.message || String(error)));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleSaveVerse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDetails(true);
+    try {
+      const quotesJSON = JSON.stringify({
+        quote_arabic: quoteArabicForm,
+        quote_translation: quoteTranslationForm,
+        quote_source: quoteSourceForm,
+        photo_sec2_dance: photoSec2Dance,
+        photo_sec2_pigeons: photoSec2Pigeons,
+        photo_sec2_flowers: photoSec2Flowers,
+        photo_sec2_run: photoSec2Run,
+        photo_sec3_bg: photoSec3Bg,
+        photo_sec3_frame: photoSec3Frame,
+        photo_sec3_couple: photoSec3Couple,
+        rundown: rundownItemsForm,
+        location_city: locationCityForm,
+        teaser_video_url: teaserVideoUrlForm,
+        dining_schedule: diningScheduleForm,
+        faqs: faqsForm
+      });
+
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_project_details',
+          payload: {
+            project_id: projectId,
+            wedding_fields: {
+              wishlist_note: quotesJSON
+            }
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update Verse details');
+      }
+
+      alert("Quote & Verse section updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to save Verse: " + (error.message || String(error)));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleSaveRundown = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDetails(true);
+    try {
+      const quotesJSON = JSON.stringify({
+        quote_arabic: quoteArabicForm,
+        quote_translation: quoteTranslationForm,
+        quote_source: quoteSourceForm,
+        photo_sec2_dance: photoSec2Dance,
+        photo_sec2_pigeons: photoSec2Pigeons,
+        photo_sec2_flowers: photoSec2Flowers,
+        photo_sec2_run: photoSec2Run,
+        photo_sec3_bg: photoSec3Bg,
+        photo_sec3_frame: photoSec3Frame,
+        photo_sec3_couple: photoSec3Couple,
+        rundown: rundownItemsForm,
+        location_city: locationCityForm,
+        teaser_video_url: teaserVideoUrlForm,
+        dining_schedule: diningScheduleForm,
+        faqs: faqsForm
+      });
+
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_project_details',
+          payload: {
+            project_id: projectId,
+            wedding_fields: {
+              wishlist_note: quotesJSON
+            }
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update Rundown details');
+      }
+
+      alert("Rundown updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to save Rundown: " + (error.message || String(error)));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleSaveCouple = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDetails(true);
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_project_details',
+          payload: {
+            project_id: projectId,
+            wedding_fields: {
+              bride_name: brideNameForm,
+              bride_nickname: brideNicknameForm,
+              bride_father: brideFatherForm,
+              bride_mother: brideMotherForm,
+              bride_instagram: brideInstagramForm,
+              bride_photo_url: bridePhotoUrlForm,
+              groom_name: groomNameForm,
+              groom_nickname: groomNicknameForm,
+              groom_father: groomFatherForm,
+              groom_mother: groomMotherForm,
+              groom_instagram: groomInstagramForm,
+              groom_photo_url: groomPhotoUrlForm,
+            }
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update Couple details');
+      }
+
+      alert("Mempelai (Couple) section updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to save Couple: " + (error.message || String(error)));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleSaveEvents = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDetails(true);
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_project_details',
+          payload: {
+            project_id: projectId,
+            project_fields: {
+              venue_name: venueNameForm,
+              venue_address: venueAddressForm,
+              venue_maps_url: venueMapsUrlForm,
+            },
+            events: weddingEvents.map(ev => ({
+              id: ev.id,
+              custom_label: ev.custom_label,
+              event_date: ev.event_date,
+              event_time: ev.event_time,
+              end_time: ev.end_time,
+              venue_name: ev.venue_name,
+              venue_address: ev.venue_address,
+              venue_maps_url: ev.venue_maps_url
+            }))
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update Events details');
+      }
+
+      alert("Events & Location section updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to save Events: " + (error.message || String(error)));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleSaveGallery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDetails(true);
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_project_details',
+          payload: {
+            project_id: projectId,
+            wedding_fields: {
+              gallery_photos: galleryPhotosForm
+            }
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update Gallery');
+      }
+
+      alert("Gallery section updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to save Gallery: " + (error.message || String(error)));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleSaveCashless = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingDetails(true);
+    try {
+      const cleanAccounts = paymentAccounts.filter(acc => acc.bank_name || acc.bank_account || acc.owner_name);
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_payment_accounts',
+          payload: {
+            project_id: projectId,
+            payment_accounts: cleanAccounts
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update Cashless');
+      }
+
+      alert("Amplop Digital (Cashless) updated successfully!");
+      await fetchData();
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to save Cashless: " + (error.message || String(error)));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      alert("File is too large. Max size is 15MB.");
+      return;
+    }
+
+    setIsUploadingPhoto(fieldName);
+    try {
+      const base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'upload_image',
+          payload: {
+            project_id: projectId,
+            file: base64String,
+            fileName: file.name,
+            fileType: file.type
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to upload file');
+      }
+
+      const data = await res.json();
+      if (fieldName === 'bride_photo_url') setBridePhotoUrlForm(data.url);
+      else if (fieldName === 'groom_photo_url') setGroomPhotoUrlForm(data.url);
+      else if (fieldName === 'cover_photo_url') setCoverPhotoUrlForm(data.url);
+      else if (fieldName === 'opening_photo_url') setOpeningPhotoUrlForm(data.url);
+      else if (fieldName === 'photo_sec2_dance') setPhotoSec2Dance(data.url);
+      else if (fieldName === 'photo_sec2_pigeons') setPhotoSec2Pigeons(data.url);
+      else if (fieldName === 'photo_sec2_flowers') setPhotoSec2Flowers(data.url);
+      else if (fieldName === 'photo_sec2_run') setPhotoSec2Run(data.url);
+      else if (fieldName === 'photo_sec3_bg') setPhotoSec3Bg(data.url);
+      else if (fieldName === 'photo_sec3_frame') setPhotoSec3Frame(data.url);
+      else if (fieldName === 'photo_sec3_couple') setPhotoSec3Couple(data.url);
+      else if (fieldName === 'music_url') setMusicUrlForm(data.url);
+
+      alert("File uploaded successfully!");
+    } catch (err: any) {
+      console.error(err);
+      alert(`Upload failed: ${err.message || String(err)}`);
+    } finally {
+      setIsUploadingPhoto(null);
     }
   };
 
@@ -1361,25 +1898,19 @@ export default function RSVPDashboard() {
     return new Intl.DateTimeFormat('id-ID', { timeStyle: 'short' }).format(date);
   };
 
-  const totalPlanned = rsvps.filter(r => r.isAttending).reduce((sum, r) => sum + r.guestsCount, 0);
-  const totalActual = rsvps.filter(r => r.checkedIn).reduce((sum, r) => sum + (r.actualGuestsCount !== undefined ? r.actualGuestsCount : r.guestsCount), 0);
-  const totalNotAttending = rsvps.filter(r => !r.isAttending).length;
-  const attendancePercentage = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
-
-  const totalGroupsAttending = rsvps.filter(r => r.isAttending).length;
-  const totalGroupsArrived = rsvps.filter(r => r.checkedIn).length;
-  const totalGroupsPending = totalGroupsAttending - totalGroupsArrived;
-  const remainingPax = Math.max(0, totalPlanned - totalActual);
-  const totalWishesCount = allWishes.length;
-
-  const remainingPercentage = totalPlanned > 0 ? Math.round((remainingPax / totalPlanned) * 100) : 0;
+  const totalGuests = rsvps.length;
+  const totalGroupsAttending = rsvps.filter(r => r.rsvp_id && r.isAttending).length;
+  const totalGroupsDeclined = rsvps.filter(r => r.rsvp_id && !r.isAttending).length;
+  const totalGroupsPending = rsvps.filter(r => !r.rsvp_id).length;
+  const totalAttendingPax = rsvps.filter(r => r.isAttending).reduce((sum, r) => sum + r.guestsCount, 0);
+  const totalResponded = totalGroupsAttending + totalGroupsDeclined;
+  const responsePercentage = totalGuests > 0 ? Math.round((totalResponded / totalGuests) * 100) : 0;
 
   const sortedRsvps = [...rsvps]
     .filter(rsvp => {
       const matchesSearch = rsvp.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === "all" || (filterStatus === "attending" && rsvp.isAttending) || (filterStatus === "declined" && !rsvp.isAttending);
-      const matchesCheckIn = filterCheckIn === "all" || (filterCheckIn === "arrived" && rsvp.checkedIn) || (filterCheckIn === "waiting" && !rsvp.checkedIn);
-      return matchesSearch && matchesStatus && matchesCheckIn;
+      return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
       if (!sortConfig.key) return 0;
@@ -1457,59 +1988,40 @@ export default function RSVPDashboard() {
           <div className="flex-1">
             <h2 className="text-[8px] md:text-[9px] font-bold tracking-[0.4em] text-neutral-400 uppercase mb-2">{coupleNicknames} Wedding</h2>
             <h1 className="text-3xl md:text-4xl font-serif tracking-tight text-neutral-800 leading-tight">Management <span className="italic text-neutral-400">Suite</span></h1>
-            <div className="flex gap-6 mt-8">
-              <button
-                onClick={() => setActiveTab('rsvp')}
-                className={`group relative text-[9px] font-bold tracking-[0.2em] uppercase pb-3 transition-all ${activeTab === 'rsvp' ? 'text-neutral-900' : 'text-neutral-400 hover:text-neutral-600'}`}
-              >
-                RSVP Responses
-                {activeTab === 'rsvp' && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />}
-              </button>
-              <button
-                onClick={() => setActiveTab('gifts')}
-                className={`group relative text-[9px] font-bold tracking-[0.2em] uppercase pb-3 transition-all ${activeTab === 'gifts' ? 'text-neutral-900' : 'text-neutral-400 hover:text-neutral-600'}`}
-              >
-                Gift Registry
-                {activeTab === 'gifts' && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />}
-              </button>
-              <button
-                onClick={() => setActiveTab('links')}
-                className={`group relative text-[9px] font-bold tracking-[0.2em] uppercase pb-3 transition-all ${activeTab === 'links' ? 'text-neutral-900' : 'text-neutral-400 hover:text-neutral-600'}`}
-              >
-                Invitation Blast
-                {activeTab === 'links' && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />}
-              </button>
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`group relative text-[9px] font-bold tracking-[0.2em] uppercase pb-3 transition-all ${activeTab === 'settings' ? 'text-neutral-900' : 'text-neutral-400 hover:text-neutral-600'}`}
-              >
-                Settings
-                {activeTab === 'settings' && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />}
-              </button>
+            <div className="flex bg-neutral-200/40 p-1.5 rounded-2xl gap-1 mt-8 max-w-max border border-neutral-200/50">
+              {[
+                { id: 'rsvp', label: 'RSVP Responses' },
+                { id: 'content', label: 'Content Editor' },
+                { id: 'settings', label: 'Settings' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`relative px-5 py-2.5 rounded-xl text-[9px] font-bold tracking-[0.15em] uppercase transition-all duration-300 cursor-pointer ${activeTab === tab.id ? 'text-white' : 'text-neutral-500 hover:text-neutral-800'}`}
+                >
+                  <span className="relative z-10">{tab.label}</span>
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="active-tab-pill"
+                      className="absolute inset-0 bg-neutral-900 rounded-xl"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                </button>
+              ))}
             </div>
-          </div>
-          <div className="flex flex-col md:flex-row gap-3">
-            <button onClick={() => setShowSlideshow(true)} className="group inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-white/80 backdrop-blur-md border border-neutral-200/60 text-neutral-900 text-[10px] font-bold tracking-[0.2em] uppercase transition-all hover:bg-neutral-900 hover:text-white rounded-xl shadow-sm hover:shadow-lg active:scale-95">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" /></svg>
-              Live Slideshow
-            </button>
-            <Link href="/dashboard/scanner" className="group inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold tracking-[0.2em] uppercase transition-all hover:bg-black rounded-xl shadow-lg hover:shadow-black/20 active:scale-95">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 group-hover:rotate-12 transition-transform"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5Zm10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 14.25 9.375v-4.5Zm0 10.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Zm-10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Z" /></svg>
-              QR Scanner
-            </Link>
           </div>
         </motion.div>
 
         {activeTab === 'rsvp' ? (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-5">
               {[
-                { label: 'Total RSVPs', value: rsvps.length, sub: 'ALL RESPONSES', color: 'text-neutral-800' },
-                { label: 'Attending', value: totalGroupsAttending, sub: '"YES" RESPONSES', color: 'text-emerald-600' },
-                { label: 'Declined', value: totalNotAttending, sub: '"NO" RESPONSES', color: 'text-rose-500' },
-                { label: 'Total Pax', value: totalPlanned, sub: 'EXPECTED GUESTS', color: 'text-neutral-800' },
-                { label: 'Actual', value: totalActual, sub: `${totalGroupsArrived} GROUPS IN`, color: 'text-amber-100', dark: true, percent: attendancePercentage },
-                { label: 'Remaining', value: remainingPax, sub: `${totalGroupsPending} LEFT`, color: 'text-neutral-400', percent: remainingPercentage, percentColor: 'text-rose-500' }
+                { label: 'Total Guests', value: totalGuests, sub: 'INVITATION LIST', color: 'text-neutral-800', dark: false, percent: undefined, percentColor: undefined },
+                { label: 'Attending (Hadir)', value: totalGroupsAttending, sub: 'GROUPS SAYING YES', color: 'text-emerald-600', dark: false, percent: undefined, percentColor: undefined },
+                { label: 'Declined (Tidak)', value: totalGroupsDeclined, sub: 'GROUPS SAYING NO', color: 'text-rose-500', dark: false, percent: undefined, percentColor: undefined },
+                { label: 'Pending Response', value: totalGroupsPending, sub: 'AWAITING RESPONSE', color: 'text-amber-600', dark: false, percent: undefined, percentColor: undefined },
+                { label: 'Total Pax Attending', value: totalAttendingPax, sub: 'EXPECTED SEATS', color: 'text-neutral-800', dark: true, percent: responsePercentage, percentColor: undefined }
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -1522,7 +2034,7 @@ export default function RSVPDashboard() {
                   <h3 className={`text-[7px] md:text-[8px] font-bold tracking-[0.2em] uppercase flex justify-between items-center ${stat.dark ? 'text-amber-200/60' : 'text-neutral-400'}`}>
                     <span>{stat.label}</span>
                     {stat.percent !== undefined && (
-                      <span className={`font-mono ${stat.dark ? 'text-amber-200' : stat.percentColor || 'text-neutral-400'}`}>
+                      <span className={`font-mono ${stat.dark ? 'text-amber-200' : (stat as any).percentColor || 'text-neutral-400'}`}>
                         {stat.percent}%
                       </span>
                     )}
@@ -1536,7 +2048,7 @@ export default function RSVPDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Arrival Flow - Ultra Aesthetic Area Chart */}
+              {/* RSVP Distribution - Pie Chart */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1544,127 +2056,56 @@ export default function RSVPDashboard() {
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100/20 blur-[60px] rounded-full -mr-16 -mt-16 group-hover:bg-amber-200/30 transition-all duration-1000"></div>
 
-                <div className="flex justify-between items-start mb-8 md:mb-12 relative z-10">
-                  <div className="flex justify-between items-end w-full">
-                    <div>
-                      <h3 className="text-[9px] md:text-[10px] font-black tracking-[0.3em] text-amber-600/60 uppercase mb-1 md:mb-2">Live Analytics</h3>
-                      <p className="text-xl md:text-3xl font-serif text-neutral-900">Hourly Distribution</p>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-xl md:text-2xl font-serif text-neutral-900">{totalActual}</p>
-                        <p className="text-[8px] md:text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Guests Arrived</p>
-                      </div>
-                      <button
-                        onClick={() => setIsHourlyExpanded(!isHourlyExpanded)}
-                        className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
-                      >
-                        <motion.svg
-                          animate={{ rotate: isHourlyExpanded ? 0 : 180 }}
-                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-neutral-400"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                        </motion.svg>
-                      </button>
-                    </div>
-                  </div>
+                <div className="mb-8 md:mb-12 relative z-10">
+                  <h3 className="text-[9px] md:text-[10px] font-black tracking-[0.3em] text-neutral-400 uppercase mb-1 md:mb-2">RSVP Analytics</h3>
+                  <p className="text-xl md:text-3xl font-serif text-neutral-900">Response Status Distribution</p>
                 </div>
 
-                <AnimatePresence>
-                  {isHourlyExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="h-56 md:h-72 w-full relative z-10" onMouseDown={(e) => e.preventDefault()} tabIndex={-1}>
-                        {(() => {
-                          const hours: { [key: string]: number } = {};
-                          for (let i = 8; i <= 22; i++) {
-                            hours[`${i.toString().padStart(2, '0')}:00`] = 0;
-                          }
+                <div className="h-56 md:h-72 w-full relative z-10 flex items-center justify-center">
+                  {(() => {
+                    const chartData = [
+                      { name: 'Attending', value: totalGroupsAttending, fill: '#10B981' },
+                      { name: 'Declined', value: totalGroupsDeclined, fill: '#EF4444' },
+                      { name: 'Pending', value: totalGroupsPending, fill: '#F59E0B' }
+                    ];
 
-                          rsvps.forEach(rsvp => {
-                            if (rsvp.checkedIn && rsvp.checkedInAt) {
-                              const hr = rsvp.checkedInAt.getHours();
-                              const timeKey = `${hr.toString().padStart(2, '0')}:00`;
-                              if (hours[timeKey] !== undefined) {
-                                hours[timeKey] += (rsvp.actualGuestsCount || rsvp.guestsCount || 1);
-                              }
-                            }
-                          });
+                    const hasData = totalGroupsAttending > 0 || totalGroupsDeclined > 0 || totalGroupsPending > 0;
 
-                          const hourlyData = Object.keys(hours).map(time => ({
-                            time,
-                            guests: hours[time]
-                          }));
-
-                          const hasData = hourlyData.some(d => d.guests > 0);
-
-                          if (!hasData) return (
-                            <div className="h-full flex flex-col items-center justify-center gap-4">
-                              <div className="w-12 h-12 rounded-full border-2 border-dashed border-neutral-200 animate-spin"></div>
-                              <p className="text-[10px] text-neutral-300 uppercase tracking-[0.4em] font-bold">Waiting for Live Data</p>
-                            </div>
-                          );
-
-                          const softBlacks = [
-                            '#171717',
-                            '#262626',
-                            '#404040',
-                            '#525252',
-                            '#171717',
-                            '#262626',
-                          ];
-
-                          return (
-                            <ResponsiveContainer
-                              width="100%"
-                              height="100%"
-                              style={{ outline: 'none' }}
-                            >
-                              <BarChart data={hourlyData} style={{ outline: 'none' }}>
-                                <XAxis
-                                  dataKey="time"
-                                  axisLine={false}
-                                  tickLine={false}
-                                  tick={{ fontSize: 9, fontWeight: 700, fill: '#A3A3A3' }}
-                                  dy={10}
-                                />
-                                <YAxis hide />
-                                <RechartsTooltip
-                                  contentStyle={{
-                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                    border: 'none',
-                                    borderRadius: '16px',
-                                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-                                    fontSize: '10px',
-                                    fontWeight: 'bold',
-                                    backdropFilter: 'blur(10px)'
-                                  }}
-                                  cursor={{ fill: 'rgba(0,0,0,0.02)' }}
-                                />
-                                <Bar
-                                  dataKey="guests"
-                                  radius={[8, 8, 0, 0]}
-                                  barSize={32}
-                                >
-                                  {hourlyData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={softBlacks[index % softBlacks.length]} />
-                                  ))}
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
-                          );
-                        })()}
+                    if (!hasData) return (
+                      <div className="h-full flex flex-col items-center justify-center gap-4">
+                        <p className="text-[10px] text-neutral-300 uppercase tracking-[0.4em] font-bold">No Data Available</p>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    );
+
+                    return (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={70}
+                            outerRadius={90}
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                            {chartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    );
+                  })()}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <p className="text-4xl font-serif text-neutral-900">{responsePercentage}%</p>
+                    <p className="text-[8px] font-black text-neutral-400 uppercase tracking-[0.2em]">Response Rate</p>
+                  </div>
+                </div>
               </motion.div>
 
-              {/* RSVP Summary - Simple Elegant White Glass Chart */}
+              {/* RSVP Details Breakdowns */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1675,68 +2116,39 @@ export default function RSVPDashboard() {
 
                 <div className="mb-8 md:mb-12 relative z-10">
                   <h3 className="text-[9px] md:text-[10px] font-black tracking-[0.3em] text-emerald-600/60 uppercase mb-1 md:mb-2">Guest Insight</h3>
-                  <p className="text-xl md:text-3xl font-serif text-neutral-900">RSVP Status</p>
+                  <p className="text-xl md:text-3xl font-serif text-neutral-900">Attendance Details</p>
                 </div>
 
-                <div className="h-auto md:h-72 w-full flex flex-col md:flex-row items-center relative z-10 gap-8 md:gap-0">
-                  <div className="h-48 md:h-full w-full md:w-1/2 relative">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: 'Arrived', value: totalActual },
-                            { name: 'Remaining', value: remainingPax }
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={70}
-                          outerRadius={90}
-                          paddingAngle={10}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          <Cell fill="#10B981" />
-                          <Cell fill="#f3f4f6" />
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <p className="text-4xl font-serif text-neutral-900">{attendancePercentage}%</p>
-                      <p className="text-[8px] font-black text-neutral-400 uppercase tracking-[0.2em]">Attendance</p>
+                <div className="space-y-6 relative z-10 w-full">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-neutral-400 text-[9px] font-black uppercase tracking-widest">
+                      <span>RSVP Progress Rate</span>
+                      <span className="text-neutral-900">{totalResponded} / {totalGuests} Responses</span>
+                    </div>
+                    <div className="h-2 w-full bg-neutral-100 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${responsePercentage}%` }}
+                        transition={{ duration: 1.5, ease: "circOut" }}
+                        className="h-full bg-neutral-900 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.2)]"
+                      />
                     </div>
                   </div>
 
-                  <div className="w-full md:w-1/2 space-y-6 px-6">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-neutral-400 text-[9px] font-black uppercase tracking-widest">
-                        <span>Check-in Progress</span>
-                        <span className="text-neutral-900">{totalActual} / {totalPlanned}</span>
-                      </div>
-                      <div className="h-2 w-full bg-neutral-100 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${attendancePercentage}%` }}
-                          transition={{ duration: 1.5, ease: "circOut" }}
-                          className="h-full bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      {[
-                        { label: 'Arrived', val: totalActual, color: 'bg-emerald-500' },
-                        { label: 'Pending', val: remainingPax, color: 'bg-neutral-200' },
-                        { label: 'Not Attending', val: totalNotAttending, color: 'bg-rose-100 text-rose-600' }
-                      ].map((item) => (
-                        <div key={item.label} className="flex items-center justify-between p-4 rounded-2xl bg-white/50 border border-white/80 hover:bg-white hover:shadow-md transition-all">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-1.5 h-1.5 rounded-full ${item.color.includes('bg-') ? item.color.split(' ')[0] : item.color}`}></div>
-                            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{item.label}</span>
-                          </div>
-                          <span className="text-sm font-serif text-neutral-900 font-bold">{item.val}</span>
+                  <div className="grid grid-cols-1 gap-3">
+                    {[
+                      { label: 'Attending (Yes)', val: `${totalGroupsAttending} Groups (${totalAttendingPax} Pax)`, color: 'bg-emerald-500' },
+                      { label: 'Declined (No)', val: `${totalGroupsDeclined} Groups`, color: 'bg-rose-500' },
+                      { label: 'Pending (No Response)', val: `${totalGroupsPending} Groups`, color: 'bg-amber-500' }
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center justify-between p-4 rounded-2xl bg-white/50 border border-white/80 hover:bg-white hover:shadow-md transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-1.5 h-1.5 rounded-full ${item.color}`}></div>
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{item.label}</span>
                         </div>
-                      ))}
-                    </div>
+                        <span className="text-sm font-serif text-neutral-900 font-bold">{item.val}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </motion.div>
@@ -1780,33 +2192,13 @@ export default function RSVPDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                   </svg>
                 </div>
-                <div className="relative group min-w-[160px]">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 group-focus-within:text-neutral-900 transition-colors z-10 pointer-events-none">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                  </svg>
-                  <motion.select
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    value={filterCheckIn}
-                    onChange={(e) => setFilterCheckIn(e.target.value)}
-                    className="w-full bg-white/70 backdrop-blur-md pl-11 pr-10 py-3 text-[13px] border border-white/60 rounded-xl outline-none focus:border-neutral-900 transition-all shadow-sm cursor-pointer appearance-none bg-no-repeat"
-                  >
-                    <option value="all">All Check-Ins</option>
-                    <option value="arrived">Arrived</option>
-                    <option value="waiting">Waiting</option>
-                  </motion.select>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-neutral-400 pointer-events-none transition-transform group-focus-within:rotate-180">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                  </svg>
-                </div>
-                {(searchTerm || filterStatus !== 'all' || filterCheckIn !== 'all' || sortConfig.key) && (
+                {(searchTerm || filterStatus !== 'all' || sortConfig.key) && (
                   <motion.button
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     onClick={() => {
                       setSearchTerm("");
                       setFilterStatus("all");
-                      setFilterCheckIn("all");
                       setSortConfig({ key: null, direction: 'asc' });
                     }}
                     className="flex items-center justify-center gap-2 px-4 py-3 bg-neutral-900 text-white text-[9px] font-bold tracking-[0.2em] uppercase rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 cursor-pointer"
@@ -1818,194 +2210,7 @@ export default function RSVPDashboard() {
               </div>
             </motion.div>
 
-            {/* Messaging Action Panel - Static & Integrated */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white/70 backdrop-blur-md border border-white/40 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm flex flex-col lg:flex-row lg:items-start justify-between gap-8 lg:gap-12 mb-8"
-            >
-              <div className="flex flex-col flex-1 min-w-0 lg:pr-6">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className={`w-2 h-2 rounded-full ${selectedIds.size > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-300'}`}></div>
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-800">Messaging Center</h3>
-                </div>
-                {selectedIds.size > 0 ? (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="flex flex-col mt-3 w-full"
-                  >
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Selected Guests</span>
-                      <span className="text-[10px] font-black text-neutral-600">({selectedIds.size})</span>
-                      <div className="flex-1 h-[1px] bg-neutral-200/60 ml-2 max-w-[200px]"></div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-3 max-w-2xl max-h-32 overflow-y-auto pr-2 custom-scrollbar pb-1">
-                      <AnimatePresence>
-                        {rsvps.filter(r => selectedIds.has(r.id)).map(guest => (
-                          <motion.div 
-                            layout
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                            key={guest.id} 
-                            className="group flex items-center gap-2.5 pl-4 pr-2 py-1.5 bg-white border border-neutral-200/80 rounded-full shadow-sm hover:border-neutral-900 hover:shadow-md transition-all duration-300"
-                          >
-                            <span className="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-black text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white transition-colors">
-                              {guest.name.charAt(0).toUpperCase()}
-                            </span>
-                            <span className="text-[11px] font-bold text-neutral-700 group-hover:text-neutral-900 whitespace-nowrap tracking-wide">
-                              {guest.name}
-                            </span>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const newSelected = new Set(selectedIds);
-                                newSelected.delete(guest.id);
-                                setSelectedIds(newSelected);
-                              }}
-                              className="w-5 h-5 flex items-center justify-center rounded-full text-neutral-300 hover:bg-rose-100 hover:text-rose-500 transition-colors ml-1 cursor-pointer"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-                            </button>
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <p className="text-[10px] text-neutral-400 font-medium mt-1 tracking-wider">
-                    Select guests from the table below to start broadcasting
-                  </p>
-                )}
-              </div>
 
-              <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-                <div className="flex flex-col w-full sm:w-auto">
-                  <span className="text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Bot WhatsApp</span>
-                  <select
-                    value={selectedBotSession}
-                    onChange={(e) => setSelectedBotSession(e.target.value)}
-                    className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-2.5 text-[10px] text-neutral-800 focus:outline-none focus:border-emerald-500/50 transition-all font-bold w-full sm:w-48 appearance-none bg-no-repeat cursor-pointer"
-                  >
-                    {[1, 2, 3, 4].map(num => (
-                      <option key={num} value={num.toString()}>
-                        {botStatuses[`Session${num}`]?.name || `WhatsApp ${num}`} {getBotStatus(num.toString())}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="flex flex-col w-full sm:w-auto">
-                  <span className="text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">Schedule (Optional)</span>
-                  <input
-                    type="datetime-local"
-                    value={scheduleTime}
-                    onChange={(e) => setScheduleTime(e.target.value)}
-                    className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-2.5 text-[10px] text-neutral-800 focus:outline-none focus:border-emerald-500/50 transition-all font-bold w-full sm:w-48"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={async () => {
-                      const allWithPhone = rsvps.filter(r => r.phone && r.phone.trim() !== "");
-                      if (allWithPhone.length === 0) {
-                        alert("Tidak ada tamu yang memiliki nomor WhatsApp.");
-                        return;
-                      }
-
-                      const confirmBlast = window.confirm(`Apakah Anda yakin ingin mengirim pesan ke SEMUA tamu (${allWithPhone.length} orang)?`);
-                      if (!confirmBlast) return;
-
-                      const promises = allWithPhone.map(async (rsvp) => {
-                        const message = `Hi *${rsvp.name}*! 👋✨\n\nThank you yaa sudah RSVP untuk wedding *${coupleNicknames}* 🤍\n\nFriendly reminder nih, jangan lupa bawa dan tunjukkan *QR Code* kamu saat tiba di meja registrasi besok ya 🎟️✨\nBiar proses check-in jadi lebih cepat, praktis, nyaman & effortless.\n\nWe’re super happy to celebrate this special day with you🥹\nSee you tomorrow at our wedding! 💐`;
-                        return supabase
-                          .from('wa_blast_logs')
-                          .insert({
-                            project_id: projectId,
-                            guest_id: rsvp.id,
-                            phone: rsvp.phone || '',
-                            message: message,
-                            status: 'queued'
-                          });
-                      });
-
-                      await Promise.all(promises);
-
-                      setQueuedPhones(prev => {
-                        const next = new Set(prev);
-                        allWithPhone.forEach(r => next.add((r.phone || '').trim()));
-                        return next;
-                      });
-
-                      alert(`Berhasil memblast pesan ke SEMUA (${allWithPhone.length}) tamu!`);
-                      setScheduleTime("");
-                    }}
-                    className="px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center gap-2 border border-amber-200 cursor-pointer"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.467 5.99 5.99 0 0 0-1.925 3.546 5.974 5.974 0 0 1-2.133-1A3.75 3.75 0 0 0 12 18Z" /></svg>
-                    Blast All ({rsvps.filter(r => r.phone && r.phone.trim() !== "").length})
-                  </button>
-
-                  <div className="h-8 w-px bg-neutral-100 mx-1"></div>
-
-                  <button
-                    disabled={selectedIds.size === 0}
-                    onClick={async () => {
-                      const guestsToReminder = rsvps.filter(r => selectedIds.has(r.id) && r.phone);
-                      if (guestsToReminder.length === 0) {
-                        alert("Pilih tamu yang memiliki nomor WhatsApp terlebih dahulu.");
-                        return;
-                      }
-
-                      const promises = guestsToReminder.map(async (rsvp) => {
-                        const message = `Hi *${rsvp.name}*! 👋✨\n\nThank you yaa sudah RSVP untuk wedding *${coupleNicknames}* 🤍\n\nFriendly reminder nih, jangan lupa bawa dan tunjukkan *QR Code* kamu saat tiba di meja registrasi besok ya 🎟️✨\nBiar proses check-in jadi lebih cepat, praktis, nyaman & effortless.\n\nWe’re super happy to celebrate this special day with you🥹\nSee you tomorrow at our wedding! 💐`;
-                        return supabase
-                          .from('wa_blast_logs')
-                          .insert({
-                            project_id: projectId,
-                            guest_id: rsvp.id,
-                            phone: rsvp.phone || '',
-                            message: message,
-                            status: 'queued'
-                          });
-                      });
-
-                      await Promise.all(promises);
-
-                      setQueuedPhones(prev => {
-                        const next = new Set(prev);
-                        guestsToReminder.forEach(r => next.add((r.phone || '').trim()));
-                        return next;
-                      });
-
-                      alert(`${guestsToReminder.length} pesan telah masuk antrian!`);
-                      setSelectedIds(new Set());
-                      setScheduleTime("");
-                    }}
-                    className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer ${selectedIds.size > 0
-                      ? 'bg-neutral-900 text-white hover:bg-black shadow-lg shadow-black/10'
-                      : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-                      }`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
-                    {scheduleTime ? 'Schedule Selected' : 'Blast Selected'}
-                  </button>
-
-                  {selectedIds.size > 0 && (
-                    <button
-                      onClick={() => { setSelectedIds(new Set()); setScheduleTime(""); }}
-                      className="p-3 text-neutral-400 hover:text-rose-500 transition-colors cursor-pointer"
-                      title="Clear Selection"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
@@ -2016,30 +2221,7 @@ export default function RSVPDashboard() {
                 <table className="w-full text-left border-collapse min-w-[950px]">
                   <thead>
                     <tr className="bg-neutral-50/30 text-neutral-500 border-b border-neutral-100">
-                      <th className="p-6 w-10">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 transition-all cursor-pointer disabled:opacity-20"
-                          checked={(() => {
-                            const available = paginatedRsvps.filter(r => r.phone);
-                            return available.length > 0 && available.every(r => selectedIds.has(r.id));
-                          })()}
-                          disabled={paginatedRsvps.filter(r => r.phone).length === 0}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              const withPhone = paginatedRsvps.filter(r => r.phone).map(r => r.id);
-                              setSelectedIds(new Set([...selectedIds, ...withPhone]));
-                            } else {
-                              const paginatedIds = paginatedRsvps.map(r => r.id);
-                              const next = new Set(selectedIds);
-                              paginatedIds.forEach(id => next.delete(id));
-                              setSelectedIds(next);
-                            }
-                          }}
-                        />
-                      </th>
                       <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">Status</th>
-                      <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">Check-In</th>
                       <th
                         className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer hover:text-neutral-900 transition-colors"
                         onClick={() => requestSort('name')}
@@ -2051,92 +2233,28 @@ export default function RSVPDashboard() {
                         className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase text-center cursor-pointer hover:text-neutral-900 transition-colors"
                         onClick={() => requestSort('guestsCount')}
                       >
-                        Plan <SortIcon column="guestsCount" />
-                      </th>
-                      <th
-                        className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase text-center cursor-pointer hover:text-neutral-900 transition-colors"
-                        onClick={() => requestSort('actualGuestsCount')}
-                      >
-                        Actual <SortIcon column="actualGuestsCount" />
+                        Pax <SortIcon column="guestsCount" />
                       </th>
                       <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase text-right">Message</th>
-                      <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-50">
                     {loading ? (
-                      <tr><td colSpan={9} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300 animate-pulse">Synchronizing Data...</td></tr>
+                      <tr><td colSpan={5} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300 animate-pulse">Synchronizing Data...</td></tr>
                     ) : filteredRsvps.length === 0 ? (
-                      <tr><td colSpan={9} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300">No responses found</td></tr>
+                      <tr><td colSpan={5} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300">No responses found</td></tr>
                     ) : (
                       paginatedRsvps.map((rsvp, idx) => {
-                        const sendWhatsApp = async (name: string, phone: string) => {
-                          if (!phone) return;
-                          try {
-                            const message = `Hi *${name}*! 👋✨\n\nThank you yaa sudah RSVP untuk wedding *${coupleNicknames}* 🤍\n\nFriendly reminder nih, jangan lupa bawa dan tunjukkan *QR Code* kamu saat tiba di meja registrasi besok ya 🎟️✨\nBiar proses check-in jadi lebih cepat, praktis, nyaman & effortless.\n\nWe’re super happy to celebrate this special day with you🥹\nSee you tomorrow at our wedding! 💐`;
-
-                            const { error } = await supabase
-                              .from('wa_blast_logs')
-                              .insert({
-                                project_id: projectId,
-                                guest_id: rsvp.id,
-                                phone: phone.trim(),
-                                message: message,
-                                status: 'queued'
-                              });
-
-                            if (error) throw error;
-
-                            alert(`Pesan untuk ${name} telah masuk antrian bot.`);
-                            setQueuedPhones(prev => {
-                              const next = new Set(prev);
-                              next.add(phone.trim());
-                              return next;
-                            });
-                          } catch (err) {
-                            console.error(err);
-                            alert("Gagal menambahkan ke antrian.");
-                          }
-                        };
-
                         return (
                           <motion.tr
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.03 }}
                             key={rsvp.id}
-                            className={`group hover:bg-white/80 transition-all duration-300 ${rsvp.checkedIn ? 'bg-emerald-50/10' : ''} ${selectedIds.has(rsvp.id) ? 'bg-neutral-50' : ''}`}
+                            className={`group hover:bg-white/80 transition-all duration-300`}
                           >
                             <td className="p-6">
-                              {rsvp.phone ? (
-                                <input
-                                  type="checkbox"
-                                  className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 transition-all cursor-pointer"
-                                  checked={selectedIds.has(rsvp.id)}
-                                  onChange={(e) => {
-                                    const next = new Set(selectedIds);
-                                    if (e.target.checked) next.add(rsvp.id);
-                                    else next.delete(rsvp.id);
-                                    setSelectedIds(next);
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-4 h-4 border border-dashed border-neutral-200 rounded-sm opacity-20" title="No phone number available"></div>
-                              )}
-                            </td>
-                            <td className="p-6">
                               <span className={`px-4 py-1.5 text-[9px] font-bold tracking-widest uppercase rounded-full border transition-all ${rsvp.isAttending ? 'text-emerald-600 border-emerald-100 bg-emerald-50/50' : 'text-neutral-400 border-neutral-100 bg-neutral-50'}`}>{rsvp.isAttending ? 'Attending' : 'Declined'}</span>
-                            </td>
-                            <td className="p-6">
-                              {rsvp.checkedIn ? (
-                                <div className="flex items-center gap-3">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></span>
-                                  <div>
-                                    <span className="block text-[9px] font-bold uppercase tracking-widest text-neutral-700">Arrived</span>
-                                    <span className="block text-[9px] font-mono text-neutral-400">{formatTime(rsvp.checkedInAt || null)}</span>
-                                  </div>
-                                </div>
-                              ) : <span className="text-[9px] font-bold tracking-widest text-neutral-200 uppercase italic">Waiting...</span>}
                             </td>
                             <td className="p-6">
                               <div className="flex flex-col">
@@ -2150,35 +2268,10 @@ export default function RSVPDashboard() {
                             <td className="p-6 text-center">
                               <span className="text-sm font-serif text-neutral-700 font-medium">{rsvp.isAttending ? rsvp.guestsCount : '—'}</span>
                             </td>
-                            <td className="p-6 text-center">
-                              {(() => {
-                                const plan = rsvp.guestsCount;
-                                const actual = rsvp.actualGuestsCount !== undefined ? rsvp.actualGuestsCount : (rsvp.checkedIn ? rsvp.guestsCount : null);
-                                const isOver = actual !== null && actual > plan;
-
-                                return (
-                                  <span className={`text-lg font-serif ${isOver ? 'text-rose-600 font-black' : rsvp.checkedIn ? 'text-neutral-900 font-bold' : 'text-neutral-300'}`}>
-                                    {actual ?? '—'}
-                                  </span>
-                                );
-                              })()}
-                            </td>
                             <td className="p-6 text-right">
                               {rsvp.wishes && rsvp.wishes !== 'Walk-in registration' ? (
                                 <button onClick={() => setSelectedWish(rsvp)} className="px-5 py-2 text-[9px] font-bold tracking-[0.2em] uppercase border border-neutral-200 bg-white/50 hover:bg-neutral-900 hover:text-white transition-all rounded-xl shadow-sm active:scale-95 cursor-pointer">Read Wish</button>
                               ) : <span className="text-[9px] text-neutral-200 tracking-widest uppercase">—</span>}
-                            </td>
-                            <td className="p-6 text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() => sendWhatsApp(rsvp.name, rsvp.phone || '')}
-                                  disabled={!rsvp.phone || queuedPhones.has((rsvp.phone || '').trim())}
-                                  className="inline-flex items-center justify-center p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all active:scale-90 disabled:opacity-20 disabled:grayscale cursor-pointer"
-                                  title="Send WhatsApp Reminder"
-                                >
-                                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217s.231.001.332.005c.109.004.253-.041.397.303.145.346.491 1.2.534 1.287.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.303c-.087.101-.177.211-.077.383.101.173.447.737.958 1.192.658.587 1.212.769 1.385.855.173.087.275.072.376-.043.101-.116.433-.506.548-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z" /><path d="M12.036 3.913C7.622 3.912 4.032 7.502 4.032 11.917c0 1.578.463 3.047 1.242 4.286L3.5 22.142l6.125-1.607c1.163.639 2.486.981 3.893.982 4.411 0 8.002-3.59 8.002-8.005.001-4.413-3.591-8.001-7.984-7.999zm.019 14.156c-1.307 0-2.539-.376-3.585-1.03l-.257-.16-2.67.7 1.041-3.805-.181-.287c-.562-.894-.859-1.923-.858-2.98.001-3.13 2.547-5.676 5.679-5.676 3.131 0 5.677 2.546 5.677 5.676-.001 3.13-2.548 5.677-5.671 5.682z" /></svg>
-                                </button>
-                              </div>
                             </td>
                           </motion.tr>
                         );
@@ -2321,516 +2414,1380 @@ export default function RSVPDashboard() {
               );
             })()}
           </>
-        ) : activeTab === 'gifts' ? (
+        ) : activeTab === 'content' ? (
           <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-100">
               <div>
-                <h3 className="text-xl font-serif text-neutral-800">Gift Registry</h3>
-                <p className="text-sm text-neutral-400 mt-1">Manage items available for guests to purchase</p>
+                <h3 className="text-xl font-serif text-neutral-800">Content Editor</h3>
+                <p className="text-sm text-neutral-400 mt-1">Edit all wedding invitation details by section that display on the live site</p>
               </div>
-              <button onClick={() => setShowAddGiftModal(true)} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold tracking-[0.2em] uppercase transition-all hover:bg-neutral-800 rounded-xl shadow-sm hover:shadow-md cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                Add New Item
-              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {gifts.map((gift) => (
-                <div key={gift.id} className="group bg-white rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
-                  <div className="relative aspect-[4/5] bg-neutral-100 overflow-hidden">
-                    <img src={gift.image} alt={gift.name} className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${gift.isBought ? 'grayscale opacity-60' : ''}`} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    {gift.isBought && (
-                      <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-bold tracking-widest uppercase text-neutral-900 rounded-full shadow-sm">
-                        Purchased
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Responsive Navigation Menu */}
+              <div className="col-span-1 lg:col-span-1">
+                {/* Mobile / Tablet Horizontal Scroll Menu */}
+                <div className="lg:hidden flex overflow-x-auto pb-4 gap-2 scrollbar-none" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+                  {[
+                    { id: 'cover', label: 'Cover', icon: '🌐' },
+                    { id: 'couple', label: 'Mempelai', icon: '👤' },
+                    { id: 'events', label: 'Lokasi', icon: '📍' },
+                    { id: 'verse', label: 'Ayat', icon: '📖' },
+                    { id: 'rundown', label: 'Rundown', icon: '⏰' },
+                    { id: 'dining', label: 'Dining', icon: '🍽️' },
+                    { id: 'faq', label: 'FAQ', icon: '❓' },
+                    { id: 'story', label: 'Story', icon: '💕' },
+                    { id: 'gallery', label: 'Gallery', icon: '🖼️' },
+                    { id: 'video', label: 'Teaser', icon: '🎬' },
+                    { id: 'cashless', label: 'Amplop', icon: '💳' },
+                  ].map((sec) => (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => setActiveSection(sec.id as any)}
+                      className={`flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold tracking-wide rounded-full border transition-all whitespace-nowrap cursor-pointer shrink-0 ${activeSection === sec.id ? 'bg-neutral-900 border-neutral-900 text-white shadow-sm' : 'bg-white border-neutral-200 text-neutral-600'}`}
+                    >
+                      <span>{sec.icon}</span>
+                      <span>{sec.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Desktop Sticky Sidebar */}
+                <div className="hidden lg:block bg-white p-5 rounded-[2rem] border border-neutral-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] sticky top-6 space-y-1">
+                  {/* Group: Utama */}
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 px-3 pb-1.5">Utama</p>
+                  {[
+                    { id: 'cover', label: 'Cover & Opening', icon: '🌐' },
+                    { id: 'couple', label: 'Mempelai', icon: '👤' },
+                    { id: 'events', label: 'Acara & Lokasi', icon: '📍' },
+                  ].map((sec) => (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => setActiveSection(sec.id as any)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-[11px] font-semibold tracking-wide rounded-xl transition-all text-left cursor-pointer group ${activeSection === sec.id ? 'bg-neutral-900 text-white shadow-md shadow-black/10' : 'bg-transparent text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'}`}
+                    >
+                      <span className={`text-sm leading-none ${activeSection === sec.id ? 'scale-110' : 'opacity-60 group-hover:opacity-100'} transition-all`}>{sec.icon}</span>
+                      <span className="truncate">{sec.label}</span>
+                    </button>
+                  ))}
+
+                  <div className="border-t border-neutral-100 !my-3" />
+
+                  {/* Group: Konten */}
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 px-3 pb-1.5">Konten</p>
+                  {[
+                    { id: 'verse', label: 'Ayat & Kutipan', icon: '📖' },
+                    { id: 'rundown', label: 'Rundown Acara', icon: '⏰' },
+                    { id: 'dining', label: 'Dining Schedule', icon: '🍽️' },
+                    { id: 'faq', label: 'FAQ', icon: '❓' },
+                    { id: 'story', label: 'Love Story', icon: '💕' },
+                  ].map((sec) => (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => setActiveSection(sec.id as any)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-[11px] font-semibold tracking-wide rounded-xl transition-all text-left cursor-pointer group ${activeSection === sec.id ? 'bg-neutral-900 text-white shadow-md shadow-black/10' : 'bg-transparent text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'}`}
+                    >
+                      <span className={`text-sm leading-none ${activeSection === sec.id ? 'scale-110' : 'opacity-60 group-hover:opacity-100'} transition-all`}>{sec.icon}</span>
+                      <span className="truncate">{sec.label}</span>
+                    </button>
+                  ))}
+
+                  <div className="border-t border-neutral-100 !my-3" />
+
+                  {/* Group: Media */}
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 px-3 pb-1.5">Media</p>
+                  {[
+                    { id: 'gallery', label: 'Gallery Photos', icon: '🖼️' },
+                    { id: 'video', label: 'Video Teaser', icon: '🎬' },
+                  ].map((sec) => (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => setActiveSection(sec.id as any)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-[11px] font-semibold tracking-wide rounded-xl transition-all text-left cursor-pointer group ${activeSection === sec.id ? 'bg-neutral-900 text-white shadow-md shadow-black/10' : 'bg-transparent text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'}`}
+                    >
+                      <span className={`text-sm leading-none ${activeSection === sec.id ? 'scale-110' : 'opacity-60 group-hover:opacity-100'} transition-all`}>{sec.icon}</span>
+                      <span className="truncate">{sec.label}</span>
+                    </button>
+                  ))}
+
+                  <div className="border-t border-neutral-100 !my-3" />
+
+                  {/* Group: Lainnya */}
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 px-3 pb-1.5">Lainnya</p>
+                  {[
+                    { id: 'cashless', label: 'Amplop Digital', icon: '💳' },
+                  ].map((sec) => (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => setActiveSection(sec.id as any)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-[11px] font-semibold tracking-wide rounded-xl transition-all text-left cursor-pointer group ${activeSection === sec.id ? 'bg-neutral-900 text-white shadow-md shadow-black/10' : 'bg-transparent text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'}`}
+                    >
+                      <span className={`text-sm leading-none ${activeSection === sec.id ? 'scale-110' : 'opacity-60 group-hover:opacity-100'} transition-all`}>{sec.icon}</span>
+                      <span className="truncate">{sec.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Form Content Area */}
+              <div className="lg:col-span-3">
+                {activeSection === 'cover' && (
+                  <form onSubmit={handleSaveCover} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Cover & Opening</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Edit wedding date, hashtag, music background and cover photos</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Wedding Date</label>
+                        <input type="date" value={weddingDateForm} onChange={(e) => setWeddingDateForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" required />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Countdown Target</label>
+                        <input type="datetime-local" value={countdownTargetForm ? countdownTargetForm.split('+')[0].substring(0, 16) : ""} onChange={(e) => setCountdownTargetForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Hashtag</label>
+                        <input type="text" value={hashtagForm} onChange={(e) => setHashtagForm(e.target.value)} placeholder="#WeddingCouple" className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Location City (displayed on cover)</label>
+                        <input type="text" value={locationCityForm} onChange={(e) => setLocationCityForm(e.target.value)} placeholder="e.g. SEMARANG" className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                        <p className="text-[10px] text-neutral-400 mt-1 ml-1">Override the city name shown on the invitation cover</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Background Music (BGM)</label>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-neutral-50 p-4 rounded-xl border border-neutral-200">
+                        {musicUrlForm ? (
+                          <div className="flex-1 space-y-2 w-full">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-green-600 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M19.952 1.351a.75.75 0 0 1 .27 1.012l-6 10.5a.75.75 0 0 1-1.077.254l-3-2.25a.75.75 0 1 1 .9-1.2l2.33 1.748 5.485-9.6a.75.75 0 0 1 1.092-.264ZM20.25 18.75a.75.75 0 0 0-.75-.75h-15a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 .75-.75Z" clipRule="evenodd" /></svg>
+                                Music Loaded
+                              </span>
+                              <audio src={musicUrlForm} controls className="h-8 max-w-full" />
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-neutral-400 flex-1">No audio file uploaded yet.</p>
+                        )}
+                        <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer shrink-0">
+                          {isUploadingPhoto === 'music_url' ? 'Uploading...' : 'Upload Audio File'}
+                          <input type="file" accept="audio/*" onChange={(e) => handleUploadPhoto(e, 'music_url')} className="hidden" disabled={isUploadingPhoto !== null} />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-neutral-100">
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Opening Cover Photo</label>
+                        <div className="flex items-center gap-4">
+                          {openingPhotoUrlForm && (
+                            <div className="relative w-36 h-24 rounded-2xl overflow-hidden border border-neutral-200 shrink-0 shadow-sm">
+                              <img src={openingPhotoUrlForm} onClick={() => setActivePreviewImage(openingPhotoUrlForm)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Opening preview" />
+                            </div>
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                              {isUploadingPhoto === 'opening_photo_url' ? 'Uploading...' : 'Upload Image'}
+                              <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'opening_photo_url')} className="hidden" disabled={isUploadingPhoto !== null} />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Main Cover Photo</label>
+                        <div className="flex items-center gap-4">
+                          {coverPhotoUrlForm && (
+                            <div className="relative w-36 h-24 rounded-2xl overflow-hidden border border-neutral-200 shrink-0 shadow-sm">
+                              <img src={coverPhotoUrlForm} onClick={() => setActivePreviewImage(coverPhotoUrlForm)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Cover preview" />
+                            </div>
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                              {isUploadingPhoto === 'cover_photo_url' ? 'Uploading...' : 'Upload Image'}
+                              <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'cover_photo_url')} className="hidden" disabled={isUploadingPhoto !== null} />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Cover Section'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {activeSection === 'verse' && (
+                  <form onSubmit={handleSaveVerse} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Ayat & Kutipan (Quote)</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Configure Quranic, Biblical or other holy verses/quotes and edit section photos</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Quote Arabic / Original</label>
+                      <textarea rows={2} value={quoteArabicForm} onChange={(e) => setQuoteArabicForm(e.target.value)} placeholder="Arabic text..." className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 text-right font-serif" />
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Quote Translation</label>
+                      <textarea rows={3} value={quoteTranslationForm} onChange={(e) => setQuoteTranslationForm(e.target.value)} placeholder="Translation..." className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Quote Source</label>
+                      <input type="text" value={quoteSourceForm} onChange={(e) => setQuoteSourceForm(e.target.value)} placeholder="e.g. — QS. Ar-Rum: 21" className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                    </div>
+
+                    {/* Photo uploaders for Quote & Verse */}
+                    <div className="border-t border-neutral-100 pt-6 space-y-6">
+                      <h5 className="text-sm font-serif text-neutral-800 uppercase tracking-wide">Section Photos</h5>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Quote Section Photos */}
+                        <div className="space-y-4">
+                          <h6 className="text-[10px] font-bold tracking-[0.15em] text-neutral-400 uppercase">Quote Slide Photos</h6>
+                          
+                          {/* 1. Dance Photo */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Top-Left Photo (Dance)</label>
+                            <div className="flex items-center gap-4">
+                              {photoSec2Dance && (
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 shadow-sm">
+                                  <img src={photoSec2Dance} onClick={() => setActivePreviewImage(photoSec2Dance)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Dance preview" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                                  {isUploadingPhoto === 'photo_sec2_dance' ? 'Uploading...' : 'Upload Image'}
+                                  <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'photo_sec2_dance')} className="hidden" disabled={isUploadingPhoto !== null} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 2. Pigeons Photo */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Top-Right Photo (Pigeons)</label>
+                            <div className="flex items-center gap-4">
+                              {photoSec2Pigeons && (
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 shadow-sm">
+                                  <img src={photoSec2Pigeons} onClick={() => setActivePreviewImage(photoSec2Pigeons)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Pigeons preview" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                                  {isUploadingPhoto === 'photo_sec2_pigeons' ? 'Uploading...' : 'Upload Image'}
+                                  <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'photo_sec2_pigeons')} className="hidden" disabled={isUploadingPhoto !== null} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 3. Flowers Photo */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Bottom-Left Photo (Feet/Shoes)</label>
+                            <div className="flex items-center gap-4">
+                              {photoSec2Flowers && (
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 shadow-sm">
+                                  <img src={photoSec2Flowers} onClick={() => setActivePreviewImage(photoSec2Flowers)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Flowers preview" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                                  {isUploadingPhoto === 'photo_sec2_flowers' ? 'Uploading...' : 'Upload Image'}
+                                  <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'photo_sec2_flowers')} className="hidden" disabled={isUploadingPhoto !== null} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 4. Run Photo */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Bottom-Right Photo (Walking Couple)</label>
+                            <div className="flex items-center gap-4">
+                              {photoSec2Run && (
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 shadow-sm">
+                                  <img src={photoSec2Run} onClick={() => setActivePreviewImage(photoSec2Run)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Run preview" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                                  {isUploadingPhoto === 'photo_sec2_run' ? 'Uploading...' : 'Upload Image'}
+                                  <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'photo_sec2_run')} className="hidden" disabled={isUploadingPhoto !== null} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Verse Section Photos */}
+                        <div className="space-y-4">
+                          <h6 className="text-[10px] font-bold tracking-[0.15em] text-neutral-400 uppercase">Verse Slide Photos</h6>
+
+                          {/* 5. Background Photo */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Background Photo</label>
+                            <div className="flex items-center gap-4">
+                              {photoSec3Bg && (
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 shadow-sm">
+                                  <img src={photoSec3Bg} onClick={() => setActivePreviewImage(photoSec3Bg)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Background preview" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                                  {isUploadingPhoto === 'photo_sec3_bg' ? 'Uploading...' : 'Upload Image'}
+                                  <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'photo_sec3_bg')} className="hidden" disabled={isUploadingPhoto !== null} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 6. Frame Photo */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Silver Platter Frame</label>
+                            <div className="flex items-center gap-4">
+                              {photoSec3Frame && (
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 shadow-sm">
+                                  <img src={photoSec3Frame} onClick={() => setActivePreviewImage(photoSec3Frame)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Frame preview" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                                  {isUploadingPhoto === 'photo_sec3_frame' ? 'Uploading...' : 'Upload Image'}
+                                  <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'photo_sec3_frame')} className="hidden" disabled={isUploadingPhoto !== null} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 7. Couple Photo */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Couple Photo</label>
+                            <div className="flex items-center gap-4">
+                              {photoSec3Couple && (
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 shadow-sm">
+                                  <img src={photoSec3Couple} onClick={() => setActivePreviewImage(photoSec3Couple)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Couple preview" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                                  {isUploadingPhoto === 'photo_sec3_couple' ? 'Uploading...' : 'Upload Image'}
+                                  <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'photo_sec3_couple')} className="hidden" disabled={isUploadingPhoto !== null} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Quote Section'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {activeSection === 'couple' && (
+                  <form onSubmit={handleSaveCouple} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-8">
+                    {/* Bride Section */}
+                    <div className="space-y-4">
+                      <h4 className="text-base font-serif text-neutral-800 border-b border-neutral-100 pb-3 uppercase tracking-wider">Mempelai Wanita (Bride)</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Nickname</label>
+                          <input type="text" value={brideNicknameForm} onChange={(e) => setBrideNicknameForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" required />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Instagram</label>
+                          <input type="text" value={brideInstagramForm} onChange={(e) => setBrideInstagramForm(e.target.value)} placeholder="@username" className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Full Name</label>
+                        <input type="text" value={brideNameForm} onChange={(e) => setBrideNameForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" required />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Father's Name</label>
+                          <input type="text" value={brideFatherForm} onChange={(e) => setBrideFatherForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Mother's Name</label>
+                          <input type="text" value={brideMotherForm} onChange={(e) => setBrideMotherForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Bride Photo</label>
+                        <div className="flex items-center gap-4">
+                          {bridePhotoUrlForm && (
+                            <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-neutral-200 shrink-0 shadow-sm">
+                              <img src={bridePhotoUrlForm} onClick={() => setActivePreviewImage(bridePhotoUrlForm)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Bride preview" />
+                            </div>
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                              {isUploadingPhoto === 'bride_photo_url' ? 'Uploading...' : 'Upload Image'}
+                              <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'bride_photo_url')} className="hidden" disabled={isUploadingPhoto !== null} />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Groom Section */}
+                    <div className="space-y-4 pt-6 border-t border-neutral-100">
+                      <h4 className="text-base font-serif text-neutral-800 border-b border-neutral-100 pb-3 uppercase tracking-wider">Mempelai Pria (Groom)</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Nickname</label>
+                          <input type="text" value={groomNicknameForm} onChange={(e) => setGroomNicknameForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" required />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Instagram</label>
+                          <input type="text" value={groomInstagramForm} onChange={(e) => setGroomInstagramForm(e.target.value)} placeholder="@username" className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Full Name</label>
+                        <input type="text" value={groomNameForm} onChange={(e) => setGroomNameForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" required />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Father's Name</label>
+                          <input type="text" value={groomFatherForm} onChange={(e) => setGroomFatherForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Mother's Name</label>
+                          <input type="text" value={groomMotherForm} onChange={(e) => setGroomMotherForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Groom Photo</label>
+                        <div className="flex items-center gap-4">
+                          {groomPhotoUrlForm && (
+                            <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-neutral-200 shrink-0 shadow-sm">
+                              <img src={groomPhotoUrlForm} onClick={() => setActivePreviewImage(groomPhotoUrlForm)} className="object-cover w-full h-full cursor-zoom-in hover:scale-105 transition-all duration-300" alt="Groom preview" />
+                            </div>
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                              {isUploadingPhoto === 'groom_photo_url' ? 'Uploading...' : 'Upload Image'}
+                              <input type="file" accept="image/*" onChange={(e) => handleUploadPhoto(e, 'groom_photo_url')} className="hidden" disabled={isUploadingPhoto !== null} />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Couple Section'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {activeSection === 'events' && (
+                  <form onSubmit={handleSaveEvents} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Events & Location</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Configure locations, schedules and maps for sub-events</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Main Venue Name</label>
+                        <input type="text" value={venueNameForm} onChange={(e) => setVenueNameForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" required />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Religion</label>
+                        <select value={religionForm} onChange={(e) => setReligionForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 cursor-pointer">
+                          <option value="islam">Islam</option>
+                          <option value="christian">Kristen</option>
+                          <option value="catholic">Katolik</option>
+                          <option value="hindu">Hindu</option>
+                          <option value="buddha">Buddha</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Venue Address</label>
+                        <textarea rows={3} value={venueAddressForm} onChange={(e) => setVenueAddressForm(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 resize-none" required />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Google Maps Location</label>
+                          <button
+                            type="button"
+                            onClick={() => setVenueMapsUrlForm(getMapsEmbedUrl(venueNameForm || venueAddressForm))}
+                            className="text-[9px] font-bold uppercase text-neutral-500 hover:text-neutral-900 tracking-wider bg-transparent border-0 cursor-pointer"
+                          >
+                            Sync with Name/Address
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={venueMapsUrlForm.includes("q=") ? decodeURIComponent(venueMapsUrlForm.split("q=")[1].split("&")[0]) : venueMapsUrlForm}
+                          onChange={(e) => setVenueMapsUrlForm(getMapsEmbedUrl(e.target.value))}
+                          placeholder="e.g. Openaire Resto Bar Market Semarang"
+                          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                          required
+                        />
+                        {venueMapsUrlForm && (
+                          <div className="rounded-2xl overflow-hidden border border-neutral-200 shadow-sm aspect-[21/9]">
+                            <iframe
+                              src={venueMapsUrlForm}
+                              className="w-full h-full border-0"
+                              allowFullScreen
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Specific Wedding Events list form */}
+                    {weddingEvents.length > 0 && (
+                      <div className="pt-6 border-t border-neutral-100 space-y-6">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-neutral-500">Sub-Events (Akad, Resepsi, dll.)</h4>
+                        <div className="space-y-8 divide-y divide-neutral-100">
+                          {weddingEvents.map((ev, index) => (
+                            <div key={ev.id} className={`space-y-4 ${index > 0 ? 'pt-8' : ''}`}>
+                              <div className="flex items-center justify-between">
+                                <span className="px-3 py-1 bg-neutral-900 text-white text-[8px] font-bold tracking-[0.2em] uppercase rounded-md">
+                                  Event #{index + 1}: {ev.event_type.toUpperCase()}
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="md:col-span-2">
+                                  <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Custom Label</label>
+                                  <input 
+                                    type="text" 
+                                    value={ev.custom_label || ""} 
+                                    onChange={(e) => {
+                                      const updated = [...weddingEvents];
+                                      updated[index] = { ...updated[index], custom_label: e.target.value };
+                                      setWeddingEvents(updated);
+                                    }} 
+                                    className="w-full bg-neutral-50 border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" 
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Event Date</label>
+                                  <input 
+                                    type="date" 
+                                    value={ev.event_date || ""} 
+                                    onChange={(e) => {
+                                      const updated = [...weddingEvents];
+                                      updated[index] = { ...updated[index], event_date: e.target.value };
+                                      setWeddingEvents(updated);
+                                    }} 
+                                    className="w-full bg-neutral-50 border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" 
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Start Time</label>
+                                    <input 
+                                      type="text" 
+                                      value={ev.event_time || ""} 
+                                      onChange={(e) => {
+                                        const updated = [...weddingEvents];
+                                        updated[index] = { ...updated[index], event_time: e.target.value };
+                                        setWeddingEvents(updated);
+                                      }} 
+                                      placeholder="10:00:00"
+                                      className="w-full bg-neutral-50 border border-neutral-200 px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" 
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">End Time</label>
+                                    <input 
+                                      type="text" 
+                                      value={ev.end_time || ""} 
+                                      onChange={(e) => {
+                                        const updated = [...weddingEvents];
+                                        updated[index] = { ...updated[index], end_time: e.target.value };
+                                        setWeddingEvents(updated);
+                                      }} 
+                                      placeholder="12:00:00"
+                                      className="w-full bg-neutral-50 border border-neutral-200 px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" 
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Venue Name</label>
+                                  <input 
+                                    type="text" 
+                                    value={ev.venue_name || ""} 
+                                    onChange={(e) => {
+                                      const updated = [...weddingEvents];
+                                      updated[index] = { ...updated[index], venue_name: e.target.value };
+                                      setWeddingEvents(updated);
+                                    }} 
+                                    className="w-full bg-neutral-50 border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" 
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex justify-between items-center">
+                                    <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase ml-1">Google Maps Location</label>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...weddingEvents];
+                                        updated[index] = { ...updated[index], venue_maps_url: getMapsEmbedUrl(ev.venue_name || ev.venue_address || "") };
+                                        setWeddingEvents(updated);
+                                      }}
+                                      className="text-[8px] font-bold uppercase text-neutral-500 hover:text-neutral-900 tracking-wider bg-transparent border-0 cursor-pointer"
+                                    >
+                                      Sync
+                                    </button>
+                                  </div>
+                                  <input 
+                                    type="text" 
+                                    value={ev.venue_maps_url && ev.venue_maps_url.includes("q=") ? decodeURIComponent(ev.venue_maps_url.split("q=")[1].split("&")[0]) : ev.venue_maps_url || ""} 
+                                    onChange={(e) => {
+                                      const updated = [...weddingEvents];
+                                      updated[index] = { ...updated[index], venue_maps_url: getMapsEmbedUrl(e.target.value) };
+                                      setWeddingEvents(updated);
+                                    }} 
+                                    placeholder="e.g. Openaire Resto Bar Market Semarang"
+                                    className="w-full bg-neutral-50 border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" 
+                                  />
+                                  {ev.venue_maps_url && (
+                                    <div className="rounded-xl overflow-hidden border border-neutral-200 shadow-sm aspect-[21/9] mt-2">
+                                      <iframe
+                                        src={ev.venue_maps_url}
+                                        className="w-full h-full border-0"
+                                        allowFullScreen
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Venue Address</label>
+                                <textarea 
+                                  rows={2} 
+                                  value={ev.venue_address || ""} 
+                                  onChange={(e) => {
+                                    const updated = [...weddingEvents];
+                                    updated[index] = { ...updated[index], venue_address: e.target.value };
+                                    setWeddingEvents(updated);
+                                  }} 
+                                  className="w-full bg-neutral-50 border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 resize-none" 
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
-                    {gift.discount && !gift.isBought && (
-                      <div className="absolute top-4 left-4 px-3 py-1 bg-rose-500 text-[9px] font-bold tracking-widest uppercase text-white rounded-full shadow-sm">
-                        {gift.discount}
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Events Section'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {activeSection === 'rundown' && (
+                  <form onSubmit={handleSaveRundown} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4 flex justify-between items-center">
+                      <div>
+                        <h4 className="text-base font-serif text-neutral-800">Rundown Acara (Wedding Rundown)</h4>
+                        <p className="text-xs text-neutral-400 mt-1">Configure chronological wedding milestone events and schedules</p>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-6 flex-1 flex flex-col bg-white z-10">
-                    <h4 className="text-base font-serif text-neutral-800 mb-2 line-clamp-2">{gift.name}</h4>
-                    <div className="flex flex-col mb-6">
-                      <span className="text-neutral-900 font-bold text-lg tracking-tight">Rp. {gift.price}</span>
-                      {gift.originalPrice && (
-                        <span className="text-xs text-neutral-400 line-through">Rp. {gift.originalPrice}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRundownItemsForm([
+                            ...rundownItemsForm,
+                            { time: "00.00", title: "New Event Milestone", icon: "rundown-rings.png" }
+                          ]);
+                        }}
+                        className="px-4 py-2 bg-neutral-900 text-white text-[9px] font-bold uppercase tracking-wider rounded-xl hover:bg-neutral-800 transition-all shadow-sm cursor-pointer border-0"
+                      >
+                        + Add Milestone
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {rundownItemsForm.map((item, idx) => (
+                        <div key={idx} className="p-6 bg-neutral-50 rounded-2xl border border-neutral-150 relative space-y-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRundownItemsForm(rundownItemsForm.filter((_, i) => i !== idx));
+                            }}
+                            className="absolute top-4 right-4 text-neutral-400 hover:text-red-500 transition-all cursor-pointer text-xs font-bold uppercase tracking-wider font-sans border-0 bg-transparent"
+                          >
+                            Remove
+                          </button>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Time</label>
+                              <input
+                                type="text"
+                                value={item.time}
+                                onChange={(e) => {
+                                  const updated = [...rundownItemsForm];
+                                  updated[idx].time = e.target.value;
+                                  setRundownItemsForm(updated);
+                                }}
+                                placeholder="e.g. 10.00 - 11.00"
+                                className="w-full bg-white border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                                required
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Milestone Title</label>
+                              <input
+                                type="text"
+                                value={item.title}
+                                onChange={(e) => {
+                                  const updated = [...rundownItemsForm];
+                                  updated[idx].title = e.target.value;
+                                  setRundownItemsForm(updated);
+                                }}
+                                placeholder="e.g. Akad Nikah"
+                                className="w-full bg-white border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Icon Style</label>
+                              <select
+                                value={item.icon}
+                                onChange={(e) => {
+                                  const updated = [...rundownItemsForm];
+                                  updated[idx].icon = e.target.value;
+                                  setRundownItemsForm(updated);
+                                }}
+                                className="w-full bg-white border border-neutral-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 cursor-pointer"
+                              >
+                                <option value="rundown-rings.png">Cincin (Rings)</option>
+                                <option value="rundown-table.png">Meja Makan (Table)</option>
+                                <option value="rundown-doves.png">Burung Merpati (Doves)</option>
+                                <option value="rundown-toast.png">Gelas Toast (Toast)</option>
+                                <option value="rundown-camera.png">Kamera (Camera)</option>
+                                <option value="rundown-hands.png">Salaman (Hands)</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {rundownItemsForm.length === 0 && (
+                        <div className="text-center py-12 text-neutral-400 text-xs bg-neutral-50 border border-dashed border-neutral-200 rounded-2xl">
+                          No rundown milestones configured. Click "+ Add Milestone" to start.
+                        </div>
                       )}
                     </div>
-                    <div className="flex gap-2 mt-auto">
-                      <button onClick={() => toggleBought(gift.id, gift.isBought)} className={`flex-1 py-3.5 px-2 text-[10px] font-bold tracking-widest uppercase rounded-xl border transition-all cursor-pointer ${gift.isBought ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-900 hover:text-white hover:border-neutral-900'}`}>{gift.isBought ? 'Make Available' : 'Mark as Bought'}</button>
-                      <button onClick={() => setEditingGift({
-                        id: gift.id,
-                        name: gift.name,
-                        price: gift.originalPrice ? gift.originalPrice.toString().replace(/[^0-9]/g, '') : gift.price.toString().replace(/[^0-9]/g, ''),
-                        image: gift.image,
-                        discount: gift.discount ? gift.discount.replace(/[^0-9]/g, '') : ""
-                      })} className="p-3.5 px-3 text-amber-500 bg-amber-50 hover:bg-amber-500 hover:text-white rounded-xl border border-transparent transition-all cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Rundown'}
                       </button>
-                      <button onClick={() => handleDeleteGift(gift.id)} className="p-3.5 px-3 text-rose-400 bg-rose-50 hover:bg-rose-500 hover:text-white rounded-xl border border-transparent transition-all cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : activeTab === 'links' ? (
-          <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-neutral-100">
-              <div>
-                <h3 className="text-xl font-serif text-neutral-800">Invitation Blast</h3>
-                <p className="text-sm text-neutral-400 mt-1">Configure and blast personalized wedding invitations via WhatsApp</p>
-              </div>
-            </div>
+                  </form>
+                )}
 
-            <div className="flex flex-col gap-8">
-              <div className="flex flex-col gap-8">
-                {/* WhatsApp Blaster Robot Status Panel */}
-                <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-neutral-100">
-                    <div>
-                      <h4 className="text-base font-serif text-neutral-800">WhatsApp Blaster Robot</h4>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">Scan QR code to link your WhatsApp account and send messages</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        botStatus?.status === 'connected' ? 'bg-emerald-500 animate-pulse' :
-                        botStatus?.status === 'qr' ? 'bg-amber-500 animate-pulse' :
-                        botStatus?.status === 'loading' ? 'bg-blue-500 animate-pulse' :
-                        'bg-rose-500'
-                      }`}></div>
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">
-                        {botStatus?.status === 'connected' ? 'Connected (Aktif)' :
-                         botStatus?.status === 'qr' ? 'Waiting Scan (Scan QR)' :
-                         botStatus?.status === 'loading' ? 'Initializing (Memuat...)' :
-                         'Disconnected (Tidak Aktif)'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-center justify-center py-6 text-center">
-                    {botStatus?.status === 'loading' && (
-                      <div className="flex flex-col items-center gap-3 animate-in fade-in duration-300">
-                        <div className="w-12 h-12 rounded-full border-4 border-dashed border-neutral-300 animate-spin"></div>
-                        <p className="text-xs text-neutral-500">Starting WhatsApp browser session. Please wait...</p>
-                      </div>
-                    )}
-
-                    {botStatus?.status === 'qr' && botStatus.qr && (
-                      <div className="flex flex-col items-center gap-4 animate-in zoom-in-95 duration-300">
-                        <div className="p-4 bg-white border border-neutral-200 rounded-2xl shadow-sm">
-                          <QRCode value={botStatus.qr} size={200} />
+                {activeSection === 'story' && (() => {
+                  const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
+                  if (isLaceEnvelop) {
+                    return (
+                      <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
+                        <div className="border-b border-neutral-100 pb-4">
+                          <h4 className="text-base font-serif text-neutral-800">Edit Love Story</h4>
+                          <p className="text-xs text-neutral-400 mt-1">Update your love story description. Paragraphs will split automatically on newline.</p>
                         </div>
-                        <div className="max-w-xs">
-                          <p className="text-xs text-neutral-600 font-bold">Scan this QR Code using WhatsApp Link Devices:</p>
-                          <p className="text-[10px] text-neutral-400 mt-1">Open WhatsApp &rarr; Menu/Settings &rarr; Linked Devices &rarr; Link a Device</p>
-                        </div>
+
+                        <form onSubmit={handleSaveSingleLoveStory} className="space-y-5">
+                          <div>
+                            <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Love Story Content</label>
+                            <textarea
+                              value={singleLoveStoryText}
+                              onChange={(e) => setSingleLoveStoryText(e.target.value)}
+                              placeholder="Write your love story here..."
+                              rows={12}
+                              className="w-full bg-neutral-50 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900 resize-y leading-relaxed font-sans"
+                              required
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <button
+                              type="submit"
+                              disabled={isSavingLoveStory}
+                              className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer"
+                            >
+                              {isSavingLoveStory ? 'Saving...' : 'Save Love Story'}
+                            </button>
+                          </div>
+                        </form>
                       </div>
-                    )}
+                    );
+                  }
 
-                    {botStatus?.status === 'connected' && (
-                      <div className="flex flex-col items-center gap-3 animate-in zoom-in-95 duration-300">
-                        <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 text-2xl font-bold">
-                          ✓
-                        </div>
-                        <h5 className="text-sm font-bold text-neutral-800">Robot is Connected & Running</h5>
-                        <p className="text-xs text-neutral-500 max-w-xs">Ready to blast wedding invitations automatically. Keep the background bot process running.</p>
+                  return (
+                    <div className="flex flex-col gap-8">
+                      {/* Form to add story */}
+                      <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 h-fit">
+                        <h4 className="text-base font-serif text-neutral-800 mb-6">Add New Story Milestone</h4>
+                        <form onSubmit={handleAddStory} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Year</label>
+                            <input type="text" value={newStoryYear} onChange={(e) => setNewStoryYear(e.target.value)} required placeholder="e.g. 2019" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Title</label>
+                            <input type="text" value={newStoryTitle} onChange={(e) => setNewStoryTitle(e.target.value)} required placeholder="e.g. First Met" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                          </div>
+                          <div className="md:col-span-2 lg:col-span-1">
+                            <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Order (Number)</label>
+                            <input type="number" value={newStoryOrder} onChange={(e) => setNewStoryOrder(e.target.value)} required placeholder="e.g. 1" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                          </div>
+                          <div className="md:col-span-2 lg:col-span-4">
+                            <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Description</label>
+                            <textarea value={newStoryDesc} onChange={(e) => setNewStoryDesc(e.target.value)} required rows={3} placeholder="Description..." className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 resize-none"></textarea>
+                          </div>
+                          <div className="md:col-span-2 lg:col-span-4 flex justify-end">
+                            <button type="submit" disabled={isAddingStory} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                              {isAddingStory ? 'Adding...' : 'Add Event'}
+                            </button>
+                          </div>
+                        </form>
                       </div>
-                    )}
 
-                    {(!botStatus?.status || botStatus?.status === 'disconnected') && (
-                      <div className="flex flex-col items-center gap-3 text-neutral-400 py-4 animate-in fade-in duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-neutral-300"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" /></svg>
-                        <p className="text-xs text-neutral-500">Robot is currently offline or logged out.</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-                    {(botStatus?.status === 'connected' || botStatus?.status === 'qr' || botStatus?.status === 'loading') && (
-                      <button
-                        onClick={() => handleToggleBot('logout')}
-                        disabled={isChangingBot}
-                        className="px-6 py-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 text-[10px] font-bold tracking-widest uppercase rounded-xl transition-all cursor-pointer disabled:opacity-50"
-                      >
-                        Disconnect / Log Out Robot
-                      </button>
-                    )}
-                    {(!botStatus?.status || botStatus?.status === 'disconnected') && (
-                      <button
-                        onClick={() => handleToggleBot('login')}
-                        disabled={isChangingBot}
-                        className="px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white text-[10px] font-bold tracking-widest uppercase rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
-                      >
-                        Connect / Start Robot
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Template Editor */}
-                <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-4">
-                  <div>
-                    <h4 className="text-base font-serif text-neutral-800">Message Template</h4>
-                    <p className="text-[10px] text-neutral-400 mt-0.5">Customize the wedding invitation text</p>
-                  </div>
-                  <div className="space-y-2">
-                    <textarea
-                      value={messageTemplate}
-                      onChange={(e) => setMessageTemplate(e.target.value)}
-                      rows={14}
-                      className="w-full bg-neutral-50 border border-neutral-200 p-4 rounded-xl text-xs focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-800 font-mono resize-y leading-relaxed"
-                      placeholder="Wedding invitation template..."
-                    />
-                    <p className="text-[9px] text-neutral-400 leading-normal">
-                      💡 Use <code className="bg-neutral-100 px-1 py-0.5 rounded font-bold text-neutral-600">[wedding link]</code> for the unique URL. You can also use <code className="bg-neutral-100 px-1 py-0.5 rounded font-bold text-neutral-600">[guest name]</code> or <code className="bg-neutral-100 px-1 py-0.5 rounded font-bold text-neutral-600">[nama]</code>.
-                    </p>
-                  </div>
-                </div>
-
-                {/* WhatsApp Live Preview */}
-                <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-4">
-                  <div>
-                    <h4 className="text-base font-serif text-neutral-800">WhatsApp Live Preview</h4>
-                    <p className="text-[10px] text-neutral-400 mt-0.5">Real-time simulation of the invitation message</p>
-                  </div>
-                  
-                  <div className="relative p-5 bg-[#e5ddd5] rounded-2xl border border-neutral-200/50 shadow-inner max-h-[350px] overflow-y-auto custom-scrollbar">
-                    <div className="relative max-w-[90%] bg-white p-4 rounded-xl rounded-tl-none shadow-sm text-[11px] text-neutral-800 leading-relaxed whitespace-pre-wrap font-sans">
-                      <div className="absolute top-0 left-0 -translate-x-full w-0 h-0 border-t-[8px] border-t-white border-l-[8px] border-l-transparent"></div>
-                      {renderMessage(messageTemplate, blastGuests[0]?.name || "GUEST NAME")}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Section: Guest Blast List */}
-              <div className="w-full">
-                <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col h-full min-h-[500px]">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-neutral-100">
-                    <div>
-                      <h4 className="text-base font-serif text-neutral-800">Guest Registry & Blaster</h4>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">Manage list of invitation targets</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
-                      <input
-                        type="datetime-local"
-                        value={scheduleBlastDate}
-                        onChange={(e) => setScheduleBlastDate(e.target.value)}
-                        className="flex-1 sm:flex-none px-3 py-2 bg-white border border-neutral-200 text-neutral-800 text-[9px] font-bold tracking-wider uppercase rounded-xl outline-none focus:border-neutral-900 transition-all"
-                        title="Schedule Blast (Optional)"
-                      />
-                      <button
-                        onClick={() => setBlastGuests([...blastGuests, { name: '', phone: '', botSession: '1', status: 'idle' }])}
-                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 text-neutral-800 text-[9px] font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                        Add Row
-                      </button>
-                      <button
-                        onClick={() => setShowImportModal(true)}
-                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[9px] font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        Import
-                      </button>
-                      <button
-                        onClick={copyAllLinks}
-                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-[9px] font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" /></svg>
-                        Copy Links
-                      </button>
-                      <button
-                        onClick={sendAllBlasts}
-                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold tracking-wider uppercase rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
-                        Blast All ({blastGuests.filter(g => g.name.trim() !== "" && g.phone.trim() !== "").length})
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 overflow-x-auto min-h-[350px]">
-                    <table className="w-full text-left border-collapse min-w-[600px]">
-                      <thead>
-                        <tr className="bg-neutral-50/50 text-neutral-500 border-b border-neutral-100">
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase w-10 text-center">#</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">Guest Name</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">WhatsApp Phone</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase text-center">Bot Session</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">Status</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-50">
-                        {blastGuests.length === 0 ? (
-                          <tr>
-                            <td colSpan={6} className="p-8 text-center text-[10px] tracking-wider uppercase font-bold text-neutral-300">
-                              No guests in lists. Add row or import spreadsheet values.
-                            </td>
-                          </tr>
+                      {/* Timeline Events list */}
+                      <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100">
+                        <h4 className="text-base font-serif text-neutral-800 mb-6">Story Timeline Milestones</h4>
+                        {storyEvents.length === 0 ? (
+                          <p className="text-xs text-neutral-400 italic">No story events added yet.</p>
                         ) : (
-                          blastGuests.map((guest, idx) => {
-                            const link = getGuestLink(guest.name);
-                            const cleanPhone = guest.phone.replace(/[^0-9]/g, '');
-                            const isPhoneValid = cleanPhone.length >= 10 && cleanPhone.length <= 15 && (cleanPhone.startsWith('62') || cleanPhone.startsWith('08') || cleanPhone.startsWith('0'));
-                            return (
-                              <tr key={idx} className="group hover:bg-neutral-50/50 transition-all duration-300">
-                                <td className="p-4 text-[10px] font-mono text-neutral-400 text-center font-bold">
-                                  {idx + 1}
-                                </td>
-                                <td className="p-4">
-                                  <input
-                                    type="text"
-                                    value={guest.name}
-                                    onChange={(e) => {
-                                      const updated = [...blastGuests];
-                                      updated[idx].name = e.target.value;
-                                      setBlastGuests(updated);
-                                    }}
-                                    placeholder="e.g. MICHAEL SEAN"
-                                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-neutral-900 py-1 text-[13px] font-serif font-bold text-neutral-800 focus:outline-none transition-all placeholder:text-neutral-300"
-                                  />
-                                </td>
-                                <td className="p-4">
-                                  <input
-                                    type="text"
-                                    value={guest.phone}
-                                    onChange={(e) => {
-                                      const updated = [...blastGuests];
-                                      updated[idx].phone = e.target.value;
-                                      setBlastGuests(updated);
-                                    }}
-                                    placeholder="e.g. 628123456789"
-                                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-neutral-900 py-1 text-xs font-mono text-neutral-500 focus:outline-none transition-all placeholder:text-neutral-300"
-                                  />
-                                </td>
-
-                                <td className="p-4 text-center">
-                                  <select
-                                    value={guest.botSession || "1"}
-                                    onChange={(e) => {
-                                      const updated = [...blastGuests];
-                                      updated[idx].botSession = e.target.value;
-                                      setBlastGuests(updated);
-                                    }}
-                                    className="bg-emerald-50/50 border border-emerald-100 text-emerald-800 text-[8px] font-bold tracking-widest uppercase rounded-lg px-2 py-1.5 outline-none focus:border-emerald-500 transition-all shadow-sm cursor-pointer appearance-none text-center bg-no-repeat"
-                                  >
-                                    {[1, 2, 3, 4].map(num => (
-                                      <option key={num} value={num.toString()}>
-                                        {botStatuses[`Session${num}`]?.name || `WA ${num}`}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td className="p-4">
-                                  {guest.status === 'queued' || (guest.phone.trim() && queuedPhones.has(guest.phone.trim())) ? (
-                                    <span className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100 rounded-full" title="Already in queue">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                      Queued
-                                    </span>
-                                  ) : guest.status === 'error' ? (
-                                    <span className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 rounded-full">
-                                      Error
-                                    </span>
-                                  ) : !isPhoneValid && guest.phone.trim() ? (
-                                    <span className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 rounded-full">
-                                      Not Available
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full">
-                                      Available
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-4 text-right">
-                                  <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                                    <button
-                                      onClick={() => copyToClipboard(link, "Personalized guest invitation link copied!")}
-                                      disabled={!guest.name.trim()}
-                                      className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all disabled:opacity-20 cursor-pointer"
-                                      title="Copy Invitation Link"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" /></svg>
-                                    </button>
-                                    <button
-                                      onClick={() => copyToClipboard(renderMessage(messageTemplate, guest.name), "Fully-rendered invitation message copied!")}
-                                      disabled={!guest.name.trim()}
-                                      className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all disabled:opacity-20 cursor-pointer"
-                                      title="Copy Message Text"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>
-                                    </button>
-                                    <button
-                                      onClick={() => sendWhatsAppBlast(guest.name, guest.phone, idx)}
-                                      disabled={!guest.name.trim() || !isPhoneValid || guest.status === 'queued' || queuedPhones.has(guest.phone.trim())}
-                                      className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all active:scale-90 disabled:opacity-20 disabled:grayscale cursor-pointer"
-                                      title="Send WhatsApp Invitation"
-                                    >
-                                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217s.231.001.332.005c.109.004.253-.041.397.303.145.346.491 1.2.534 1.287.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.303c-.087.101-.177.211-.077.383.101.173.447.737.958 1.192.658.587 1.212.769 1.385.855.173.087.275.072.376-.043.101-.116.433-.506.548-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z" /><path d="M12.036 3.913C7.622 3.912 4.032 7.502 4.032 11.917c0 1.578.463 3.047 1.242 4.286L3.5 22.142l6.125-1.607c1.163.639 2.486.981 3.893.982 4.411 0 8.002-3.59 8.002-8.005.001-4.413-3.591-8.001-7.984-7.999zm.019 14.156c-1.307 0-2.539-.376-3.585-1.03l-.257-.16-2.67.7 1.041-3.805-.181-.287c-.562-.894-.859-1.923-.858-2.98.001-3.13 2.547-5.676 5.679-5.676 3.131 0 5.677 2.546 5.677 5.676-.001 3.13-2.548 5.677-5.671 5.682z" /></svg>
-                                    </button>
-                                    {blastGuests.length > 1 && (
-                                      <button
-                                        onClick={() => {
-                                          const updated = blastGuests.filter((_, i) => i !== idx);
-                                          setBlastGuests(updated);
-                                        }}
-                                        className="p-2 text-neutral-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
-                                        title="Remove Row"
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-                                      </button>
-                                    )}
+                          <div className="space-y-4">
+                            {storyEvents.map((item) => (
+                              <div key={item.id} className="flex items-start justify-between p-5 rounded-2xl bg-neutral-50 border border-neutral-100 hover:bg-white hover:border-neutral-200 hover:shadow-md transition-all">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs font-mono font-bold text-neutral-400">[{item.year}]</span>
+                                    <span className="text-sm font-bold text-neutral-800">{item.title}</span>
+                                    <span className="text-[9px] font-black text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded uppercase tracking-wider">Order {item.order}</span>
                                   </div>
-                                </td>
-                              </tr>
-                            );
-                          })
+                                  <p className="text-xs text-neutral-500 leading-relaxed max-w-2xl">{item.desc}</p>
+                                </div>
+                                <button type="button" onClick={() => handleDeleteStory(item.id)} className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button>
+                              </div>
+                            ))}
+                          </div>
                         )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Riwayat Pengiriman (Blast Logs) Panel */}
-                <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-4">
-                  <div className="flex justify-between items-center pb-4 border-b border-neutral-100">
-                    <div>
-                      <h4 className="text-base font-serif text-neutral-800">Riwayat Pengiriman (Blast Logs)</h4>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">Log real-time pengiriman undangan pernikahan</p>
+                      </div>
                     </div>
-                    <button
-                      onClick={fetchBlastLogs}
-                      className="px-4 py-2 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 text-neutral-800 text-[9px] font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      🔄 Refresh Log
-                    </button>
-                  </div>
+                  );
+                })()}
 
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-neutral-50/50 text-neutral-500 border-b border-neutral-100">
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">Waktu</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">Penerima</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">Pesan Preview</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">Status</th>
-                          <th className="p-4 text-[9px] font-bold tracking-wider uppercase">Keterangan</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-50">
-                        {blastLogs.length === 0 ? (
-                          <tr>
-                            <td colSpan={5} className="p-8 text-center text-[10px] tracking-wider uppercase font-bold text-neutral-300">
-                              Belum ada riwayat pengiriman.
-                            </td>
-                          </tr>
-                        ) : (
-                          blastLogs.map((log) => {
-                            const dateStr = log.created_at ? new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-";
-                            const guestName = log.guests?.name || log.phone;
-                            
-                            return (
-                              <tr key={log.id} className="text-xs">
-                                <td className="p-4 text-[10px] text-neutral-400 font-mono font-medium">{dateStr}</td>
-                                <td className="p-4 font-bold text-neutral-800">{guestName}</td>
-                                <td className="p-4 text-neutral-500 truncate max-w-xs" title={log.message}>
-                                  {log.message}
-                                </td>
-                                <td className="p-4">
-                                  {log.status === 'sent' && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full">
-                                      Terkirim
-                                    </span>
-                                  )}
-                                  {log.status === 'queued' && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100 rounded-full animate-pulse">
-                                      Antrian
-                                    </span>
-                                  )}
-                                  {log.status === 'failed' && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 rounded-full">
-                                      Gagal
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-4 text-[10px] text-neutral-400 font-medium max-w-xs truncate" title={log.failed_reason || ""}>
-                                  {log.status === 'sent' ? `Terkirim pada ${log.sent_at ? new Date(log.sent_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : ''}` : log.failed_reason || "-"}
-                                </td>
-                              </tr>
-                            );
-                          })
+                {activeSection === 'gallery' && (
+                  <form onSubmit={handleSaveGallery} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Gallery Photos</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Manage and add photos for the invitation gallery</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Photo URLs</label>
+                      {galleryPhotosForm.length === 0 ? (
+                        <p className="text-xs text-neutral-400 italic bg-neutral-50 p-4 rounded-xl border border-neutral-100">No gallery photos added yet.</p>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {galleryPhotosForm.map((url, idx) => (
+                            <div key={idx} className="relative group aspect-square rounded-2xl overflow-hidden border border-neutral-200 shadow-sm bg-neutral-50">
+                              <img src={url} className="object-cover w-full h-full" alt="Gallery item" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setActivePreviewImage(url)}
+                                  className="p-2 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-colors shadow-md active:scale-90 cursor-pointer border-0"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" /></svg>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...galleryPhotosForm];
+                                    updated.splice(idx, 1);
+                                    setGalleryPhotosForm(updated);
+                                  }}
+                                  className="p-2 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-colors shadow-md active:scale-90 cursor-pointer border-0"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-6 border-t border-neutral-100 space-y-4">
+                      <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Upload New Photo</label>
+                      <div className="flex items-center gap-2">
+                        <label className="inline-block cursor-pointer px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-xl transition-all active:scale-95 cursor-pointer">
+                          {isUploadingPhoto === 'gallery' ? 'Uploading...' : 'Upload Image File'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setIsUploadingPhoto('gallery');
+                              try {
+                                const base64String = await new Promise<string>((resolve, reject) => {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => resolve(reader.result as string);
+                                  reader.onerror = reject;
+                                  reader.readAsDataURL(file);
+                                });
+
+                                const res = await fetch('/api/admin', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    action: 'upload_image',
+                                    payload: {
+                                      project_id: projectId,
+                                      file: base64String,
+                                      fileName: file.name,
+                                      fileType: file.type
+                                    }
+                                  })
+                                });
+
+                                if (!res.ok) throw new Error('Upload failed');
+                                const data = await res.json();
+                                setGalleryPhotosForm([...galleryPhotosForm, data.url]);
+                                alert('Photo uploaded and added to gallery!');
+                              } catch (err: any) {
+                                alert('Upload failed: ' + err.message);
+                              } finally {
+                                setIsUploadingPhoto(null);
+                              }
+                            }}
+                            className="hidden"
+                            disabled={isUploadingPhoto !== null}
+                          />
+                        </label>
+                        <span className="text-[8px] text-neutral-400 uppercase">Max 5MB</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Gallery Section'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {activeSection === 'cashless' && (
+                  <form onSubmit={handleSaveCashless} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Amplop Digital (Cashless)</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Configure bank accounts or digital wallets for wedding cash gifts</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {paymentAccounts.map((acc, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border border-neutral-100 bg-neutral-50 relative group">
+                          <div>
+                            <label className="block text-[8px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-1.5">Bank / E-Wallet Name</label>
+                            <input
+                              type="text"
+                              value={acc.bank_name || ""}
+                              placeholder="e.g. BCA / Mandiri / GoPay"
+                              onChange={(e) => {
+                                const next = [...paymentAccounts];
+                                next[index].bank_name = e.target.value;
+                                setPaymentAccounts(next);
+                              }}
+                              className="w-full bg-white border border-neutral-200 px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-1.5">Account Number</label>
+                            <input
+                              type="text"
+                              value={acc.bank_account || ""}
+                              placeholder="Account number..."
+                              onChange={(e) => {
+                                const next = [...paymentAccounts];
+                                next[index].bank_account = e.target.value;
+                                setPaymentAccounts(next);
+                              }}
+                              className="w-full bg-white border border-neutral-200 px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-1.5">Account Holder Name</label>
+                            <input
+                              type="text"
+                              value={acc.owner_name || ""}
+                              placeholder="Holder name..."
+                              onChange={(e) => {
+                                const next = [...paymentAccounts];
+                                next[index].owner_name = e.target.value;
+                                setPaymentAccounts(next);
+                              }}
+                              className="w-full bg-white border border-neutral-200 px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = [...paymentAccounts];
+                              next.splice(index, 1);
+                              setPaymentAccounts(next);
+                            }}
+                            className="absolute -top-2.5 -right-2.5 w-6 h-6 items-center justify-center rounded-full bg-rose-500 text-white shadow-md hover:bg-rose-600 active:scale-90 flex opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentAccounts([...paymentAccounts, { bank_name: "", bank_account: "", owner_name: "" }]);
+                        }}
+                        className="w-full py-3.5 border-2 border-dashed border-neutral-200 rounded-xl text-neutral-500 text-[10px] font-bold uppercase tracking-wider hover:border-neutral-900 hover:text-neutral-900 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        Add Payment Account
+                      </button>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Cashless Accounts'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Dining Schedule Section */}
+                {activeSection === 'dining' && (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setIsSavingDetails(true);
+                    try {
+                      const quotesJSON = JSON.stringify({
+                        quote_arabic: quoteArabicForm, quote_translation: quoteTranslationForm, quote_source: quoteSourceForm,
+                        photo_sec2_dance: photoSec2Dance, photo_sec2_pigeons: photoSec2Pigeons, photo_sec2_flowers: photoSec2Flowers, photo_sec2_run: photoSec2Run,
+                        photo_sec3_bg: photoSec3Bg, photo_sec3_frame: photoSec3Frame, photo_sec3_couple: photoSec3Couple,
+                        rundown: rundownItemsForm, location_city: locationCityForm, teaser_video_url: teaserVideoUrlForm,
+                        dining_schedule: diningScheduleForm, faqs: faqsForm
+                      });
+                      const res = await fetch('/api/admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_project_details', payload: { project_id: projectId, wedding_fields: { wishlist_note: quotesJSON } } }) });
+                      if (!res.ok) { const errData = await res.json(); throw new Error(errData.error || 'Failed'); }
+                      alert("Dining Schedule updated successfully!");
+                      await fetchData();
+                    } catch (error: any) { console.error(error); alert("Failed to save: " + (error.message || String(error))); } finally { setIsSavingDetails(false); }
+                  }} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Dining Schedule</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Configure the dining timeline shown on the invitation</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {diningScheduleForm.map((item, index) => (
+                        <div key={index} className="grid grid-cols-[1fr_2fr_auto] gap-4 p-4 rounded-xl border border-neutral-100 bg-neutral-50 items-center group">
+                          <div>
+                            <label className="block text-[8px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-1.5">Time</label>
+                            <input
+                              type="text"
+                              value={item.time}
+                              onChange={(e) => {
+                                const updated = [...diningScheduleForm];
+                                updated[index] = { ...updated[index], time: e.target.value };
+                                setDiningScheduleForm(updated);
+                              }}
+                              placeholder="e.g. 11.00 - 12.00"
+                              className="w-full bg-white border border-neutral-200 px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-1.5">Menu / Description</label>
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => {
+                                const updated = [...diningScheduleForm];
+                                updated[index] = { ...updated[index], title: e.target.value };
+                                setDiningScheduleForm(updated);
+                              }}
+                              placeholder="e.g. Main Course"
+                              className="w-full bg-white border border-neutral-200 px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = diningScheduleForm.filter((_, i) => i !== index);
+                              setDiningScheduleForm(updated);
+                            }}
+                            className="mt-4 p-2 text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clipRule="evenodd" /></svg>
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setDiningScheduleForm([...diningScheduleForm, { time: "", title: "" }])}
+                        className="w-full py-3.5 border-2 border-dashed border-neutral-200 rounded-xl text-neutral-500 text-[10px] font-bold uppercase tracking-wider hover:border-neutral-900 hover:text-neutral-900 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        Add Dining Item
+                      </button>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Dining Schedule'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* FAQ Section */}
+                {activeSection === 'faq' && (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setIsSavingDetails(true);
+                    try {
+                      const quotesJSON = JSON.stringify({
+                        quote_arabic: quoteArabicForm, quote_translation: quoteTranslationForm, quote_source: quoteSourceForm,
+                        photo_sec2_dance: photoSec2Dance, photo_sec2_pigeons: photoSec2Pigeons, photo_sec2_flowers: photoSec2Flowers, photo_sec2_run: photoSec2Run,
+                        photo_sec3_bg: photoSec3Bg, photo_sec3_frame: photoSec3Frame, photo_sec3_couple: photoSec3Couple,
+                        rundown: rundownItemsForm, location_city: locationCityForm, teaser_video_url: teaserVideoUrlForm,
+                        dining_schedule: diningScheduleForm, faqs: faqsForm
+                      });
+                      const res = await fetch('/api/admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_project_details', payload: { project_id: projectId, wedding_fields: { wishlist_note: quotesJSON } } }) });
+                      if (!res.ok) { const errData = await res.json(); throw new Error(errData.error || 'Failed'); }
+                      alert("FAQ updated successfully!");
+                      await fetchData();
+                    } catch (error: any) { console.error(error); alert("Failed to save: " + (error.message || String(error))); } finally { setIsSavingDetails(false); }
+                  }} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Frequently Asked Questions</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Manage FAQ items displayed on the invitation</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {faqsForm.map((item, index) => (
+                        <div key={index} className="p-5 rounded-xl border border-neutral-100 bg-neutral-50 space-y-3 relative group">
+                          <button
+                            type="button"
+                            onClick={() => setFaqsForm(faqsForm.filter((_, i) => i !== index))}
+                            className="absolute top-3 right-3 p-1.5 text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clipRule="evenodd" /></svg>
+                          </button>
+                          <div>
+                            <label className="block text-[8px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-1.5">Question</label>
+                            <input
+                              type="text"
+                              value={item.question}
+                              onChange={(e) => {
+                                const updated = [...faqsForm];
+                                updated[index] = { ...updated[index], question: e.target.value };
+                                setFaqsForm(updated);
+                              }}
+                              placeholder="e.g. Apakah boleh membawa anak kecil?"
+                              className="w-full bg-white border border-neutral-200 px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-1.5">Answer</label>
+                            <textarea
+                              rows={2}
+                              value={item.answer}
+                              onChange={(e) => {
+                                const updated = [...faqsForm];
+                                updated[index] = { ...updated[index], answer: e.target.value };
+                                setFaqsForm(updated);
+                              }}
+                              placeholder="Answer to the question..."
+                              className="w-full bg-white border border-neutral-200 px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 resize-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setFaqsForm([...faqsForm, { question: "", answer: "" }])}
+                        className="w-full py-3.5 border-2 border-dashed border-neutral-200 rounded-xl text-neutral-500 text-[10px] font-bold uppercase tracking-wider hover:border-neutral-900 hover:text-neutral-900 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        Add FAQ Item
+                      </button>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save FAQ'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Video Teaser Section */}
+                {activeSection === 'video' && (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setIsSavingDetails(true);
+                    try {
+                      const quotesJSON = JSON.stringify({
+                        quote_arabic: quoteArabicForm, quote_translation: quoteTranslationForm, quote_source: quoteSourceForm,
+                        photo_sec2_dance: photoSec2Dance, photo_sec2_pigeons: photoSec2Pigeons, photo_sec2_flowers: photoSec2Flowers, photo_sec2_run: photoSec2Run,
+                        photo_sec3_bg: photoSec3Bg, photo_sec3_frame: photoSec3Frame, photo_sec3_couple: photoSec3Couple,
+                        rundown: rundownItemsForm, location_city: locationCityForm, teaser_video_url: teaserVideoUrlForm,
+                        dining_schedule: diningScheduleForm, faqs: faqsForm
+                      });
+                      const res = await fetch('/api/admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_project_details', payload: { project_id: projectId, wedding_fields: { wishlist_note: quotesJSON } } }) });
+                      if (!res.ok) { const errData = await res.json(); throw new Error(errData.error || 'Failed'); }
+                      alert("Video Teaser updated successfully!");
+                      await fetchData();
+                    } catch (error: any) { console.error(error); alert("Failed to save: " + (error.message || String(error))); } finally { setIsSavingDetails(false); }
+                  }} className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 space-y-6">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h4 className="text-base font-serif text-neutral-800">Video Teaser</h4>
+                      <p className="text-xs text-neutral-400 mt-1">Upload or set the video teaser shown in the closing section of the invitation</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {teaserVideoUrlForm ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-green-600 flex items-center gap-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M19.952 1.351a.75.75 0 0 1 .27 1.012l-6 10.5a.75.75 0 0 1-1.077.254l-3-2.25a.75.75 0 1 1 .9-1.2l2.33 1.748 5.485-9.6a.75.75 0 0 1 1.092-.264ZM20.25 18.75a.75.75 0 0 0-.75-.75h-15a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 .75-.75Z" clipRule="evenodd" /></svg>
+                              Video Loaded
+                            </span>
+                          </div>
+                          <div className="rounded-2xl overflow-hidden border border-neutral-200 shadow-sm aspect-video bg-black">
+                            <video key={teaserVideoUrlForm} controls className="w-full h-full">
+                              <source src={teaserVideoUrlForm} type="video/mp4" />
+                            </video>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-48 rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50">
+                          <p className="text-xs text-neutral-400">No video uploaded yet. Upload a video file below.</p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-4">
+                        <label className="inline-block cursor-pointer px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer">
+                          {isUploadingPhoto === 'teaser_video' ? 'Uploading...' : 'Upload Video File'}
+                          <input
+                            type="file"
+                            accept="video/mp4,video/webm,video/quicktime"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 50 * 1024 * 1024) {
+                                alert("Video file must be under 50MB");
+                                return;
+                              }
+                              setIsUploadingPhoto('teaser_video');
+                              try {
+                                const base64String = await new Promise<string>((resolve, reject) => {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => resolve(reader.result as string);
+                                  reader.onerror = reject;
+                                  reader.readAsDataURL(file);
+                                });
+                                const res = await fetch('/api/admin', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    action: 'upload_image',
+                                    payload: {
+                                      project_id: projectId,
+                                      file: base64String,
+                                      fileName: file.name,
+                                      fileType: file.type
+                                    }
+                                  })
+                                });
+                                if (!res.ok) throw new Error('Upload failed');
+                                const data = await res.json();
+                                setTeaserVideoUrlForm(data.url);
+                                alert("Video uploaded successfully!");
+                              } catch (err: any) {
+                                console.error(err);
+                                alert("Failed to upload video: " + (err.message || String(err)));
+                              } finally {
+                                setIsUploadingPhoto(null);
+                              }
+                            }}
+                            className="hidden"
+                            disabled={isUploadingPhoto !== null}
+                          />
+                        </label>
+                        {teaserVideoUrlForm && (
+                          <button
+                            type="button"
+                            onClick={() => setTeaserVideoUrlForm("")}
+                            className="px-4 py-2 text-[9px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 border border-red-200 hover:border-red-300 rounded-lg transition-all cursor-pointer"
+                          >
+                            Remove Video
+                          </button>
                         )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-neutral-100">
+                      <button type="submit" disabled={isSavingDetails} className="px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-md active:scale-95 cursor-pointer">
+                        {isSavingDetails ? 'Saving...' : 'Save Video Teaser'}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
-
-            {/* Batch Import Modal */}
-            {showImportModal && (
-              <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-neutral-900/40 backdrop-blur-md animate-in fade-in duration-300">
-                <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-neutral-100 flex flex-col">
-                  <div className="p-6 md:p-8 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50">
-                    <div>
-                      <h2 className="text-xl font-serif text-neutral-800">Batch Import Guests</h2>
-                      <p className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase mt-1">Paste names and phone numbers</p>
-                    </div>
-                    <button
-                      onClick={() => setShowImportModal(false)}
-                      className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-900 shadow-sm border border-neutral-100 transition-all cursor-pointer"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  </div>
-                  <div className="p-6 md:p-8 space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold tracking-widest text-neutral-800 uppercase">Google Sheets Link</label>
-                      <input
-                        type="text"
-                        value={importSheetUrl}
-                        onChange={(e) => setImportSheetUrl(e.target.value)}
-                        placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-                        className="w-full bg-neutral-50 border border-neutral-200 p-3 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-800"
-                      />
-                      <p className="text-[9px] text-neutral-400">Pastikan file diatur ke "Anyone with the link can view". Pastikan data ada di Kolom B (Name), C (Phone).</p>
-                    </div>
-                    
-                    <div className="relative py-2">
-                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-100"></div></div>
-                      <div className="relative flex justify-center"><span className="bg-white px-3 text-[9px] text-neutral-400 font-bold uppercase tracking-widest">Or Paste Manually</span></div>
-                    </div>
-
-                    <textarea
-                      rows={5}
-                      value={importText}
-                      onChange={(e) => setImportText(e.target.value)}
-                      placeholder={"Michael Sean, 08123456789\nAlbert Johnson, 62898765432"}
-                      className="w-full bg-neutral-50 border border-neutral-200 p-4 rounded-xl text-xs focus:outline-none focus:border-neutral-900 transition-all text-neutral-800 font-mono resize-none"
-                    />
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => setShowImportModal(false)}
-                        className="flex-1 py-3.5 bg-white hover:bg-neutral-50 text-neutral-800 text-[10px] font-bold tracking-[0.2em] uppercase rounded-xl border border-neutral-200 transition-all cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleBatchImport}
-                        className="flex-1 py-3.5 bg-neutral-900 hover:bg-neutral-800 text-white text-[10px] font-bold tracking-[0.2em] uppercase rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-                      >
-                        Import
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ) : activeTab === 'settings' ? (
           <div className="space-y-8">
@@ -2841,330 +3798,81 @@ export default function RSVPDashboard() {
               </div>
             </div>
 
-            {/* Card Menu */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <button
-                onClick={() => setSettingsTab('password')}
-                className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'password' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
-              >
-                <div className={`p-3 rounded-xl mb-4 ${settingsTab === 'password' ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-600'}`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
+                <div className="border-b border-neutral-100 pb-4">
+                  <h4 className="text-base font-serif text-neutral-800">Change Password</h4>
+                  <p className="text-xs text-neutral-400 mt-1">Update the password required to access this management suite.</p>
                 </div>
-                <h4 className="text-lg font-serif font-bold mb-1">Security & Password</h4>
-                <p className={`text-xs ${settingsTab === 'password' ? 'text-neutral-400' : 'text-neutral-500'}`}>Manage your dashboard access credentials</p>
-              </button>
-              
-              {(() => {
-                const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
-                return (
-                  <button
-                    onClick={() => setSettingsTab('story')}
-                    className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'story' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
-                  >
-                    <div className={`p-3 rounded-xl mb-4 ${settingsTab === 'story' ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-600'}`}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
-                    </div>
-                    <h4 className="text-lg font-serif font-bold mb-1">{isLaceEnvelop ? "Love Story" : "Our Story Timeline"}</h4>
-                    <p className={`text-xs ${settingsTab === 'story' ? 'text-neutral-400' : 'text-neutral-500'}`}>{isLaceEnvelop ? "Edit your love story description" : "Add and edit your journey milestones"}</p>
-                  </button>
-                );
-              })()}
 
-              <button
-                onClick={() => setSettingsTab('payment')}
-                className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'payment' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
-              >
-                <div className={`p-3 rounded-xl mb-4 ${settingsTab === 'payment' ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-600'}`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
-                </div>
-                <h4 className="text-lg font-serif font-bold mb-1">Bank Accounts</h4>
-                <p className={`text-xs ${settingsTab === 'payment' ? 'text-neutral-400' : 'text-neutral-500'}`}>Edit details of bank account for gift registry</p>
-              </button>
-            </div>
-
-            {settingsTab === 'password' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
-                  <div className="border-b border-neutral-100 pb-4">
-                    <h4 className="text-base font-serif text-neutral-800">Change Password</h4>
-                    <p className="text-xs text-neutral-400 mt-1">Update the password required to access this management suite.</p>
-                  </div>
-
-                  <form onSubmit={handleChangePassword} className="space-y-5">
-                    <div>
-                      <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">New Password</label>
-                      <div className="relative">
-                        <input
-                          type={showChangePassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Enter new password"
-                          className="w-full bg-neutral-50 border border-neutral-200 pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowChangePassword(!showChangePassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
-                          title={showChangePassword ? "Hide password" : "Show password"}
-                        >
-                          {showChangePassword ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Confirm New Password</label>
-                      <div className="relative">
-                        <input
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="Confirm new password"
-                          className="w-full bg-neutral-50 border border-neutral-200 pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
-                          title={showConfirmPassword ? "Hide password" : "Show password"}
-                        >
-                          {showConfirmPassword ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isChangingPassword}
-                      className="w-full py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 mt-2 cursor-pointer"
-                    >
-                      {isChangingPassword ? (
-                        <>
-                          <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
-                          Saving...
-                        </>
-                      ) : (
-                        "Save New Password"
-                      )}
-                    </button>
-                  </form>
-                </div>
-              </div>
-            ) : settingsTab === 'story' ? (() => {
-              const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
-              if (isLaceEnvelop) {
-                return (
-                  <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
-                    <div className="border-b border-neutral-100 pb-4">
-                      <h4 className="text-base font-serif text-neutral-800">Edit Love Story</h4>
-                      <p className="text-xs text-neutral-400 mt-1">Update your love story description. You can separate paragraphs with newlines.</p>
-                    </div>
-
-                    <form onSubmit={handleSaveSingleLoveStory} className="space-y-5">
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Love Story Content</label>
-                        <textarea
-                          value={singleLoveStoryText}
-                          onChange={(e) => setSingleLoveStoryText(e.target.value)}
-                          placeholder="Write your love story here..."
-                          rows={12}
-                          className="w-full bg-neutral-50 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900 resize-y leading-relaxed font-sans"
-                          required
-                        />
-                      </div>
+                <form onSubmit={handleChangePassword} className="space-y-5">
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showChangePassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password"
+                        className="w-full bg-neutral-50 border border-neutral-200 pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
+                        required
+                      />
                       <button
-                        type="submit"
-                        disabled={isSavingLoveStory}
-                        className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                        type="button"
+                        onClick={() => setShowChangePassword(!showChangePassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
+                        title={showChangePassword ? "Hide password" : "Show password"}
                       >
-                        {isSavingLoveStory ? (
-                          <>
-                            <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
-                            Saving...
-                          </>
+                        {showChangePassword ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
                         ) : (
-                          "Save Love Story"
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                         )}
                       </button>
-                    </form>
-                  </div>
-                );
-              }
-
-              return (
-                <div className="flex flex-col gap-8">
-                  {/* Form to add story */}
-                  <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 h-fit">
-                    <h4 className="text-base font-serif text-neutral-800 mb-6">Add New Event</h4>
-                    <form onSubmit={handleAddStory} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Year</label>
-                        <input type="text" value={newStoryYear} onChange={(e) => setNewStoryYear(e.target.value)} required placeholder="e.g. 2019" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Title</label>
-                        <input type="text" value={newStoryTitle} onChange={(e) => setNewStoryTitle(e.target.value)} required placeholder="e.g. First Met" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-1">
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Order (Number)</label>
-                        <input type="number" value={newStoryOrder} onChange={(e) => setNewStoryOrder(e.target.value)} required placeholder="e.g. 1" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-4">
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Description</label>
-                        <textarea value={newStoryDesc} onChange={(e) => setNewStoryDesc(e.target.value)} required rows={3} placeholder="Description..." className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 resize-none"></textarea>
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-4 flex justify-end">
-                        <button type="submit" className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 mt-2 cursor-pointer">
-                          Save Event
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-
-                  {/* List of stories */}
-                  <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col min-h-[500px]">
-                    <h4 className="text-base font-serif text-neutral-800 mb-6">Timeline Events</h4>
-                    <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-                      {storyEvents.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-neutral-300 gap-4">
-                          <p className="text-sm font-medium">No story events found.</p>
-                        </div>
-                      ) : (
-                        storyEvents.map((event) => (
-                          <div key={event.id} className="p-5 bg-neutral-50 rounded-2xl border border-neutral-100 flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg">Order: {event.order}</span>
-                                <span className="text-[#979e6c] font-script text-xl">{event.year}</span>
-                              </div>
-                              <h5 className="font-serif text-neutral-800 uppercase text-sm font-bold">{event.title}</h5>
-                              <p className="text-neutral-500 text-sm mt-1 leading-relaxed">{event.desc}</p>
-                            </div>
-                            <button onClick={() => handleDeleteStory(event.id)} className="shrink-0 p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-all self-start cursor-pointer" title="Delete">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                            </button>
-                          </div>
-                        ))
-                      )}
                     </div>
                   </div>
-                </div>
-              );
-            })() : settingsTab === 'payment' ? (
-              <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
-                <div className="border-b border-neutral-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h4 className="text-base font-serif text-neutral-800">Manage Bank Accounts</h4>
-                    <p className="text-xs text-neutral-400 mt-1">Specify bank accounts details (maximum of 2 accounts) where guests can send wedding gifts.</p>
+                    <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Confirm New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        className="w-full bg-neutral-50 border border-neutral-200 pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
+                        title={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    disabled={paymentAccounts.length >= 2}
-                    onClick={() => setPaymentAccounts([...paymentAccounts, { bank_name: "", bank_account: "", owner_name: "" }])}
-                    className="self-start px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50 disabled:hover:bg-neutral-100 disabled:cursor-not-allowed text-neutral-800 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:active:scale-100"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.0} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    Add Account
-                  </button>
-                </div>
-
-                <form onSubmit={handleSavePaymentAccounts} className="space-y-6">
-                  {paymentAccounts.length === 0 ? (
-                    <div className="p-8 text-center border border-dashed border-neutral-200 rounded-2xl text-neutral-400 text-sm">
-                      No bank accounts added. Click "Add Account" to add one.
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {paymentAccounts.map((account, idx) => (
-                        <div key={idx} className="p-5 bg-neutral-50 rounded-2xl border border-neutral-150 relative flex flex-col md:flex-row gap-4 items-end md:items-center">
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 w-full">
-                            <div>
-                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Bank Name</label>
-                              <input
-                                type="text"
-                                value={account.bank_name || ""}
-                                onChange={(e) => {
-                                  const updated = [...paymentAccounts];
-                                  updated[idx] = { ...updated[idx], bank_name: e.target.value };
-                                  setPaymentAccounts(updated);
-                                }}
-                                placeholder="e.g. BCA, Mandiri, BRI"
-                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Account Number</label>
-                              <input
-                                type="text"
-                                value={account.bank_account || ""}
-                                onChange={(e) => {
-                                  const updated = [...paymentAccounts];
-                                  updated[idx] = { ...updated[idx], bank_account: e.target.value };
-                                  setPaymentAccounts(updated);
-                                }}
-                                placeholder="e.g. 0131800826"
-                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Account Owner</label>
-                              <input
-                                type="text"
-                                value={account.owner_name || ""}
-                                onChange={(e) => {
-                                  const updated = [...paymentAccounts];
-                                  updated[idx] = { ...updated[idx], owner_name: e.target.value };
-                                  setPaymentAccounts(updated);
-                                }}
-                                placeholder="e.g. JOVITA LOLA EDRIA"
-                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
-                                required
-                              />
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = paymentAccounts.filter((_, i) => i !== idx);
-                              setPaymentAccounts(updated);
-                            }}
-                            className="p-3 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-all cursor-pointer active:scale-95 sm:mt-6"
-                            title="Remove Account"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
                   <button
                     type="submit"
-                    disabled={isSavingPaymentAccounts}
-                    className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                    disabled={isChangingPassword}
+                    className="w-full py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 mt-2 cursor-pointer"
                   >
-                    {isSavingPaymentAccounts ? (
+                    {isChangingPassword ? (
                       <>
                         <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
                         Saving...
                       </>
                     ) : (
-                      "Save Bank Accounts"
+                      "Save New Password"
                     )}
                   </button>
                 </form>
               </div>
-            ) : null}
+            </div>
           </div>
         ) : null}
       </div>
@@ -3362,123 +4070,39 @@ export default function RSVPDashboard() {
         </div>
       )}
 
-      {showSlideshow && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-neutral-950 overflow-hidden">
-          {/* Cinematic Background */}
-          <div className="absolute inset-0 z-0">
-            <motion.div
-              initial={{ scale: 1 }}
-              animate={{ scale: 1.15 }}
-              transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
-              className="relative w-full h-full"
-            >
-              <img
-                src={slideshowBg}
-                alt="Slideshow Background"
-                className="w-full h-full object-cover opacity-20 grayscale brightness-50"
-              />
-            </motion.div>
-            <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/80 via-transparent to-neutral-950"></div>
-          </div>
 
-          {/* Floating UI Elements */}
-          <div className="absolute inset-0 z-10 pointer-events-none">
-            <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-4"
-              >
-                <div className="h-[1px] w-12 bg-gradient-to-l from-amber-200/50 to-transparent"></div>
-                <h2 className="text-[10px] font-bold tracking-[0.5em] text-amber-200/40 uppercase">The Wedding Wishes</h2>
-                <div className="h-[1px] w-12 bg-gradient-to-r from-amber-200/50 to-transparent"></div>
-              </motion.div>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-white/90 font-serif text-3xl md:text-5xl mt-2 tracking-wider"
-              >
-                {coupleNicknames}
-              </motion.p>
-            </div>
 
-            <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end">
-              <div className="flex flex-col gap-1">
-                <span className="text-[8px] font-bold tracking-[0.3em] text-white/20 uppercase">Now Showing</span>
-                <span className="text-white/40 font-mono text-xs">{currentSlideIndex + 1} / {allWishes.length}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse"></div>
-                <span className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">Live Stream</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setShowSlideshow(false)}
-            className="absolute top-8 right-8 w-12 h-12 bg-white/5 hover:bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center text-white/50 hover:text-white transition-all z-[110] border border-white/10 active:scale-90 cursor-pointer"
+      {/* Lightbox Modal Overlay for Image Zooming */}
+      <AnimatePresence>
+        {activePreviewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setActivePreviewImage(null)}
+            className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-4 cursor-zoom-out"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-
-          <div className="w-full max-w-4xl px-6 relative z-20 mt-24">
-            <AnimatePresence mode="wait">
-              {allWishes.length > 0 ? (
-                <motion.div
-                  key={currentSlideIndex}
-                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -30, scale: 1.05 }}
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative flex flex-col items-center"
-                >
-                  <div className="absolute -top-8 -left-4 text-6xl text-amber-200/10 font-serif pointer-events-none">"</div>
-
-                  <div className="bg-white/[0.03] backdrop-blur-2xl p-8 md:p-12 lg:p-16 rounded-[3rem] border border-white/10 shadow-2xl relative overflow-hidden group w-full">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: "100%" }}
-                        transition={{ duration: 8, ease: "linear" }}
-                        className="h-full bg-gradient-to-r from-transparent via-amber-200/40 to-transparent"
-                      />
-                    </div>
-
-                    <div className="max-h-[35vh] overflow-y-auto no-scrollbar">
-                      <p 
-                        className={`font-bold text-white text-center tracking-wide leading-relaxed drop-shadow-2xl
-                        ${(allWishes[currentSlideIndex]?.text?.length || 0) < 100 ? "text-xl md:text-2xl lg:text-3xl" :
-                          (allWishes[currentSlideIndex]?.text?.length || 0) < 250 ? "text-lg md:text-xl lg:text-2xl" : "text-base md:text-lg lg:text-xl"}`}
-                      >
-                        {allWishes[currentSlideIndex]?.text}
-                      </p>
-                    </div>
-
-                    <div className="mt-12 flex flex-col items-center gap-4">
-                      <div className="h-px w-24 bg-gradient-to-r from-transparent via-amber-200/30 to-transparent"></div>
-                      <motion.h3
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="text-lg md:text-xl lg:text-2xl font-bold text-amber-200/90 tracking-[0.1em] drop-shadow-lg"
-                      >
-                        {allWishes[currentSlideIndex]?.name}
-                      </motion.h3>
-                    </div>
-                  </div>
-
-                  <div className="absolute -bottom-8 -right-4 text-6xl text-amber-200/10 font-serif pointer-events-none rotate-180">"</div>
-                </motion.div>
-              ) : (
-                <div className="text-center space-y-4">
-                  <p className="text-white/20 font-serif text-3xl tracking-widest uppercase animate-pulse">Waiting for wishes...</p>
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      )}
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="relative max-w-4xl max-h-[85vh] rounded-3xl overflow-hidden shadow-2xl bg-neutral-900 border border-neutral-800"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src={activePreviewImage} className="object-contain max-w-full max-h-[85vh]" alt="Full size preview" />
+              <button
+                type="button"
+                onClick={() => setActivePreviewImage(null)}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all active:scale-90 cursor-pointer border-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -21,9 +21,14 @@ export default function StoryTimelineSlide({
 }: Props) {
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
   const projectId = project?.id || "f93ad18d-cba2-4de0-a86b-b1fadf2783a2";
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://xnruifsptjsafctjwqdh.supabase.co";
+
+  const gallery = (project as any)?.gallery_photos || [];
+  const bgStoryUrl = (typeof gallery[2] === 'string' ? gallery[2] : gallery[2]?.url) || project?.opening_photo_url || project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/love-story-bg.jpg`;
 
   const storyItems = project?.love_story_items as any[] | undefined;
   const useSingleStoryItem = storyItems && storyItems.length === 1;
@@ -38,7 +43,7 @@ export default function StoryTimelineSlide({
       {/* Background image with warm/dark sepia overlay */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-black shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
         <Image
-          src={`${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projectId}/love-story-bg.jpg`}
+          src={bgStoryUrl}
           alt="Love Story Background"
           fill
           className="object-cover brightness-[0.55] select-none"

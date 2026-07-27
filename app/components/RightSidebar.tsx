@@ -97,6 +97,9 @@ export default function RightSidebar({
   }, [project?.wedding_date]);
 
   const formattedWeddingLocation = React.useMemo(() => {
+    if (project?.location_city) {
+      return project.location_city.toUpperCase();
+    }
     const venue = project?.venue_name || "";
     const knownCities = [
       "SEMARANG", "JAKARTA", "BANDUNG", "SURABAYA", "MEDAN", "BALI", 

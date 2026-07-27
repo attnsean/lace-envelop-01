@@ -100,11 +100,14 @@ export default function BlessingWall({
 }: Props) {
   const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const projId = projectId || project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
+  const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
+  const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xnruifsptjsafctjwqdh.supabase.co";
 
-  const sec5Bg = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projId}/sec5-bg.png`;
-  const sec5Envelope = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projId}/sec5-envelope.png`;
-  const sec5Couple = `${supabaseUrl}/storage/v1/object/public/undangan/${userId}/${projId}/sec5-couple.jpg`;
+  const sec5Bg = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-bg.png`;
+  const sec5Envelope = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-envelope.png`;
+  const sec5Couple = project?.opening_photo_url || project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec5-couple.jpg`;
 
   const q1Rsvp = project?.question01_rsvp || "Are you coming?";
   const q2Rsvp = project?.question02_rsvp || "Let us know if you have any dietary restrictions.";
