@@ -21,15 +21,15 @@ export default function VerseSection({ project }: Props) {
   const frameImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec3-frame.png`;
   const coupleImgUrl = project?.opening_photo_url || project?.bride_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec3-couple.jpg`;
 
-  const quoteArabic = project?.quote_arabic !== undefined && project?.quote_arabic !== null
+  const quoteArabic = project?.quote_arabic !== undefined && project?.quote_arabic !== null && project?.quote_arabic !== ""
     ? project.quote_arabic
-    : "وَخَلَقْنَاكُمْ أَزْوَاجًا";
-  const quoteTranslation = project?.quote_translation !== undefined && project?.quote_translation !== null
+    : "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ";
+  const quoteTranslation = project?.quote_translation !== undefined && project?.quote_translation !== null && project?.quote_translation !== ""
     ? project.quote_translation
-    : "“And We created you in pairs.”";
-  const quoteSource = project?.quote_source !== undefined && project?.quote_source !== null
+    : "“Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir.”";
+  const quoteSource = project?.quote_source !== undefined && project?.quote_source !== null && project?.quote_source !== ""
     ? project.quote_source
-    : "— Surah An-Naba (78:8)";
+    : "(QS. Ar-Rum [30]: 21)";
 
   return (
     <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-neutral-950 flex flex-col items-center justify-center">
