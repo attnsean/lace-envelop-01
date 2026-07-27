@@ -79,20 +79,26 @@ export default function RundownOverlay({
   const eventDateRaw =
     project?.wedding_date || firstEvent?.event_date || "2026-08-08";
   const formattedIndoDate = formatEnglishDate(eventDateRaw);
+  const rawMapsUrl = firstEvent?.venue_maps_url || project?.venue_maps_url || "";
+  const venueQuery = encodeURIComponent(
+    firstEvent?.venue_name 
+      ? `${firstEvent.venue_name}, ${firstEvent?.venue_address || ""}` 
+      : (project?.venue_name ? `${project.venue_name}, ${project.venue_address || ""}` : "Derich Garden Restaurant Tangerang")
+  );
+
   const latitude = firstEvent?.latitude;
   const longitude = firstEvent?.longitude;
 
-  const mapIframeSrc =
-    latitude && longitude
-      ? `https://maps.google.com/maps?q=${latitude},${longitude}&hl=id&z=15&output=embed`
-      : firstEvent?.venue_maps_url ||
-        `https://maps.google.com/maps?q=-6.9538467,110.3767627&hl=id&z=15&output=embed`;
+  let mapIframeSrc = `https://maps.google.com/maps?q=${venueQuery}&hl=id&z=15&output=embed`;
+  if (latitude && longitude) {
+    mapIframeSrc = `https://maps.google.com/maps?q=${latitude},${longitude}&hl=id&z=15&output=embed`;
+  } else if (rawMapsUrl && (rawMapsUrl.includes("output=embed") || rawMapsUrl.includes("/embed"))) {
+    mapIframeSrc = rawMapsUrl;
+  }
 
-  const mapLinkUrl =
-    firstEvent?.venue_maps_url ||
-    (latitude && longitude
-      ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
-      : `https://www.google.com/maps/search/?api=1&query=-6.9538467,110.3767627`);
+  const mapLinkUrl = (rawMapsUrl && !rawMapsUrl.includes("output=embed") && rawMapsUrl.startsWith("http"))
+    ? rawMapsUrl
+    : `https://www.google.com/maps/search/?api=1&query=${venueQuery}`;
 
   const googleCalendarLink = getGoogleCalendarLink();
 
