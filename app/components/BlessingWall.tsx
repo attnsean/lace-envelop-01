@@ -658,9 +658,6 @@ export default function BlessingWall({
                           >
                             <option value={1}>1 Orang</option>
                             <option value={2}>2 Orang</option>
-                            <option value={3}>3 Orang</option>
-                            <option value={4}>4 Orang</option>
-                            <option value={5}>5 Orang</option>
                           </select>
                         </div>
 
