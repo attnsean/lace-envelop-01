@@ -104,7 +104,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
             <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
               {formattedDate}
             </p>
-            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
+            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider notranslate">
               {events?.[0]?.venue_name || project?.venue_name || "Derich Garden Restaurant"}
             </p>
           </div>

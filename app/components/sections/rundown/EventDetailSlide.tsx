@@ -100,7 +100,7 @@ export default function EventDetailSlide({
             className="flex flex-col items-center justify-center text-center gap-4 max-w-md"
           >
             <div className="flex flex-col items-center gap-2">
-              <p className="font-seasons text-white/95 text-[clamp(14px,3vw,18px)] md:text-[clamp(18px,1.5vw,22px)] leading-relaxed tracking-wider font-medium">
+              <p className="font-seasons text-white/95 text-[clamp(14px,3vw,18px)] md:text-[clamp(18px,1.5vw,22px)] leading-relaxed tracking-wider font-medium notranslate">
                 {venueName}
               </p>
               <a

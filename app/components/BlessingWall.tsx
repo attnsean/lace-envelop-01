@@ -645,34 +645,23 @@ export default function BlessingWall({
                           )}
                         </div>
 
-                        {/* Dietary restrictions */}
+                        {/* Pax Count Selection */}
                         <div className="space-y-1 md:space-y-0.5">
                           <label className="block font-sans text-xs md:text-[11px] font-medium text-[#3d332a] select-none">
-                            {q2Rsvp}
+                            Jumlah Tamu / Pax Yang Hadir
                           </label>
-                          <input
-                            type="text"
-                            value={dietaryRestrictions}
-                            onChange={(e) => setDietaryRestrictions(e.target.value)}
+                          <select
+                            value={guestsCount}
+                            onChange={(e) => setGuestsCount(Number(e.target.value))}
                             disabled={hasRsvpSubmitted}
-                            placeholder="e.g. Vegetarian, Gluten-free, etc."
-                            className="w-full bg-[#ebe7db]/40 border border-[#b8b3a9] py-2.5 px-4 md:py-1.5 md:px-3 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans focus:outline-none focus:border-[#6c6355] focus:ring-1 focus:ring-[#6c6355] transition-all placeholder-[#5c554e]/40"
-                          />
-                        </div>
-
-                        {/* Song Nomination */}
-                        <div className="space-y-1 md:space-y-0.5">
-                          <label className="block font-sans text-xs md:text-[11px] font-medium text-[#3d332a] select-none">
-                            Nominate a song for our playlist!
-                          </label>
-                          <input
-                            type="text"
-                            value={songNomination}
-                            onChange={(e) => setSongNomination(e.target.value)}
-                            disabled={hasRsvpSubmitted}
-                            placeholder="Song title & Artist"
-                            className="w-full bg-[#ebe7db]/40 border border-[#b8b3a9] py-2.5 px-4 md:py-1.5 md:px-3 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans focus:outline-none focus:border-[#6c6355] focus:ring-1 focus:ring-[#6c6355] transition-all placeholder-[#5c554e]/40"
-                          />
+                            className="w-full bg-[#ebe7db]/40 border border-[#b8b3a9] py-2.5 px-4 md:py-1.5 md:px-3 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans focus:outline-none focus:border-[#6c6355] focus:ring-1 focus:ring-[#6c6355] transition-all cursor-pointer"
+                          >
+                            <option value={1}>1 Orang</option>
+                            <option value={2}>2 Orang</option>
+                            <option value={3}>3 Orang</option>
+                            <option value={4}>4 Orang</option>
+                            <option value={5}>5 Orang</option>
+                          </select>
                         </div>
 
                         {/* Submit button / Submitted text */}
