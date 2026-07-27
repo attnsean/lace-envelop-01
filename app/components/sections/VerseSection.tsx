@@ -60,6 +60,17 @@ export default function VerseSection({ project }: Props) {
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               className="relative w-[95vw] sm:w-[90vw] max-w-[540px] sm:max-w-[660px] aspect-[1.7] flex items-center justify-center filter drop-shadow-2xl"
             >
+              {/* Frame Overlay */}
+              <Image
+                src={frameImgUrl}
+                alt="Silver Frame"
+                fill
+                sizes="(max-width: 640px) 540px, 660px"
+                className="object-contain z-30 select-none pointer-events-none drop-shadow-xl scale-105 sm:scale-105"
+                draggable={false}
+                unoptimized
+              />
+
               {/* Couple Photo */}
               <div className="relative w-[280px] sm:w-[360px] aspect-[4/3] z-20 overflow-hidden rounded-2xl border-2 border-white/60 shadow-2xl">
                 <Image
