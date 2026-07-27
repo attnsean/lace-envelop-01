@@ -2864,107 +2864,42 @@ export default function RSVPDashboard() {
                   </form>
                 </div>
               </div>
-            ) : settingsTab === 'story' ? (() => {
-              const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
-              if (isLaceEnvelop) {
-                return (
-                  <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
-                    <div className="border-b border-neutral-100 pb-4">
-                      <h4 className="text-base font-serif text-neutral-800">Edit Love Story</h4>
-                      <p className="text-xs text-neutral-400 mt-1">Update your love story description. You can separate paragraphs with newlines.</p>
-                    </div>
-
-                    <form onSubmit={handleSaveSingleLoveStory} className="space-y-5">
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Love Story Content</label>
-                        <textarea
-                          value={singleLoveStoryText}
-                          onChange={(e) => setSingleLoveStoryText(e.target.value)}
-                          placeholder="Write your love story here..."
-                          rows={12}
-                          className="w-full bg-neutral-50 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900 resize-y leading-relaxed font-sans"
-                          required
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={isSavingLoveStory}
-                        className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer mt-2"
-                      >
-                        {isSavingLoveStory ? (
-                          <>
-                            <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
-                            Saving...
-                          </>
-                        ) : (
-                          "Save Love Story"
-                        )}
-                      </button>
-                    </form>
-                  </div>
-                );
-              }
-
-              return (
-                <div className="flex flex-col gap-8">
-                  {/* Form to add story */}
-                  <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 h-fit">
-                    <h4 className="text-base font-serif text-neutral-800 mb-6">Add New Event</h4>
-                    <form onSubmit={handleAddStory} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Year</label>
-                        <input type="text" value={newStoryYear} onChange={(e) => setNewStoryYear(e.target.value)} required placeholder="e.g. 2019" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Title</label>
-                        <input type="text" value={newStoryTitle} onChange={(e) => setNewStoryTitle(e.target.value)} required placeholder="e.g. First Met" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-1">
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Order (Number)</label>
-                        <input type="number" value={newStoryOrder} onChange={(e) => setNewStoryOrder(e.target.value)} required placeholder="e.g. 1" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-4">
-                        <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Description</label>
-                        <textarea value={newStoryDesc} onChange={(e) => setNewStoryDesc(e.target.value)} required rows={3} placeholder="Description..." className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 resize-none"></textarea>
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-4 flex justify-end">
-                        <button type="submit" className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 mt-2 cursor-pointer">
-                          Save Event
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-
-                  {/* List of stories */}
-                  <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col min-h-[500px]">
-                    <h4 className="text-base font-serif text-neutral-800 mb-6">Timeline Events</h4>
-                    <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-                      {storyEvents.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-neutral-300 gap-4">
-                          <p className="text-sm font-medium">No story events found.</p>
-                        </div>
-                      ) : (
-                        storyEvents.map((event) => (
-                          <div key={event.id} className="p-5 bg-neutral-50 rounded-2xl border border-neutral-100 flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg">Order: {event.order}</span>
-                                <span className="text-[#979e6c] font-script text-xl">{event.year}</span>
-                              </div>
-                              <h5 className="font-serif text-neutral-800 uppercase text-sm font-bold">{event.title}</h5>
-                              <p className="text-neutral-500 text-sm mt-1 leading-relaxed">{event.desc}</p>
-                            </div>
-                            <button onClick={() => handleDeleteStory(event.id)} className="shrink-0 p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-all self-start cursor-pointer" title="Delete">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+            ) : settingsTab === 'story' ? (
+              <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
+                <div className="border-b border-neutral-100 pb-4">
+                  <h4 className="text-base font-serif text-neutral-800">Edit Love Story</h4>
+                  <p className="text-xs text-neutral-400 mt-1">Update your love story description. You can separate paragraphs with newlines.</p>
                 </div>
-              );
-            })() : settingsTab === 'payment' ? (
+
+                <form onSubmit={handleSaveSingleLoveStory} className="space-y-5">
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Love Story Content</label>
+                    <textarea
+                      value={singleLoveStoryText}
+                      onChange={(e) => setSingleLoveStoryText(e.target.value)}
+                      placeholder="Write your love story here..."
+                      rows={12}
+                      className="w-full bg-neutral-50 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900 resize-y leading-relaxed font-sans"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSavingLoveStory}
+                    className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  >
+                    {isSavingLoveStory ? (
+                      <>
+                        <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Love Story"
+                    )}
+                  </button>
+                </form>
+              </div>
+            ) : settingsTab === 'payment' ? (
               <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
                 <div className="border-b border-neutral-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
