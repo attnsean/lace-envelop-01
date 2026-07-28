@@ -61,13 +61,13 @@ export default function VerseSection({ project }: Props) {
               className="relative w-[95vw] sm:w-[90vw] max-w-[540px] sm:max-w-[660px] aspect-[1.7] flex items-center justify-center filter drop-shadow-2xl"
             >
               {/* Couple Photo */}
-              <div className="relative w-[320px] sm:w-[440px] max-w-[90vw] aspect-[16/10] z-20 overflow-hidden rounded-2xl border-2 border-white/60 shadow-2xl">
+              <div className="relative w-[320px] sm:w-[440px] max-w-[90vw] aspect-[16/10] z-20 overflow-hidden rounded-2xl border-2 border-white/60 shadow-2xl bg-black/40">
                 <Image
                   src={coupleImgUrl}
                   alt="Couple under Veil"
                   fill
                   sizes="(max-width: 640px) 380px, 460px"
-                  className="object-cover object-[center_bottom]"
+                  className="object-contain"
                   unoptimized
                 />
               </div>
