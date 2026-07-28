@@ -497,7 +497,7 @@ export default function BlessingWall({
                         alt="Couple photo"
                         fill
                         unoptimized
-                        className="object-cover object-[center_28%]"
+                        className="object-contain"
                       />
                     </div>
                   </div>
