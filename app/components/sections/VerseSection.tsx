@@ -58,16 +58,16 @@ export default function VerseSection({ project }: Props) {
             <motion.div
               animate={{ y: [-5, 5, -5] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="relative w-[95vw] sm:w-[90vw] max-w-[540px] sm:max-w-[660px] aspect-[1.7] flex items-center justify-center filter drop-shadow-2xl"
+              className="relative w-full flex items-center justify-center filter drop-shadow-2xl"
             >
               {/* Couple Photo */}
-              <div className="relative w-[320px] sm:w-[440px] max-w-[90vw] aspect-[16/10] z-20 overflow-hidden rounded-2xl border-2 border-white/60 shadow-2xl bg-black/40">
+              <div className="relative w-[230px] xs:w-[260px] sm:w-[300px] aspect-[3/4] sm:aspect-[2/3] max-h-[45dvh] z-20 overflow-hidden rounded-2xl border-2 border-white/60 shadow-2xl">
                 <Image
                   src={coupleImgUrl}
                   alt="Couple under Veil"
                   fill
-                  sizes="(max-width: 640px) 380px, 460px"
-                  className="object-contain"
+                  sizes="(max-width: 640px) 320px, 400px"
+                  className="object-cover object-[center_28%]"
                   unoptimized
                 />
               </div>
