@@ -87,7 +87,7 @@ export default function BrideGroomSlide({
                 src={project?.bride_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/bride-photo.jpg`}
                 alt={project?.bride_name || "Jovita Lola Edria"}
                 fill
-                className="object-cover"
+                className="object-cover object-[center_15%]"
                 unoptimized
               />
             </div>
@@ -140,7 +140,7 @@ export default function BrideGroomSlide({
                 src={project?.groom_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/groom-photo.jpg`}
                 alt={project?.groom_name || "Muhammad Luqman Fikri"}
                 fill
-                className="object-cover"
+                className="object-cover object-[center_15%]"
                 unoptimized
               />
             </div>

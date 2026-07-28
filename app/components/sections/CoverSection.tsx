@@ -27,7 +27,7 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
           alt="Background"
           fill
           sizes="100vw"
-          className="object-cover brightness-[0.65] select-none"
+          className="object-cover object-[center_bottom] brightness-[0.65] select-none"
           draggable={false}
           priority
         />
@@ -99,11 +99,9 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
               Open Invitation
             </button>
 
-            {project?.hashtag && (
-              <p className="font-seasons text-[11px] tracking-[0.25em] text-white/70 font-semibold mt-8 select-none">
-                {project.hashtag.startsWith('#') ? project.hashtag : `#${project.hashtag}`}
-              </p>
-            )}
+            <p className="font-seasons text-[11px] tracking-[0.25em] text-white/70 font-semibold mt-8 select-none">
+              {project?.hashtag ? (project.hashtag.startsWith('#') ? project.hashtag : `#${project.hashtag}`) : "#DEVInitelywithDIKA"}
+            </p>
           </motion.div>
         </div>
       </div>

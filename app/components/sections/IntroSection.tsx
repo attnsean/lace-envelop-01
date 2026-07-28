@@ -21,7 +21,7 @@ export default function IntroSection({ project, isOpen, formattedWeddingDate, fo
           alt="Background"
           fill
           sizes="100vw"
-          className="object-cover brightness-[0.55] select-none"
+          className="object-cover object-[center_bottom] brightness-[0.55] select-none"
           draggable={false}
           priority
         />
