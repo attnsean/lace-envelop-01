@@ -488,16 +488,16 @@ export default function BlessingWall({
               {/* Left Column: Visuals (Couple Photo & Envelope Card) */}
               <div className="flex flex-col gap-8 md:gap-y-6 w-full md:w-1/2 items-center md:items-end">
                 
-                {/* Card 1: Couple Photo (Landscape matte frame) */}
+                {/* Card 1: Couple Photo (Vertical matte polaroid frame) */}
                 <FadeIn delay={0.1} className="w-full flex justify-center md:justify-end">
-                  <div className="bg-white p-4 pb-6 md:p-2.5 md:pb-5 shadow-2xl rounded-sm transition-all duration-500 w-full max-w-[420px] md:max-w-[360px] lg:max-w-[400px] aspect-[4/3] flex flex-col justify-between">
+                  <div className="bg-white p-3 pb-6 md:p-2.5 md:pb-5 shadow-2xl rounded-sm transition-all duration-500 w-full max-w-[320px] md:max-w-[280px] lg:max-w-[320px] aspect-[3/4] flex flex-col justify-between">
                     <div className="relative w-full h-[90%] overflow-hidden bg-neutral-100">
                       <Image
                         src={sec5Couple}
                         alt="Couple photo"
                         fill
                         unoptimized
-                        className="object-contain"
+                        className="object-cover object-[center_60%]"
                       />
                     </div>
                   </div>
