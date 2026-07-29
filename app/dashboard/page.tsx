@@ -1478,13 +1478,6 @@ export default function RSVPDashboard() {
                 {activeTab === 'rsvp' && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />}
               </button>
               <button
-                onClick={() => setActiveTab('gifts')}
-                className={`group relative text-[9px] font-bold tracking-[0.2em] uppercase pb-3 transition-all ${activeTab === 'gifts' ? 'text-neutral-900' : 'text-neutral-400 hover:text-neutral-600'}`}
-              >
-                Gift Registry
-                {activeTab === 'gifts' && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />}
-              </button>
-              <button
                 onClick={() => setActiveTab('settings')}
                 className={`group relative text-[9px] font-bold tracking-[0.2em] uppercase pb-3 transition-all ${activeTab === 'settings' ? 'text-neutral-900' : 'text-neutral-400 hover:text-neutral-600'}`}
               >
@@ -1498,10 +1491,6 @@ export default function RSVPDashboard() {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" /></svg>
               Live Slideshow
             </button>
-            <Link href="/dashboard/scanner" className="group inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-neutral-900 text-white text-[10px] font-bold tracking-[0.2em] uppercase transition-all hover:bg-black rounded-xl shadow-lg hover:shadow-black/20 active:scale-95">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 group-hover:rotate-12 transition-transform"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5Zm10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 14.25 9.375v-4.5Zm0 10.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Zm-10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Z" /></svg>
-              QR Scanner
-            </Link>
           </div>
         </motion.div>
 
