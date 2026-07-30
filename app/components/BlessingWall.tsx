@@ -263,12 +263,13 @@ export default function BlessingWall({
               .from('rsvp')
               .select('*')
               .eq('project_id', projectId)
-              .eq('guest_id', guest.id)
-              .limit(1);
+              .eq('guest_id', guest.id);
 
-            if (byIdData && byIdData.length > 0 && !byIdError) {
+            const realRsvp = byIdData?.find((r: any) => r.pax > 0 || r.attendance === 'tidak_hadir' || (r.guest_phone && r.guest_phone.trim() !== ''));
+
+            if (realRsvp && !byIdError) {
               hasRsvp = true;
-              const rsvpRecord = byIdData[0];
+              const rsvpRecord = realRsvp;
               if (rsvpRecord.guest_phone) setPhone(rsvpRecord.guest_phone);
               if (rsvpRecord.attendance) setIsAttending(rsvpRecord.attendance === 'hadir' ? 'yes' : 'no');
               if (rsvpRecord.pax) setGuestsCount(rsvpRecord.pax);
@@ -289,12 +290,13 @@ export default function BlessingWall({
               .from('rsvp')
               .select('*')
               .eq('project_id', projectId)
-              .ilike('guest_name', guestName)
-              .limit(1);
+              .ilike('guest_name', guestName);
 
-            if (byNameData && byNameData.length > 0 && !byNameError) {
+            const realRsvp = byNameData?.find((r: any) => r.pax > 0 || r.attendance === 'tidak_hadir' || (r.guest_phone && r.guest_phone.trim() !== ''));
+
+            if (realRsvp && !byNameError) {
               hasRsvp = true;
-              const rsvpRecord = byNameData[0];
+              const rsvpRecord = realRsvp;
               if (rsvpRecord.guest_phone) setPhone(rsvpRecord.guest_phone);
               if (rsvpRecord.attendance) setIsAttending(rsvpRecord.attendance === 'hadir' ? 'yes' : 'no');
               if (rsvpRecord.pax) setGuestsCount(rsvpRecord.pax);
@@ -312,12 +314,12 @@ export default function BlessingWall({
           // Fetch RSVP stats (all submissions for this project)
           const { data: statsData, error: statsError } = await supabase
             .from('rsvp')
-            .select('attendance')
+            .select('attendance, pax, guest_phone')
             .eq('project_id', projectId);
 
           if (statsData && !statsError) {
-            const hadir = statsData.filter(r => r.attendance === 'hadir').length;
-            const tidakHadir = statsData.filter(r => r.attendance === 'tidak_hadir').length;
+            const hadir = statsData.filter((r: any) => r.attendance === 'hadir' && (r.pax > 0 || (r.guest_phone && r.guest_phone.trim() !== ''))).length;
+            const tidakHadir = statsData.filter((r: any) => r.attendance === 'tidak_hadir').length;
             setRsvpStats({ hadir, tidakHadir });
           }
 

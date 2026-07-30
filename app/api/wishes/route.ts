@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     }
 
     // 2. Fallback to rsvp table if guestbook_entries table is missing
+    // Set pax: 0 so wish entries are NOT confused with real RSVP attendance submissions!
     console.warn('guestbook_entries insert failed, using rsvp table fallback:', gbError?.message);
     const { data: rsvpData, error: rsvpError } = await supabaseAdmin
       .from('rsvp')
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
         guest_id: guest_id || null,
         guest_name: name,
         attendance: 'hadir',
-        pax: 1,
+        pax: 0,
         message
       })
       .select();
