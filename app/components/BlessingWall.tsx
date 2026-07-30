@@ -144,14 +144,27 @@ export default function BlessingWall({
   const galleryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (guestName && guestName !== "Guest Name" && guestName !== "Special Guest") {
-      setRsvpGuestName(guestName);
-      setWishSenderName(guestName);
-    } else {
-      setRsvpGuestName("");
-      setWishSenderName("");
-    }
+    const resolvedName = guestName && guestName !== "Guest Name" && guestName !== "Special Guest" ? guestName : "Tamu Undangan";
+    setRsvpGuestName(resolvedName);
+    setWishSenderName(resolvedName);
   }, [guestName]);
+
+  // Load saved user wishes from localStorage for max 3 limit per guest
+  useEffect(() => {
+    if (typeof window !== 'undefined' && projectId) {
+      const activeName = guestName || "guest";
+      const storageKey = `wishes_${projectId}_${activeName}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setMyWishes(parsed);
+          }
+        } catch (e) {}
+      }
+    }
+  }, [projectId, guestName]);
 
   // Helper to fetch wishes
   const fetchWishes = useCallback(async () => {
@@ -509,7 +522,15 @@ export default function BlessingWall({
         text: wishText,
         createdAt: new Date()
       };
-      setMyWishes([...myWishes, newWish]);
+      const updatedMyWishes = [...myWishes, newWish];
+      setMyWishes(updatedMyWishes);
+      
+      if (typeof window !== 'undefined' && projectId) {
+        const activeName = guestName || "guest";
+        const storageKey = `wishes_${projectId}_${activeName}`;
+        localStorage.setItem(storageKey, JSON.stringify(updatedMyWishes));
+      }
+
       setWishText("");
       setSuccessType('wish');
       setShowSuccess(true);
@@ -799,11 +820,10 @@ export default function BlessingWall({
                         </label>
                         <input 
                           type="text"
-                          value={wishSenderName}
-                          onChange={(e) => setWishSenderName(e.target.value)}
-                          className="w-full bg-white border border-[#4a3525]/20 focus:border-[#4a3525] rounded-2xl px-4 py-3 text-xs md:text-sm text-[#4a3525] focus:outline-none font-sans shadow-inner placeholder-[#4a3525]/40"
-                          placeholder="Masukkan nama Anda..."
-                          required
+                          value={wishSenderName || (guestName && guestName !== "Guest Name" && guestName !== "Special Guest" ? guestName : "Tamu Undangan")}
+                          disabled
+                          readOnly
+                          className="w-full bg-[#EAE3D2]/50 border border-[#4a3525]/20 rounded-2xl px-4 py-3 text-xs md:text-sm text-[#4a3525] font-sans font-bold cursor-not-allowed select-none opacity-80"
                         />
                       </div>
 
