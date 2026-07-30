@@ -7,6 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import CustomCursor from "./CustomCursor";
 import { DbGuest, DbProject, DbEvent, DbWish } from "../../lib/resolveProject";
 
+import BlessingWall from "./BlessingWall";
+
 // Import sections
 import CoverSection from "./sections/CoverSection";
 import IntroSection from "./sections/IntroSection";
@@ -97,25 +99,20 @@ export default function RightSidebar({
   }, [project?.wedding_date]);
 
   const formattedWeddingLocation = React.useMemo(() => {
-    if (project?.location_city) {
-      return project.location_city.toUpperCase();
-    }
-    const venue = project?.venue_name || "";
+    const venue = events?.[0]?.venue_name || project?.venue_name || "";
+    const address = (events?.[0]?.venue_address || project?.venue_address || "").toUpperCase();
     const knownCities = [
-      "SEMARANG", "JAKARTA", "BANDUNG", "SURABAYA", "MEDAN", "BALI", 
-      "YOGYAKARTA", "JOGJA", "MAKASSAR", "DENPASAR", "TANGERANG", 
+      "TANGERANG", "JAKARTA", "SEMARANG", "BANDUNG", "SURABAYA", "MEDAN", "BALI", 
+      "YOGYAKARTA", "JOGJA", "MAKASSAR", "DENPASAR", 
       "BEKASI", "DEPOK", "BOGOR", "SOLO", "SURAKARTA"
     ];
     
-    // Check address first for "Kota [Nama]" or "Kabupaten [Nama]" or known cities
-    const address = (project?.venue_address || "").toUpperCase();
     for (const city of knownCities) {
       if (address.includes(city)) {
         return city;
       }
     }
     
-    // Check venue name next for known cities
     const venueUpper = venue.toUpperCase();
     for (const city of knownCities) {
       if (venueUpper.includes(city)) {
@@ -123,15 +120,14 @@ export default function RightSidebar({
       }
     }
     
-    // Fallback: take the last word of venue_name, clean it
     if (venue.trim()) {
       const parts = venue.trim().split(/\s+/);
       const lastWord = parts[parts.length - 1].toUpperCase().replace(/[.,()]/g, "");
       if (lastWord) return lastWord;
     }
     
-    return "SEMARANG";
-  }, [project?.venue_name, project?.venue_address]);
+    return "TANGERANG";
+  }, [events, project?.venue_name, project?.venue_address]);
 
   const openLightbox = (idx: number) => {
     setPage([idx, 0]);
@@ -364,7 +360,17 @@ export default function RightSidebar({
 
         <GiftRegistrySection project={project} />
 
-
+        {/* Page untuk Ucapan Tamu Undangan (Blessing Wall / Guestbook) */}
+        <BlessingWall
+          guestName={guestName}
+          guest={guest}
+          projectId={project?.id}
+          wishes={wishes}
+          hasRsvp={false}
+          hasGuestbook={true}
+          project={project}
+          galleryImages={galleryImages}
+        />
 
         <ClosingSection
           project={project}

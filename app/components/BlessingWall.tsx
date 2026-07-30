@@ -45,44 +45,47 @@ function WishCard({ wish }: { wish: DisplayWish }) {
   }, [wish.text]);
 
   const formattedDate = wish.createdAt instanceof Date && !isNaN(wish.createdAt.getTime())
-    ? wish.createdAt.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    : "Recently Shared";
+    ? wish.createdAt.toLocaleString('id-ID', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : "Baru saja";
 
   return (
-    <div className="group relative flex flex-col gap-5 p-6 md:p-8 bg-white/[0.015] hover:bg-white/[0.03] border border-white/5 hover:border-[#979e6c]/20 rounded-[2rem] transition-all duration-700 shadow-2xl overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-[#979e6c]/5 transition-all duration-700"></div>
-      
-      <p 
-        ref={textRef}
-        className={`text-[14px] md:text-base font-sans font-light text-gray-300 leading-relaxed relative z-10 group-hover:text-white transition-colors text-center ${!isExpanded ? 'line-clamp-8' : ''}`}
-      >
-        &ldquo;{wish.text}&rdquo;
-      </p>
+    <div className="group relative flex flex-col gap-4 p-5 md:p-7 bg-[#FDFBF7] border border-[#4a3525]/15 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+      <div className="flex items-start gap-3">
+        <span className="font-altesse text-3xl text-[#4a3525]/40 leading-none select-none">“</span>
+        <p 
+          ref={textRef}
+          className={`text-xs md:text-sm font-sans text-[#4a3525]/90 leading-relaxed flex-1 ${!isExpanded ? 'line-clamp-6' : ''}`}
+        >
+          {wish.text}
+        </p>
+      </div>
       
       {isTruncated && !isExpanded && (
         <button 
           onClick={() => setIsExpanded(true)}
-          className="text-[#979e6c] text-[10px] font-bold tracking-widest uppercase hover:text-white transition-colors relative z-10 mt-2 mx-auto"
+          className="text-[#8B7355] text-[10px] font-bold tracking-widest uppercase hover:text-[#4a3525] transition-colors self-start ml-6 cursor-pointer"
         >
-          See more
+          Selengkapnya
         </button>
       )}
 
       {isExpanded && (
         <button 
           onClick={() => setIsExpanded(false)}
-          className="text-gray-500 hover:text-[#979e6c] text-[10px] font-bold tracking-widest uppercase transition-colors relative z-10 mt-2 mx-auto"
+          className="text-[#4a3525]/60 hover:text-[#4a3525] text-[10px] font-bold tracking-widest uppercase transition-colors self-start ml-6 cursor-pointer"
         >
-          Show less
+          Tampilkan sedikit
         </button>
       )}
       
-      <div className="flex flex-col items-center gap-6 pt-8 border-t border-white/5 relative z-10 mt-auto">
-        <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-[10px] font-bold text-[#979e6c] group-hover:border-[#979e6c]/40 transition-all duration-500">{(wish.name || "G").charAt(0)}</div>
-        <div className="flex flex-col items-center gap-2">
-          <h4 className="text-[10px] font-bold text-white tracking-[0.3em] uppercase leading-none group-hover:text-[#979e6c] transition-colors">{wish.name}</h4>
-          <span className="text-[8px] text-gray-600 uppercase tracking-[0.2em]">{formattedDate}</span>
+      <div className="flex items-center justify-between pt-3 border-t border-[#4a3525]/10 mt-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-[#EAE3D2] border border-[#4a3525]/20 flex items-center justify-center text-xs font-bold text-[#4a3525]">
+            {(wish.name || "G").charAt(0).toUpperCase()}
+          </div>
+          <h4 className="text-xs font-seasons font-bold text-[#4a3525] tracking-wider uppercase">{wish.name}</h4>
         </div>
+        <span className="text-[9px] font-lekton text-[#4a3525]/60 tracking-wider">{formattedDate}</span>
       </div>
     </div>
   );
@@ -107,7 +110,7 @@ export default function BlessingWall({
 
   const sec5Bg = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-bg.png`;
   const sec5Envelope = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-envelope.png`;
-  const sec5Couple = project?.opening_photo_url || project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec5-couple.jpg`;
+  const sec5Couple = (galleryImages && galleryImages.length > 5 ? galleryImages[5] : (project?.gallery_photos && Array.isArray(project.gallery_photos) && project.gallery_photos[5] ? (typeof project.gallery_photos[5] === 'string' ? project.gallery_photos[5] : (project.gallery_photos[5] as any)?.url) : (project?.cover_photo_url || project?.opening_photo_url)));
 
   const q1Rsvp = project?.question01_rsvp || "Are you coming?";
   const q2Rsvp = project?.question02_rsvp || "Let us know if you have any dietary restrictions.";
@@ -690,127 +693,142 @@ export default function BlessingWall({
         </section>
       )}
 
-      {/* SECTION 2: BLESSING WALL */}
+      {/* SECTION 2: BLESSING WALL (LIGHT CREAM THEME FOR DEVI & DHIKA) */}
       {hasGuestbook && (
-        <section id="blessings" className="relative w-full min-h-screen snap-start shrink-0 flex flex-col items-center bg-neutral-900 py-16 md:py-24">
-        <div className="absolute inset-0 z-0">
-          <Image 
-            src={galleryImages && galleryImages.length > 0 
-              ? (galleryImages[4 % galleryImages.length] || project?.opening_photo_url || bgWishes) 
-              : (project?.opening_photo_url || bgWishes)
-            } 
-            alt="Wishes BG" 
-            fill 
-            unoptimized={
-              galleryImages && galleryImages.length > 0 
-                ? typeof (galleryImages[4 % galleryImages.length] || project?.opening_photo_url) === 'string'
-                : typeof (project?.opening_photo_url) === 'string'
-            }
-            className="object-cover opacity-20 grayscale" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"></div>
-        </div>
-        <div className="relative z-10 w-full max-w-5xl px-6 md:px-10 flex flex-col items-center">
-          <FadeIn>
-            <div className="text-center mb-12 md:mb-16">
-              <span className="text-[7px] md:text-[10px] font-bold tracking-[0.6em] text-[#979e6c] uppercase mb-4 block">Part II</span>
-              <h2 className="text-3xl md:text-5xl font-serif text-white font-light tracking-tight leading-none">Blessings</h2>
-              <p className="text-[7px] sm:text-[8px] md:text-[10px] text-gray-600 tracking-[0.2em] md:tracking-[0.3em] uppercase mt-4 md:mt-6 max-w-[250px] md:max-w-xs mx-auto leading-relaxed">Leave your warmest words for the beginning of our new chapter.</p>
-            </div>
-          </FadeIn>
-          <div className="w-full max-w-2xl mb-20 md:mb-32">
-            <FadeIn delay={0.2}>
-              <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/5 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-12 shadow-2xl w-full">
-                {myWishes.length >= 3 ? (
-                  <div className="text-center space-y-6 py-4">
-                     <span className="text-5xl block mb-6 opacity-30">✨</span>
-                     <h4 className="text-3xl font-serif text-white italic">Blessings Sent</h4>
-                     <p className="text-[10px] text-gray-500 tracking-[0.2em] uppercase leading-relaxed max-w-xs mx-auto">You have shared 3 beautiful blessings. They are now part of our wall forever.</p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleWishSubmit} className="space-y-10">
-                    <div className="relative">
-                      <textarea value={wishText} onChange={(e) => setWishText(e.target.value)} className="w-full bg-transparent border-b border-white/10 py-3 md:py-4 text-xs md:text-sm text-white focus:outline-none focus:border-[#979e6c] transition-all duration-500 peer placeholder-transparent min-h-[80px] md:min-h-[100px] resize-none font-sans" placeholder="Wishes" required />
-                      <label className="absolute left-0 -top-6 md:-top-7 text-[9px] md:text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em] md:tracking-[0.4em] peer-placeholder-shown:text-xs peer-placeholder-shown:top-4 peer-focus:-top-6 peer-focus:text-[#979e6c] whitespace-nowrap">Share your blessings ({myWishes.length}/3)</label>
-                    </div>
-                    <button type="submit" disabled={isSubmitting} className="w-full py-4 md:py-5 border border-white/10 text-white text-[9px] md:text-[11px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase rounded-full hover:bg-white hover:text-black transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
-                      <span className="truncate">{isSubmitting && successType === 'wish' ? "SHARING..." : "SUBMIT BLESSING"}</span>
-                    </button>
-                  </form>
-                )}
+        <section id="blessings" className="relative w-full min-h-screen snap-start shrink-0 flex flex-col items-center bg-[#e2ddc7] py-16 md:py-24 text-[#4a3525]">
+          <div className="relative z-10 w-full max-w-5xl px-4 md:px-8 flex flex-col items-center select-none">
+            <FadeIn>
+              <div className="text-center mb-10 md:mb-14">
+                <span className="font-seasons text-[#4a3525]/70 text-xs font-semibold tracking-[0.25em] uppercase mb-2 block">
+                  DOA RESTU
+                </span>
+                <h2 className="font-altesse text-[#4a3525] text-[clamp(40px,9vw,64px)] font-light leading-none mb-3">
+                  Blessings & Wishes
+                </h2>
+                <p className="font-lekton text-[#4a3525]/80 text-xs md:text-sm tracking-wide max-w-sm mx-auto leading-relaxed">
+                  Tuliskan pesan & doa terbaik Anda untuk kedua mempelai di awal lembaran baru kami.
+                </p>
               </div>
             </FadeIn>
-          </div>
 
-          {/* GALLERY WITH PAGINATION */}
-          <div ref={galleryRef} className="w-full flex flex-col items-center">
-            <div className="flex flex-col items-center mb-16 text-center">
-               <div className="h-[1px] w-16 bg-white/10 mb-8"></div>
-               <h3 className="text-2xl md:text-4xl font-serif text-white font-light tracking-tight leading-none mb-4">Gallery of Love</h3>
-               <span className="text-[7px] md:text-[9px] font-bold tracking-[0.3em] md:tracking-[0.5em] text-[#979e6c] uppercase">{allDisplayWishes.length} Shared Messages</span>
-            </div>
+            {/* Input Form Card */}
+            <div className="w-full max-w-xl mb-16 md:mb-24">
+              <FadeIn delay={0.2}>
+                <div className="bg-[#FDFBF7]/90 backdrop-blur-xl border border-[#4a3525]/15 rounded-3xl p-6 sm:p-8 md:p-10 shadow-xl w-full">
+                  {myWishes.length >= 3 ? (
+                    <div className="text-center space-y-4 py-4">
+                       <span className="text-4xl block mb-2 opacity-60">✨</span>
+                       <h4 className="font-altesse text-2xl md:text-3xl text-[#4a3525] italic">Doa Restu Terkirim</h4>
+                       <p className="font-lekton text-xs text-[#4a3525]/70 leading-relaxed max-w-xs mx-auto">
+                         Anda telah mengirimkan 3 ucapan doa. Terima kasih atas doa dan restu hangat Anda!
+                       </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleWishSubmit} className="flex flex-col gap-6">
+                      <div className="flex flex-col gap-2 text-left">
+                        <label className="font-seasons text-xs font-semibold text-[#4a3525] tracking-wider uppercase">
+                          Kirim Ucapan & Doa ({myWishes.length}/3)
+                        </label>
+                        <textarea 
+                          value={wishText} 
+                          onChange={(e) => setWishText(e.target.value)} 
+                          className="w-full bg-white border border-[#4a3525]/20 focus:border-[#4a3525] rounded-2xl p-4 text-xs md:text-sm text-[#4a3525] focus:outline-none min-h-[100px] resize-none font-sans shadow-inner placeholder-[#4a3525]/40" 
+                          placeholder="Tuliskan ucapan dan doa restu Anda di sini..." 
+                          required 
+                        />
+                      </div>
 
-            {/* Single Column List (Paginated) */}
-            <div className="w-full max-w-lg flex flex-col gap-6 md:gap-8 min-h-[500px]">
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  key={currentPage}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.5 }}
-                  className="flex flex-col gap-6 md:gap-8"
-                >
-                  {currentWishes.map((wish) => (
-                    <WishCard key={wish.id} wish={wish} />
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="mt-16 md:mt-24 flex items-center justify-center gap-4 md:gap-8 w-full flex-wrap">
-                <button 
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="p-3 md:p-4 border border-white/10 rounded-full text-[#979e6c] disabled:opacity-20 hover:bg-white/5 transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 md:w-5 md:h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
-                </button>
-                <div className="flex items-center gap-2 md:gap-4">
-                   <span className="text-[9px] md:text-[10px] font-bold text-white tracking-[0.2em] md:tracking-[0.4em] uppercase">Page</span>
-                   <div className="px-3 py-1.5 md:px-4 md:py-2 bg-white/5 border border-white/10 rounded-lg text-[#979e6c] text-[10px] md:text-xs font-bold">{currentPage}</div>
-                   <span className="text-[9px] md:text-[10px] font-bold text-gray-600 tracking-[0.2em] md:tracking-[0.4em] uppercase">of {totalPages}</span>
+                      <button 
+                        type="submit" 
+                        disabled={isSubmitting} 
+                        className="w-full py-3.5 px-8 rounded-full bg-[#4a3525] text-white hover:bg-[#36261a] transition-all duration-300 font-seasons text-xs tracking-[0.2em] uppercase shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 cursor-pointer font-bold"
+                      >
+                        <span className="truncate">
+                          {isSubmitting && successType === 'wish' ? "MENGIRIM..." : "KIRIM UCAPAN & DOA"}
+                        </span>
+                      </button>
+                    </form>
+                  )}
                 </div>
-                <button 
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="p-3 md:p-4 border border-white/10 rounded-full text-[#979e6c] disabled:opacity-20 hover:bg-white/5 transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 md:w-5 md:h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
-                </button>
-              </div>
-            )}
+              </FadeIn>
+            </div>
 
-            {allDisplayWishes.length === 0 && <p className="text-gray-700 text-[10px] tracking-[0.5em] uppercase italic py-20">The gallery is waiting for your light.</p>}
+            {/* GALLERY WITH PAGINATION */}
+            <div ref={galleryRef} className="w-full flex flex-col items-center">
+              <div className="flex flex-col items-center mb-12 text-center">
+                 <div className="h-[1px] w-16 bg-[#4a3525]/20 mb-6"></div>
+                 <h3 className="font-altesse text-[#4a3525] text-[clamp(32px,7vw,52px)] font-light leading-none mb-2">
+                   Gallery of Love
+                 </h3>
+                 <span className="font-lekton text-[10px] md:text-xs font-bold tracking-[0.25em] text-[#4a3525]/70 uppercase">
+                   {allDisplayWishes.length} Pesan & Doa Terkirim
+                 </span>
+              </div>
+
+              {/* Single Column List (Paginated) */}
+              <div className="w-full max-w-lg flex flex-col gap-6 md:gap-8 min-h-[400px]">
+                <AnimatePresence mode="wait">
+                  <motion.div 
+                    key={currentPage}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex flex-col gap-5 md:gap-6"
+                  >
+                    {currentWishes.map((wish) => (
+                      <WishCard key={wish.id} wish={wish} />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-12 md:mt-16 flex items-center justify-center gap-4 w-full flex-wrap">
+                  <button 
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-3 border border-[#4a3525]/30 rounded-full text-[#4a3525] disabled:opacity-20 hover:bg-[#4a3525]/10 transition-all cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                  </button>
+                  <div className="flex items-center gap-2">
+                     <span className="font-lekton text-xs font-bold text-[#4a3525]/80 uppercase">Halaman</span>
+                     <div className="px-3 py-1 bg-[#4a3525] rounded-lg text-white text-xs font-mono font-bold">{currentPage}</div>
+                     <span className="font-lekton text-xs font-bold text-[#4a3525]/60 uppercase">dari {totalPages}</span>
+                  </div>
+                  <button 
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-3 border border-[#4a3525]/30 rounded-full text-[#4a3525] disabled:opacity-20 hover:bg-[#4a3525]/10 transition-all cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+                  </button>
+                </div>
+              )}
+
+              {allDisplayWishes.length === 0 && (
+                <p className="font-lekton text-[#4a3525]/50 text-xs tracking-widest uppercase italic py-16">
+                  Belum ada ucapan. Jadilah yang pertama memberikan doa restu!
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* Success Modal */}
       <AnimatePresence>
         {showSuccess && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[500] flex items-center justify-center bg-black/98 backdrop-blur-3xl p-6">
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 40 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 40 }} className="bg-neutral-950 border border-white/5 p-12 md:p-20 flex flex-col items-center gap-12 text-center max-w-sm rounded-[5rem] relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#979e6c] to-transparent"></div>
-              <div className="w-24 h-24 bg-[#979e6c]/5 rounded-full flex items-center justify-center text-5xl border border-[#979e6c]/10"><span className="relative z-10">{successType === 'rsvp' ? '🥂' : '✨'}</span></div>
-              <div className="space-y-5">
-                <h4 className="text-white font-serif text-4xl tracking-widest italic leading-none">{successType === 'rsvp' ? 'Confirmed' : 'Sent'}</h4>
-                <p className="text-gray-500 text-[10px] font-sans tracking-[0.25em] leading-relaxed uppercase">{successType === 'rsvp' ? "Your presence is our joy." : "Your beautiful words are shared."}</p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="bg-[#FDFBF7] border border-[#4a3525]/20 p-8 md:p-12 flex flex-col items-center gap-6 text-center max-w-sm rounded-3xl relative shadow-2xl text-[#4a3525]">
+              <div className="w-16 h-16 bg-[#EAE3D2] rounded-full flex items-center justify-center text-3xl border border-[#4a3525]/20"><span className="relative z-10">{successType === 'rsvp' ? '🥂' : '✨'}</span></div>
+              <div className="space-y-2">
+                <h4 className="font-altesse text-3xl md:text-4xl text-[#4a3525] italic">{successType === 'rsvp' ? 'Terima Kasih' : 'Terkirim'}</h4>
+                <p className="font-lekton text-[#4a3525]/70 text-xs tracking-wider leading-relaxed">{successType === 'rsvp' ? "Konfirmasi kehadiran Anda telah kami terima." : "Doa dan ucapan restu Anda telah disampaikan."}</p>
               </div>
-              <button onClick={() => setShowSuccess(false)} className="w-full py-6 bg-white text-black text-[11px] font-bold tracking-[0.6em] uppercase rounded-full hover:bg-[#979e6c]">Close</button>
+              <button onClick={() => setShowSuccess(false)} className="w-full py-3.5 bg-[#4a3525] text-white text-xs font-seasons font-bold tracking-[0.2em] uppercase rounded-full hover:bg-[#36261a] transition-all cursor-pointer">Tutup</button>
             </motion.div>
           </motion.div>
         )}

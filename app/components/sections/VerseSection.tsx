@@ -17,9 +17,10 @@ export default function VerseSection({ project }: Props) {
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
 
-  const bgImgUrl = project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec3-bg.jpg`;
+  const gallery = (project as any)?.gallery_photos || [];
+  const bgImgUrl = (typeof gallery[2] === 'string' ? gallery[2] : gallery[2]?.url) || project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec3-bg.jpg`;
   const frameImgUrl = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec3-frame.png`;
-  const coupleImgUrl = project?.opening_photo_url || project?.bride_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec3-couple.jpg`;
+  const coupleImgUrl = (typeof gallery[1] === 'string' ? gallery[1] : gallery[1]?.url) || project?.opening_photo_url || project?.bride_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec3-couple.jpg`;
 
   const quoteArabic = project?.quote_arabic !== undefined && project?.quote_arabic !== null && project?.quote_arabic !== ""
     ? project.quote_arabic

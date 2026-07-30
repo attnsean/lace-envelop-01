@@ -14,6 +14,9 @@ interface Props {
 }
 
 export default function CoverSection({ project, guestName, isOpen, handleOpen }: Props) {
+  const gallery = (project as any)?.gallery_photos || [];
+  const coverImgUrl = (typeof gallery[0] === 'string' ? gallery[0] : gallery[0]?.url) || project?.cover_photo_url || "/bg-invitation.jpg";
+
   return (
     <section
       className={`absolute inset-0 w-full h-full z-40 transition-transform duration-[1500ms] ease-[cubic-bezier(0.7,0,0.3,1)] ${
@@ -23,7 +26,7 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
       <div className="absolute inset-0 z-0 overflow-hidden bg-black shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
         <FloatingParticles />
         <Image
-          src={project?.opening_photo_url || project?.cover_photo_url || "/bg-invitation.jpg"}
+          src={coverImgUrl}
           alt="Background"
           fill
           sizes="100vw"

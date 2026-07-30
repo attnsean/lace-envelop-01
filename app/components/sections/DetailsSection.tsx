@@ -117,13 +117,28 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
  
         {/* Akad & Reception */}
         <FadeIn delay={0.7}>
-          <div className="flex flex-col items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-5">
-            <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em] mb-1 sm:mb-2">
-              AKAD & RECEPTION
-            </h4>
-            <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
-              {weddingTimeRange}
-            </p>
+          <div className="flex flex-col items-center gap-3 mb-4 sm:mb-6 md:mb-5">
+            {/* AKAD NIKAH */}
+            <div className="flex flex-col items-center gap-1">
+              <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
+                AKAD NIKAH
+              </h4>
+              <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
+                16.00 WIB - Selesai
+              </p>
+            </div>
+
+            <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>
+
+            {/* RESEPSI */}
+            <div className="flex flex-col items-center gap-1">
+              <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
+                RESEPSI PERNIKAHAN
+              </h4>
+              <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
+                19.00 - 21.00 WIB
+              </p>
+            </div>
           </div>
         </FadeIn>
  
