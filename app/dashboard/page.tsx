@@ -17,6 +17,7 @@ interface RSVPData {
   rsvp_id?: string;
   name: string;
   isAttending: boolean;
+  hasResponded: boolean;
   guestsCount: number;
   actualGuestsCount?: number;
   checkedIn?: boolean;
@@ -65,7 +66,7 @@ export default function RSVPDashboard() {
   const [gifts, setGifts] = useState<GiftItem[]>([]);
   const [storyEvents, setStoryEvents] = useState<StoryEvent[]>([]);
   const [activeTab, setActiveTab] = useState<'rsvp' | 'gifts' | 'links' | 'settings'>('rsvp');
-  const [settingsTab, setSettingsTab] = useState<'password' | 'story' | 'payment'>('password');
+  const [settingsTab, setSettingsTab] = useState<'password' | 'story'>('password');
   const [loading, setLoading] = useState(true);
 
   // Authentication & Security State
@@ -97,11 +98,6 @@ export default function RSVPDashboard() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [paymentAccounts, setPaymentAccounts] = useState<any[]>([]);
-  const [isSavingPaymentAccounts, setIsSavingPaymentAccounts] = useState(false);
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all"); // all, attending, declined
   const [filterCheckIn, setFilterCheckIn] = useState("all"); // all, arrived, waiting
@@ -112,8 +108,6 @@ export default function RSVPDashboard() {
   const [newStoryTitle, setNewStoryTitle] = useState("");
   const [newStoryDesc, setNewStoryDesc] = useState("");
   const [newStoryOrder, setNewStoryOrder] = useState("");
-  const [singleLoveStoryText, setSingleLoveStoryText] = useState("");
-  const [isSavingLoveStory, setIsSavingLoveStory] = useState(false);
 
   const [showSlideshow, setShowSlideshow] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -177,33 +171,23 @@ export default function RSVPDashboard() {
         .eq('id', projectId)
         .maybeSingle();
 
+      const { data: weddingData } = await supabase
+        .from('wedding_details')
+        .select('*')
+        .eq('project_id', projectId)
+        .maybeSingle();
+
       if (projectData) {
-        setProject(projectData);
-        setDbPassword(projectData.password_dashboard || "serastory");
-
-        const { data: weddingDetails } = await supabase
-          .from('wedding_details')
-          .select('*')
-          .eq('project_id', projectId)
-          .maybeSingle();
-
-        const rawAccounts = (weddingDetails?.payment_accounts && Array.isArray(weddingDetails.payment_accounts) && weddingDetails.payment_accounts.length > 0)
-          ? weddingDetails.payment_accounts
-          : projectData.payment_accounts;
-
-        const accounts = Array.isArray(rawAccounts) && rawAccounts.length > 0
-          ? rawAccounts.map((acc: any) => ({
-              bank_name: acc.bank_name || acc.provider || acc.bank || "",
-              bank_account: acc.bank_account || acc.account_number || acc.number || "",
-              owner_name: acc.owner_name || acc.account_name || acc.name || ""
-            }))
-          : [{ bank_name: "", bank_account: "", owner_name: "" }];
-
-        setPaymentAccounts(accounts);
+        const mergedProject = {
+          ...projectData,
+          ...(weddingData || {})
+        };
+        setProject(mergedProject);
+        setDbPassword(mergedProject.hashtag || "serastory");
 
         try {
-          if (projectData.love_story) {
-            const status = JSON.parse(projectData.love_story);
+          if (mergedProject.love_story) {
+            const status = JSON.parse(mergedProject.love_story);
             setBotStatus(status);
           } else {
             setBotStatus({ status: 'disconnected' });
@@ -212,12 +196,14 @@ export default function RSVPDashboard() {
           setBotStatus({ status: 'disconnected' });
         }
         
-        const bName = projectData.bride_name || "Bride";
-        const gName = projectData.groom_name || "Groom";
-        const bNick = projectData.bride_nickname || "Bride";
-        const gNick = projectData.groom_nickname || "Groom";
+        const bName = mergedProject.bride_name || "Bride";
+        const gName = mergedProject.groom_name || "Groom";
+        const bNick = mergedProject.bride_nickname || "Bride";
+        const gNick = mergedProject.groom_nickname || "Groom";
 
-        setMessageTemplate("");
+        setMessageTemplate(
+          `*WEDDING INVITATION*\n\nShalom / Salam Sejahtera,\n\n“Two are better than one, because they have a good reward for their toil. For if they fall, one will lift up his fellow. But woe to him who is alone when he falls and has not another to lift him up.”\n(Ecclesiastes 4:9-10)\n\nWith great joy and without diminishing our respect, we would like to invite you to attend and give your blessings on the occasion of our wedding celebration:\n\n*${gName} & ${bName}*💍\n\nGod willing, the ceremony will be held on:\n\n*Holy Matrimony*\nSaturday, 25 April 2026\n10.00 WIB\n\n*Wedding Reception*\nSaturday, 25 April 2026\n12.00 WIB\n\nPlease visit the link below for complete wedding details:\n\n[wedding link]\n\nIt would be a great honor and happiness for us if you could attend and celebrate this special day with us.\n\nWarm regards,\n\n*${gNick} & ${bNick}*🤍`
+        );
       }
 
       // 2. Fetch guests
@@ -240,22 +226,48 @@ export default function RSVPDashboard() {
         console.error("Error fetching RSVP:", rsvpError);
       }
 
+      // 3b. Fetch guestbook_entries (wishes)
+      const { data: gbData } = await supabase
+        .from('guestbook_entries')
+        .select('*')
+        .eq('project_id', projectId);
+
       // 4. Fetch checkins
       const { data: checkinsData, error: checkinsError } = await supabase
         .from('checkins')
         .select('*')
         .eq('project_id', projectId);
 
-      if (checkinsError && checkinsError.message) {
-        console.warn("Checkins table not available:", checkinsError.message);
+      if (checkinsError) {
+        console.error("Error fetching checkins:", checkinsError);
       }
 
-      // 5. Merge data
+      // Helper function to check if an rsvp row is a real RSVP attendance submission
+      const isRealRsvp = (r: any) => {
+        if (!r) return false;
+        return (r.pax > 0) || (r.attendance === 'tidak_hadir') || (r.guest_phone && r.guest_phone.trim() !== '');
+      };
+
+      // Collect all wishes mapped by guest_name (lowercase)
+      const wishesByNameMap = new Map<string, string>();
+      (gbData || []).forEach((w: any) => {
+        if (w.name && w.message) {
+          wishesByNameMap.set(w.name.toLowerCase().trim(), w.message);
+        }
+      });
+      (rsvpData || []).forEach((r: any) => {
+        if (r.guest_name && r.message && r.message.trim() !== '') {
+          wishesByNameMap.set(r.guest_name.toLowerCase().trim(), r.message);
+        }
+      });
+
+      // Filter real RSVPs
+      const realRsvpData = (rsvpData || []).filter(isRealRsvp);
       const rsvpMap = new Map<string, any>();
       const rsvpByNameMap = new Map<string, any>();
       const rsvpByPhoneMap = new Map<string, any>();
 
-      (rsvpData || []).forEach(r => {
+      realRsvpData.forEach(r => {
         if (r.guest_id) {
           rsvpMap.set(r.guest_id, r);
         } else {
@@ -291,24 +303,27 @@ export default function RSVPDashboard() {
           matchedRsvpIds.add(rsvp.id);
         }
         const checkin = checkinsMap.get(g.id);
+        const hasResponded = !!rsvp;
+        const wishMsg = rsvp?.message || (g.name ? wishesByNameMap.get(g.name.toLowerCase().trim()) : '') || "";
 
         mergedRSVPs.push({
           id: g.id,
           rsvp_id: rsvp?.id,
           name: g.name,
-          isAttending: rsvp ? (rsvp.attendance === 'hadir') : false,
-          guestsCount: rsvp ? rsvp.pax : 0,
+          isAttending: hasResponded ? (rsvp.attendance === 'hadir') : false,
+          hasResponded,
+          guestsCount: hasResponded && rsvp.attendance === 'hadir' ? rsvp.pax : 0,
           actualGuestsCount: checkin ? parseInt(checkin.notes || '1', 10) : undefined,
           checkedIn: !!checkin,
           checkedInAt: checkin ? new Date(checkin.checked_in_at) : null,
           phone: rsvp?.guest_phone || g.phone || "",
-          wishes: rsvp?.message || "",
+          wishes: wishMsg,
           createdAt: rsvp ? new Date(rsvp.submitted_at) : new Date(g.created_at)
         });
       });
 
-      // Add unmatched RSVP submissions
-      (rsvpData || []).forEach(r => {
+      // Add unmatched real RSVP submissions
+      realRsvpData.forEach(r => {
         if (r.guest_id) {
           matchedRsvpIds.add(r.id);
         }
@@ -318,13 +333,37 @@ export default function RSVPDashboard() {
             rsvp_id: r.id,
             name: r.guest_name || "Guest",
             isAttending: r.attendance === 'hadir',
-            guestsCount: r.pax,
+            hasResponded: true,
+            guestsCount: r.attendance === 'hadir' ? r.pax : 0,
             actualGuestsCount: undefined,
             checkedIn: false,
             checkedInAt: null,
             phone: r.guest_phone || "",
             wishes: r.message || "",
             createdAt: r.submitted_at ? new Date(r.submitted_at) : new Date()
+          });
+        }
+      });
+
+      // Also add unmatched wish-only entries so their wishes can be read from dashboard
+      const matchedNames = new Set(mergedRSVPs.map(m => m.name.toLowerCase().trim()));
+      wishesByNameMap.forEach((msg, nameKey) => {
+        if (!matchedNames.has(nameKey)) {
+          const wishRsvp = (rsvpData || []).find((r: any) => r.guest_name && r.guest_name.toLowerCase().trim() === nameKey);
+          const origName = wishRsvp?.guest_name || nameKey;
+          mergedRSVPs.push({
+            id: wishRsvp?.id || `wish_${nameKey}`,
+            rsvp_id: wishRsvp?.id,
+            name: origName,
+            isAttending: false,
+            hasResponded: false,
+            guestsCount: 0,
+            actualGuestsCount: undefined,
+            checkedIn: false,
+            checkedInAt: null,
+            phone: wishRsvp?.guest_phone || "",
+            wishes: msg,
+            createdAt: wishRsvp?.submitted_at ? new Date(wishRsvp.submitted_at) : new Date()
           });
         }
       });
@@ -366,16 +405,6 @@ export default function RSVPDashboard() {
         order: event.sort_order
       }));
       setStoryEvents(mappedStory);
-
-      const isLaceEnvelop = projectData?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || projectData?.project_name?.includes('lace-envelop');
-      if (isLaceEnvelop) {
-        const hasRawLoveStory = projectData?.love_story && !projectData.love_story.trim().startsWith('{');
-        if (hasRawLoveStory) {
-          setSingleLoveStoryText(projectData.love_story);
-        } else if (mappedStory.length > 0) {
-          setSingleLoveStoryText(mappedStory[0].desc || "");
-        }
-      }
 
       // 8. Fetch wa_blast_logs queue
       const { data: queueData } = await supabase
@@ -527,7 +556,9 @@ export default function RSVPDashboard() {
         if (planRes.ok) {
           const { data } = await planRes.json();
           if (data) {
-            setDbPassword(data.password_dashboard || "serastory");
+            if (data.hashtag) {
+              setDbPassword(data.hashtag);
+            }
             if (data.subscriptions?.packages?.name?.toLowerCase() === 'basic') {
               setIsBasicPlan(true);
             }
@@ -865,74 +896,6 @@ export default function RSVPDashboard() {
     }
   };
 
-  const handleSaveSingleLoveStory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSavingLoveStory(true);
-    try {
-      // 1. Delete all existing love story items for this project
-      const { error: deleteError } = await supabase
-        .from('love_story_items')
-        .delete()
-        .eq('project_id', projectId);
-
-      if (deleteError) throw deleteError;
-
-      // 2. Insert a single new item with the textarea content
-      const { error: insertError } = await supabase
-        .from('love_story_items')
-        .insert({
-          project_id: projectId,
-          year: "",
-          title: "Love Story",
-          description: singleLoveStoryText,
-          sort_order: 1
-        });
-
-      if (insertError) throw insertError;
-
-      alert("Love Story updated successfully!");
-      await fetchData();
-    } catch (error: any) {
-      console.error("Error saving love story:", error);
-      alert("Failed to save love story: " + error.message);
-    } finally {
-      setIsSavingLoveStory(false);
-    }
-  };
-
-  const handleSavePaymentAccounts = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSavingPaymentAccounts(true);
-    try {
-      const cleanAccounts = paymentAccounts.filter(acc => acc.bank_name || acc.bank_account || acc.owner_name);
-
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'update_payment_accounts',
-          payload: {
-            project_id: projectId,
-            payment_accounts: cleanAccounts
-          }
-        })
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to update bank accounts');
-      }
-
-      alert("Bank accounts updated successfully!");
-      await fetchData();
-    } catch (error: any) {
-      console.error("Error saving bank accounts:", error);
-      alert("Failed to save bank accounts: " + error.message);
-    } finally {
-      setIsSavingPaymentAccounts(false);
-    }
-  };
-
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
@@ -1042,28 +1005,14 @@ export default function RSVPDashboard() {
           <form onSubmit={handleLogin} className="space-y-6 text-left">
             <div>
               <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Password</label>
-              <div className="relative">
-                <input
-                  type={showLoginPassword ? "text" : "password"}
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="Enter password"
-                  className="w-full bg-white/80 border border-neutral-200 pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900 placeholder:text-neutral-300"
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
-                  title={showLoginPassword ? "Hide password" : "Show password"}
-                >
-                  {showLoginPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  )}
-                </button>
-              </div>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="Enter password"
+                className="w-full bg-white/80 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900 placeholder:text-neutral-300"
+                autoFocus
+              />
             </div>
             <button
               type="submit"
@@ -1373,12 +1322,12 @@ export default function RSVPDashboard() {
     return new Intl.DateTimeFormat('id-ID', { timeStyle: 'short' }).format(date);
   };
 
-  const totalPlanned = rsvps.filter(r => r.isAttending).reduce((sum, r) => sum + r.guestsCount, 0);
+  const totalPlanned = rsvps.filter(r => r.hasResponded && r.isAttending).reduce((sum, r) => sum + r.guestsCount, 0);
   const totalActual = rsvps.filter(r => r.checkedIn).reduce((sum, r) => sum + (r.actualGuestsCount !== undefined ? r.actualGuestsCount : r.guestsCount), 0);
-  const totalNotAttending = rsvps.filter(r => !r.isAttending).length;
+  const totalNotAttending = rsvps.filter(r => r.hasResponded && !r.isAttending).length;
   const attendancePercentage = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
 
-  const totalGroupsAttending = rsvps.filter(r => r.isAttending).length;
+  const totalGroupsAttending = rsvps.filter(r => r.hasResponded && r.isAttending).length;
   const totalGroupsArrived = rsvps.filter(r => r.checkedIn).length;
   const totalGroupsPending = totalGroupsAttending - totalGroupsArrived;
   const remainingPax = Math.max(0, totalPlanned - totalActual);
@@ -1389,7 +1338,7 @@ export default function RSVPDashboard() {
   const sortedRsvps = [...rsvps]
     .filter(rsvp => {
       const matchesSearch = rsvp.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = filterStatus === "all" || (filterStatus === "attending" && rsvp.isAttending) || (filterStatus === "declined" && !rsvp.isAttending);
+      const matchesStatus = filterStatus === "all" || (filterStatus === "attending" && rsvp.hasResponded && rsvp.isAttending) || (filterStatus === "declined" && rsvp.hasResponded && !rsvp.isAttending) || (filterStatus === "pending" && !rsvp.hasResponded);
       const matchesCheckIn = filterCheckIn === "all" || (filterCheckIn === "arrived" && rsvp.checkedIn) || (filterCheckIn === "waiting" && !rsvp.checkedIn);
       return matchesSearch && matchesStatus && matchesCheckIn;
     })
@@ -1498,7 +1447,7 @@ export default function RSVPDashboard() {
           <>
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-5">
               {[
-                { label: 'Total RSVPs', value: rsvps.length, sub: 'ALL RESPONSES', color: 'text-neutral-800' },
+                { label: 'Total RSVPs', value: rsvps.filter(r => r.hasResponded).length, sub: 'ALL RESPONSES', color: 'text-neutral-800' },
                 { label: 'Attending', value: totalGroupsAttending, sub: '"YES" RESPONSES', color: 'text-emerald-600' },
                 { label: 'Declined', value: totalNotAttending, sub: '"NO" RESPONSES', color: 'text-rose-500' },
                 { label: 'Total Pax', value: totalPlanned, sub: 'EXPECTED GUESTS', color: 'text-neutral-800' },
@@ -1812,8 +1761,6 @@ export default function RSVPDashboard() {
               </div>
             </motion.div>
 
-
-
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1932,7 +1879,7 @@ export default function RSVPDashboard() {
                               )}
                             </td>
                             <td className="p-6">
-                              <span className={`px-4 py-1.5 text-[9px] font-bold tracking-widest uppercase rounded-full border transition-all ${rsvp.isAttending ? 'text-emerald-600 border-emerald-100 bg-emerald-50/50' : 'text-neutral-400 border-neutral-100 bg-neutral-50'}`}>{rsvp.isAttending ? 'Attending' : 'Declined'}</span>
+                              <span className={`px-4 py-1.5 text-[9px] font-bold tracking-widest uppercase rounded-full border transition-all ${!rsvp.hasResponded ? 'text-amber-600 border-amber-100 bg-amber-50/50' : rsvp.isAttending ? 'text-emerald-600 border-emerald-100 bg-emerald-50/50' : 'text-rose-600 border-rose-100 bg-rose-50/50'}`}>{!rsvp.hasResponded ? 'NO RESPONSE' : rsvp.isAttending ? 'Attending' : 'Declined'}</span>
                             </td>
                             <td className="p-6">
                               {rsvp.checkedIn ? (
@@ -2036,97 +1983,6 @@ export default function RSVPDashboard() {
                 </div>
               )}
             </motion.div>
-
-            {/* Custom Questions Answers Table */}
-            {(() => {
-              const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
-              if (!isLaceEnvelop) return null;
-
-              const rsvpResponses = rsvps.filter(r => r.rsvp_id);
-
-              return (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/60 backdrop-blur-xl overflow-hidden rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-white/60 mt-8 p-8"
-                >
-                  <div className="border-b border-neutral-100 pb-4 mb-6">
-                    <h3 className="text-xl font-serif text-neutral-800">RSVP Custom Questions Answers</h3>
-                    <p className="text-sm text-neutral-400 mt-1">Detailed answers submitted by guests for custom RSVP questions.</p>
-                  </div>
-
-                  <div className="overflow-x-auto scrollbar-hide">
-                    <table className="w-full text-left border-collapse min-w-[700px]">
-                      <thead>
-                        <tr className="bg-neutral-50/30 text-neutral-500 border-b border-neutral-100">
-                          <th className="p-6 w-16 text-[9px] font-bold tracking-[0.2em] uppercase">No</th>
-                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">Guest Name</th>
-                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">{project?.question01_rsvp || "Are you coming?"}</th>
-                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">{project?.question02_rsvp || "Dietary Restrictions"}</th>
-                          <th className="p-6 text-[9px] font-bold tracking-[0.2em] uppercase">Song Nomination</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-50">
-                        {rsvpResponses.length === 0 ? (
-                          <tr>
-                            <td colSpan={5} className="p-16 text-center text-[10px] tracking-[0.3em] uppercase font-bold text-neutral-300">
-                              No custom responses found
-                            </td>
-                          </tr>
-                        ) : (
-                          rsvpResponses.map((r, idx) => {
-                            const answer1 = r.isAttending
-                              ? (project?.answer01_rsvp || "Absolutely, wouldn't miss it!")
-                              : (project?.answer02_rsvp || "Sadly cannot make it");
-
-                            const parseDietary = (msg: string) => {
-                              if (!msg) return "-";
-                              const match = msg.match(/Dietary:\s*(.*?)(?:\s*\|\s*Song:|$)/i);
-                              if (match) {
-                                const val = match[1].trim();
-                                return val === "-" ? "" : val;
-                              }
-                              return msg;
-                            };
-
-                            const parseSong = (msg: string) => {
-                              if (!msg) return "-";
-                              const match = msg.match(/Song:\s*(.*)/i);
-                              if (match) {
-                                const val = match[1].trim();
-                                return val === "-" ? "" : val;
-                              }
-                              return "";
-                            };
-
-                            const answer2 = parseDietary(r.wishes || "");
-                            const answer3 = parseSong(r.wishes || "");
-
-                            return (
-                              <tr key={r.rsvp_id} className="group hover:bg-white/80 transition-all duration-300">
-                                <td className="p-6 text-neutral-400 font-medium text-xs">{idx + 1}</td>
-                                <td className="p-6 font-bold text-neutral-800 text-xs">{r.name}</td>
-                                <td className="p-6">
-                                  <span className={`px-3 py-1.5 rounded-full text-[9px] font-bold tracking-wider uppercase inline-block border ${
-                                    r.isAttending
-                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
-                                      : "bg-rose-50 text-rose-700 border-rose-200/80"
-                                  }`}>
-                                    {answer1}
-                                  </span>
-                                </td>
-                                <td className="p-6 text-neutral-600 font-semibold text-xs">{answer2 || "-"}</td>
-                                <td className="p-6 text-neutral-600 font-semibold text-xs">{answer3 || "-"}</td>
-                              </tr>
-                            );
-                          })
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </motion.div>
-              );
-            })()}
           </>
         ) : activeTab === 'gifts' ? (
           <div className="space-y-8">
@@ -2649,7 +2505,7 @@ export default function RSVPDashboard() {
             </div>
 
             {/* Card Menu */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <button
                 onClick={() => setSettingsTab('password')}
                 className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'password' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
@@ -2661,31 +2517,15 @@ export default function RSVPDashboard() {
                 <p className={`text-xs ${settingsTab === 'password' ? 'text-neutral-400' : 'text-neutral-500'}`}>Manage your dashboard access credentials</p>
               </button>
               
-              {(() => {
-                const isLaceEnvelop = project?.template_id === 'f93ad18d-cba2-4de0-a86b-b1fadf2783a1' || project?.project_name?.includes('lace-envelop');
-                return (
-                  <button
-                    onClick={() => setSettingsTab('story')}
-                    className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'story' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
-                  >
-                    <div className={`p-3 rounded-xl mb-4 ${settingsTab === 'story' ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-600'}`}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
-                    </div>
-                    <h4 className="text-lg font-serif font-bold mb-1">{isLaceEnvelop ? "Love Story" : "Our Story Timeline"}</h4>
-                    <p className={`text-xs ${settingsTab === 'story' ? 'text-neutral-400' : 'text-neutral-500'}`}>{isLaceEnvelop ? "Edit your love story description" : "Add and edit your journey milestones"}</p>
-                  </button>
-                );
-              })()}
-
               <button
-                onClick={() => setSettingsTab('payment')}
-                className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'payment' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
+                onClick={() => setSettingsTab('story')}
+                className={`flex flex-col items-start p-6 rounded-[2rem] border transition-all text-left cursor-pointer ${settingsTab === 'story' ? 'bg-neutral-900 border-neutral-900 text-white shadow-xl shadow-black/10' : 'bg-white border-neutral-100 text-neutral-800 hover:border-neutral-300 hover:shadow-md'}`}
               >
-                <div className={`p-3 rounded-xl mb-4 ${settingsTab === 'payment' ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-600'}`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
+                <div className={`p-3 rounded-xl mb-4 ${settingsTab === 'story' ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-600'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
                 </div>
-                <h4 className="text-lg font-serif font-bold mb-1">Bank Accounts</h4>
-                <p className={`text-xs ${settingsTab === 'payment' ? 'text-neutral-400' : 'text-neutral-500'}`}>Edit details of bank account for gift registry</p>
+                <h4 className="text-lg font-serif font-bold mb-1">Our Story Timeline</h4>
+                <p className={`text-xs ${settingsTab === 'story' ? 'text-neutral-400' : 'text-neutral-500'}`}>Add and edit your journey milestones</p>
               </button>
             </div>
 
@@ -2700,53 +2540,25 @@ export default function RSVPDashboard() {
                   <form onSubmit={handleChangePassword} className="space-y-5">
                     <div>
                       <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">New Password</label>
-                      <div className="relative">
-                        <input
-                          type={showChangePassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Enter new password"
-                          className="w-full bg-neutral-50 border border-neutral-200 pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowChangePassword(!showChangePassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
-                          title={showChangePassword ? "Hide password" : "Show password"}
-                        >
-                          {showChangePassword ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                          )}
-                        </button>
-                      </div>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password"
+                        className="w-full bg-neutral-50 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
+                        required
+                      />
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Confirm New Password</label>
-                      <div className="relative">
-                        <input
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="Confirm new password"
-                          className="w-full bg-neutral-50 border border-neutral-200 pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
-                          title={showConfirmPassword ? "Hide password" : "Show password"}
-                        >
-                          {showConfirmPassword ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                          )}
-                        </button>
-                      </div>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        className="w-full bg-neutral-50 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900"
+                        required
+                      />
                     </div>
                     <button
                       type="submit"
@@ -2765,148 +2577,65 @@ export default function RSVPDashboard() {
                   </form>
                 </div>
               </div>
-            ) : settingsTab === 'story' ? (
-              <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
-                <div className="border-b border-neutral-100 pb-4">
-                  <h4 className="text-base font-serif text-neutral-800">Edit Love Story</h4>
-                  <p className="text-xs text-neutral-400 mt-1">Update your love story description. You can separate paragraphs with newlines.</p>
-                </div>
-
-                <form onSubmit={handleSaveSingleLoveStory} className="space-y-5">
-                  <div>
-                    <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Love Story Content</label>
-                    <textarea
-                      value={singleLoveStoryText}
-                      onChange={(e) => setSingleLoveStoryText(e.target.value)}
-                      placeholder="Write your love story here..."
-                      rows={12}
-                      className="w-full bg-neutral-50 border border-neutral-200 px-5 py-4 rounded-xl text-sm focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all text-neutral-900 resize-y leading-relaxed font-sans"
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSavingLoveStory}
-                    className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer mt-2"
-                  >
-                    {isSavingLoveStory ? (
-                      <>
-                        <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      "Save Love Story"
-                    )}
-                  </button>
-                </form>
-              </div>
-            ) : settingsTab === 'payment' ? (
-              <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col gap-6">
-                <div className="border-b border-neutral-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h4 className="text-base font-serif text-neutral-800">Manage Bank Accounts</h4>
-                    <p className="text-xs text-neutral-400 mt-1">Specify bank accounts details (maximum of 2 accounts) where guests can send wedding gifts.</p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={paymentAccounts.length >= 2}
-                    onClick={() => setPaymentAccounts([...paymentAccounts, { bank_name: "", bank_account: "", owner_name: "" }])}
-                    className="self-start px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50 disabled:hover:bg-neutral-100 disabled:cursor-not-allowed text-neutral-800 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:active:scale-100"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.0} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    Add Account
-                  </button>
-                </div>
-
-                <form onSubmit={handleSavePaymentAccounts} className="space-y-6">
-                  {paymentAccounts.length === 0 ? (
-                    <div className="p-8 text-center border border-dashed border-neutral-200 rounded-2xl text-neutral-400 text-sm">
-                      No bank accounts added. Click "Add Account" to add one.
+            ) : (
+              <div className="flex flex-col gap-8">
+                {/* Form to add story */}
+                <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 h-fit">
+                  <h4 className="text-base font-serif text-neutral-800 mb-6">Add New Event</h4>
+                  <form onSubmit={handleAddStory} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Year</label>
+                      <input type="text" value={newStoryYear} onChange={(e) => setNewStoryYear(e.target.value)} required placeholder="e.g. 2019" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {paymentAccounts.map((account, idx) => (
-                        <div key={idx} className="p-5 bg-neutral-50 rounded-2xl border border-neutral-150 relative flex flex-col md:flex-row gap-4 items-end md:items-center">
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 w-full">
-                            <div>
-                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Bank Name</label>
-                              <input
-                                type="text"
-                                value={account.bank_name || ""}
-                                onChange={(e) => {
-                                  const updated = [...paymentAccounts];
-                                  updated[idx] = { ...updated[idx], bank_name: e.target.value };
-                                  setPaymentAccounts(updated);
-                                }}
-                                placeholder="e.g. BCA, Mandiri, BRI"
-                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
-                                required
-                              />
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Title</label>
+                      <input type="text" value={newStoryTitle} onChange={(e) => setNewStoryTitle(e.target.value)} required placeholder="e.g. First Met" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-1">
+                      <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Order (Number)</label>
+                      <input type="number" value={newStoryOrder} onChange={(e) => setNewStoryOrder(e.target.value)} required placeholder="e.g. 1" className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900" />
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-4">
+                      <label className="block text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Description</label>
+                      <textarea value={newStoryDesc} onChange={(e) => setNewStoryDesc(e.target.value)} required rows={3} placeholder="Description..." className="w-full bg-neutral-50 border border-neutral-200 px-5 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900 resize-none"></textarea>
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-4 flex justify-end">
+                      <button type="submit" className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 mt-2 cursor-pointer">
+                        Save Event
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* List of stories */}
+                <div className="w-full bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col min-h-[500px]">
+                  <h4 className="text-base font-serif text-neutral-800 mb-6">Timeline Events</h4>
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+                    {storyEvents.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-neutral-300 gap-4">
+                        <p className="text-sm font-medium">No story events found.</p>
+                      </div>
+                    ) : (
+                      storyEvents.map((event) => (
+                        <div key={event.id} className="p-5 bg-neutral-50 rounded-2xl border border-neutral-100 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg">Order: {event.order}</span>
+                              <span className="text-[#d4af37] font-script text-xl">{event.year}</span>
                             </div>
-                            <div>
-                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Account Number</label>
-                              <input
-                                type="text"
-                                value={account.bank_account || ""}
-                                onChange={(e) => {
-                                  const updated = [...paymentAccounts];
-                                  updated[idx] = { ...updated[idx], bank_account: e.target.value };
-                                  setPaymentAccounts(updated);
-                                }}
-                                placeholder="e.g. 0131800826"
-                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[9px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2 ml-1">Account Owner</label>
-                              <input
-                                type="text"
-                                value={account.owner_name || ""}
-                                onChange={(e) => {
-                                  const updated = [...paymentAccounts];
-                                  updated[idx] = { ...updated[idx], owner_name: e.target.value };
-                                  setPaymentAccounts(updated);
-                                }}
-                                placeholder="e.g. JOVITA LOLA EDRIA"
-                                className="w-full bg-white border border-neutral-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-neutral-900 transition-all text-neutral-900"
-                                required
-                              />
-                            </div>
+                            <h5 className="font-serif text-neutral-800 uppercase text-sm font-bold">{event.title}</h5>
+                            <p className="text-neutral-500 text-sm mt-1 leading-relaxed">{event.desc}</p>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = paymentAccounts.filter((_, i) => i !== idx);
-                              setPaymentAccounts(updated);
-                            }}
-                            className="p-3 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-all cursor-pointer active:scale-95 sm:mt-6"
-                            title="Remove Account"
-                          >
+                          <button onClick={() => handleDeleteStory(event.id)} className="shrink-0 p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-all self-start cursor-pointer" title="Delete">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                           </button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isSavingPaymentAccounts}
-                    className="w-full md:w-auto px-8 py-4 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-neutral-800 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 cursor-pointer mt-2"
-                  >
-                    {isSavingPaymentAccounts ? (
-                      <>
-                        <div className="w-3 h-3 rounded-full border-2 border-dashed border-white animate-spin"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      "Save Bank Accounts"
+                      ))
                     )}
-                  </button>
-                </form>
+                  </div>
+                </div>
               </div>
-            ) : null}
+            )}
           </div>
         ) : null}
       </div>
