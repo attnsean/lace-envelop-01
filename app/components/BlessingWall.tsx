@@ -663,11 +663,11 @@ export default function BlessingWall({
                           </label>
                           <input
                             type="text"
-                            value={rsvpGuestName}
-                            onChange={(e) => setRsvpGuestName(e.target.value)}
+                            value={rsvpGuestName || (guestName && guestName !== "Guest Name" && guestName !== "Special Guest" ? guestName : "Tamu Undangan")}
+                            disabled
+                            readOnly
                             placeholder="Guest Name"
-                            disabled={hasRsvpSubmitted}
-                            className="w-full bg-[#ebe7db]/40 border border-[#b8b3a9] py-2.5 px-4 md:py-1.5 md:px-3 rounded-md text-xs md:text-[11px] text-[#3d332a]/85 font-sans focus:outline-none focus:border-[#6c6355] focus:ring-1 focus:ring-[#6c6355] transition-all"
+                            className="w-full bg-[#ebe7db]/80 border border-[#b8b3a9] py-2.5 px-4 md:py-1.5 md:px-3 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans font-bold cursor-not-allowed select-none opacity-90"
                           />
                         </div>
 
