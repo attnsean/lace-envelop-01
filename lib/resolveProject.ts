@@ -90,17 +90,8 @@ export interface DbProject {
   quote_arabic?: string | null;
   quote_translation?: string | null;
   quote_source?: string | null;
-  photo_sec2_dance?: string | null;
-  photo_sec2_pigeons?: string | null;
-  photo_sec2_flowers?: string | null;
-  photo_sec2_run?: string | null;
-  photo_sec3_bg?: string | null;
-  photo_sec3_frame?: string | null;
-  photo_sec3_couple?: string | null;
   faqs?: unknown;
   dining_schedule?: unknown;
-  location_city?: string | null;
-  teaser_video_url?: string | null;
   quote_intro_line1?: string | null;
   quote_intro_line1_highlight?: string | null;
   quote_intro_line2?: string | null;
@@ -228,14 +219,6 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
         const details = (projectData as any).wedding_details;
         if (details) {
           Object.assign(projectData, details);
-          if (details.wishlist_note && details.wishlist_note.trim().startsWith('{')) {
-            try {
-              const quotesData = JSON.parse(details.wishlist_note);
-              Object.assign(projectData, quotesData);
-            } catch (e) {
-              console.error("Error parsing quotes from wishlist_note in resolveProject:", e);
-            }
-          }
         }
         result.project = projectData;
 
@@ -257,7 +240,8 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
           }
         }
 
-        // 5. Fetch wishes (approved guestbook entries)
+        // 5. Fetch wishes (approved guestbook entries + rsvp messages)
+        const combinedWishesList: DbWish[] = [];
         const { data: wishesData } = await supabase
           .from('guestbook_entries')
           .select('*')
@@ -265,7 +249,37 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
           .eq('is_approved', true)
           .order('created_at', { ascending: false });
 
-        result.wishes = wishesData || [];
+        if (wishesData && wishesData.length > 0) {
+          combinedWishesList.push(...wishesData);
+        }
+
+        const { data: rsvpWishes } = await supabase
+          .from('rsvp')
+          .select('*')
+          .eq('project_id', projectId)
+          .not('message', 'is', null)
+          .order('submitted_at', { ascending: false });
+
+        if (rsvpWishes && rsvpWishes.length > 0) {
+          rsvpWishes.forEach((r: any) => {
+            if (r.message && r.message.trim() !== '') {
+              const exists = combinedWishesList.some(w => w.message === r.message && w.name === r.guest_name);
+              if (!exists) {
+                combinedWishesList.push({
+                  id: r.id,
+                  project_id: projectId,
+                  guest_id: r.guest_id || null,
+                  name: r.guest_name || 'Tamu Undangan',
+                  message: r.message,
+                  is_approved: true,
+                  created_at: r.submitted_at || new Date().toISOString()
+                });
+              }
+            }
+          });
+        }
+
+        result.wishes = combinedWishesList;
 
         // 5.5 Fetch love story items
         const { data: loveStoryData } = await supabase

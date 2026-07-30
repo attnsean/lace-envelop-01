@@ -157,24 +157,60 @@ export default function BlessingWall({
   const fetchWishes = useCallback(async () => {
     if (!projectId) return;
     try {
-      const { data, error } = await supabase
+      const combinedWishes: DisplayWish[] = [];
+
+      // 1. Try guestbook_entries
+      const { data: gbData, error: gbError } = await supabase
         .from('guestbook_entries')
         .select('*')
         .eq('project_id', projectId)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
 
-      if (data && !error) {
-        const formatted = (data as DbWish[]).map((w: DbWish) => ({
-          id: w.id,
-          name: w.name,
-          text: w.message,
-          createdAt: w.created_at ? new Date(w.created_at) : null
-        }));
-        setAllDisplayWishes(formatted);
+      if (gbData && !gbError) {
+        gbData.forEach((w: any) => {
+          combinedWishes.push({
+            id: w.id,
+            name: w.name,
+            text: w.message,
+            createdAt: w.created_at ? new Date(w.created_at) : null
+          });
+        });
       }
+
+      // 2. Fetch from rsvp table (where message is present)
+      const { data: rsvpData, error: rsvpError } = await supabase
+        .from('rsvp')
+        .select('*')
+        .eq('project_id', projectId)
+        .not('message', 'is', null)
+        .order('submitted_at', { ascending: false });
+
+      if (rsvpData && !rsvpError) {
+        rsvpData.forEach((r: any) => {
+          if (r.message && r.message.trim() !== '') {
+            const exists = combinedWishes.some(w => w.text === r.message && w.name === r.guest_name);
+            if (!exists) {
+              combinedWishes.push({
+                id: r.id,
+                name: r.guest_name || 'Tamu Undangan',
+                text: r.message,
+                createdAt: r.submitted_at ? new Date(r.submitted_at) : null
+              });
+            }
+          }
+        });
+      }
+
+      combinedWishes.sort((a, b) => {
+        const timeA = a.createdAt ? a.createdAt.getTime() : 0;
+        const timeB = b.createdAt ? b.createdAt.getTime() : 0;
+        return timeB - timeA;
+      });
+
+      setAllDisplayWishes(combinedWishes);
     } catch (err) {
-      console.error("Error fetching guestbook entries:", err);
+      console.error("Error fetching wishes:", err);
     }
   }, [projectId]);
 
@@ -451,16 +487,17 @@ export default function BlessingWall({
         console.warn('API route failed, trying Supabase direct insert:', apiErr);
       }
 
-      // 2. Direct Supabase insert fallback if API fails
+      // 2. Direct Supabase insert fallback if API fails (using rsvp table)
       if (!success) {
         const { error: dbErr } = await supabase
-          .from('guestbook_entries')
+          .from('rsvp')
           .insert({
             project_id: projectId,
             guest_id: guest?.id || null,
-            name: finalName,
-            message: wishText,
-            is_approved: true
+            guest_name: finalName,
+            attendance: 'hadir',
+            pax: 1,
+            message: wishText
           });
 
         if (dbErr) {
