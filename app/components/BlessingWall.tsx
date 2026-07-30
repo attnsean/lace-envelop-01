@@ -121,6 +121,7 @@ export default function BlessingWall({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [rsvpGuestName, setRsvpGuestName] = useState("");
+  const [wishSenderName, setWishSenderName] = useState("");
   const [isAttending, setIsAttending] = useState<string>("");
   const [guestsCount, setGuestsCount] = useState(1);
   const [wishText, setWishText] = useState("");
@@ -145,8 +146,10 @@ export default function BlessingWall({
   useEffect(() => {
     if (guestName && guestName !== "Guest Name" && guestName !== "Special Guest") {
       setRsvpGuestName(guestName);
+      setWishSenderName(guestName);
     } else {
       setRsvpGuestName("");
+      setWishSenderName("");
     }
   }, [guestName]);
 
@@ -417,24 +420,52 @@ export default function BlessingWall({
     e.preventDefault();
     if (!projectId || !wishText || myWishes.length >= 3) return;
 
-    const submitName = rsvpGuestName.trim() || guestName || "Guest Name";
+    const finalName = wishSenderName.trim() || rsvpGuestName.trim() || guestName || "";
+    if (!finalName || finalName === "Guest Name" || finalName === "Special Guest") {
+      alert("Mohon masukkan nama Anda terlebih dahulu.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/wishes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project_id: projectId,
-          guest_id: guest?.id || null,
-          name: submitName,
-          message: wishText
-        })
-      });
+      let success = false;
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to submit wish');
+      // 1. Try API endpoint
+      try {
+        const res = await fetch('/api/wishes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            project_id: projectId,
+            guest_id: guest?.id || null,
+            name: finalName,
+            message: wishText
+          })
+        });
+
+        if (res.ok) {
+          success = true;
+        }
+      } catch (apiErr) {
+        console.warn('API route failed, trying Supabase direct insert:', apiErr);
+      }
+
+      // 2. Direct Supabase insert fallback if API fails
+      if (!success) {
+        const { error: dbErr } = await supabase
+          .from('guestbook_entries')
+          .insert({
+            project_id: projectId,
+            guest_id: guest?.id || null,
+            name: finalName,
+            message: wishText,
+            is_approved: true
+          });
+
+        if (dbErr) {
+          throw new Error(dbErr.message || 'Gagal menyimpan ucapan.');
+        }
       }
 
       const newWish: WishItem = {
@@ -448,9 +479,9 @@ export default function BlessingWall({
       
       // Re-fetch wishes live from Supabase
       await fetchWishes();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error submitting wish:', err);
-      alert('Failed to submit blessing. Please try again.');
+      alert('Gagal mengirim ucapan: ' + (err?.message || 'Silakan coba lagi.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -724,10 +755,24 @@ export default function BlessingWall({
                        </p>
                     </div>
                   ) : (
-                    <form onSubmit={handleWishSubmit} className="flex flex-col gap-6">
+                    <form onSubmit={handleWishSubmit} className="flex flex-col gap-5">
                       <div className="flex flex-col gap-2 text-left">
                         <label className="font-seasons text-xs font-semibold text-[#4a3525] tracking-wider uppercase">
-                          Kirim Ucapan & Doa ({myWishes.length}/3)
+                          Nama Anda
+                        </label>
+                        <input 
+                          type="text"
+                          value={wishSenderName}
+                          onChange={(e) => setWishSenderName(e.target.value)}
+                          className="w-full bg-white border border-[#4a3525]/20 focus:border-[#4a3525] rounded-2xl px-4 py-3 text-xs md:text-sm text-[#4a3525] focus:outline-none font-sans shadow-inner placeholder-[#4a3525]/40"
+                          placeholder="Masukkan nama Anda..."
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2 text-left">
+                        <label className="font-seasons text-xs font-semibold text-[#4a3525] tracking-wider uppercase">
+                          Ucapan & Doa ({myWishes.length}/3)
                         </label>
                         <textarea 
                           value={wishText} 
@@ -741,7 +786,7 @@ export default function BlessingWall({
                       <button 
                         type="submit" 
                         disabled={isSubmitting} 
-                        className="w-full py-3.5 px-8 rounded-full bg-[#4a3525] text-white hover:bg-[#36261a] transition-all duration-300 font-seasons text-xs tracking-[0.2em] uppercase shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 cursor-pointer font-bold"
+                        className="w-full py-3.5 px-8 rounded-full bg-[#4a3525] text-white hover:bg-[#36261a] transition-all duration-300 font-seasons text-xs tracking-[0.2em] uppercase shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 cursor-pointer font-bold mt-1"
                       >
                         <span className="truncate">
                           {isSubmitting && successType === 'wish' ? "MENGIRIM..." : "KIRIM UCAPAN & DOA"}
