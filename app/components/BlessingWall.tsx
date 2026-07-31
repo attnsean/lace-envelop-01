@@ -110,7 +110,7 @@ export default function BlessingWall({
 
   const sec5Bg = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-bg.png`;
   const sec5Envelope = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-envelope.png`;
-  const sec5Couple = (galleryImages && galleryImages.length > 5 ? galleryImages[5] : (project?.gallery_photos && Array.isArray(project.gallery_photos) && project.gallery_photos[5] ? (typeof project.gallery_photos[5] === 'string' ? project.gallery_photos[5] : (project.gallery_photos[5] as any)?.url) : (project?.cover_photo_url || project?.opening_photo_url)));
+  const sec5Couple = (galleryImages && galleryImages.length > 16 ? galleryImages[16] : (project?.gallery_photos && Array.isArray(project.gallery_photos) && project.gallery_photos[16] ? (typeof project.gallery_photos[16] === 'string' ? project.gallery_photos[16] : (project.gallery_photos[16] as any)?.url) : (galleryImages && galleryImages.length > 5 ? galleryImages[5] : (project?.cover_photo_url || project?.opening_photo_url))));
 
   const q1Rsvp = project?.question01_rsvp || "Are you coming?";
   const q2Rsvp = project?.question02_rsvp || "Let us know if you have any dietary restrictions.";
