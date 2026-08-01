@@ -1,4 +1,5 @@
 @import url("https://db.onlinewebfonts.com/c/9366bd460113d8bf675fd2bdfe1ce764?family=The+Seasons");
+@import url("https://fonts.googleapis.com/css2?family=Parisienne&family=Great+Vibes&family=Dancing+Script:wght@400;600;700&family=Alex+Brush&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap");
 @import url("https://db.onlinewebfonts.com/c/5aed2eb513548a59f3e2bff1bba07d12?family=Parfumerie+Script+W00+Regular");
 @import url("https://fonts.googleapis.com/css2?family=Lekton:ital,wght@0,400;0,700;1,400&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap");
@@ -15,10 +16,10 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-playfair);
-  --font-script: var(--font-great-vibes);
+  --font-script: "Great Vibes", cursive;
   --font-seasons: "The Seasons", var(--font-playfair), serif;
-  --font-parfumerie: "Parfumerie Script W00 Regular", var(--font-great-vibes), cursive;
-  --font-altesse: var(--font-altesse-local), var(--font-script), cursive;
+  --font-parfumerie: "Parisienne", "Parfumerie Script W00 Regular", "Great Vibes", "Dancing Script", cursive;
+  --font-altesse: "Great Vibes", "Parisienne", "Alex Brush", cursive;
   --font-lekton: "Lekton", var(--font-geist-mono), monospace;
   --animate-marquee: marquee 30s ease-in-out infinite alternate;
 }

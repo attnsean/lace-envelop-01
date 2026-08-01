@@ -108,27 +108,31 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
 
       {/* Centered Content */}
       <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-2xl mx-auto h-full select-none space-y-3 sm:space-y-4">
-        <FadeIn delay={0.4}>
-          <p className="font-seasons text-[#4a3525] text-[clamp(16px,4.5vw,36px)] font-medium leading-relaxed tracking-wide">
-            {quote1}{" "}
-            {quote1Highlight && (
-              <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
-                {quote1Highlight}
-              </span>
-            )}
-          </p>
-        </FadeIn>
+        {quote1 && (
+          <FadeIn delay={0.4}>
+            <p className="font-seasons text-[#4a3525] text-[clamp(16px,4.5vw,36px)] font-medium leading-relaxed tracking-wide">
+              {quote1}{" "}
+              {quote1Highlight && (
+                <span className="font-parfumerie text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
+                  {quote1Highlight}
+                </span>
+              )}
+            </p>
+          </FadeIn>
+        )}
         
-        <FadeIn delay={0.7}>
-          <p className="font-seasons text-[#4a3525] text-[clamp(16px,4.5vw,36px)] font-medium leading-relaxed tracking-wide">
-            {quote2}{" "}
-            {quote2Highlight && (
-              <span className="font-altesse text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
-                {quote2Highlight}
-              </span>
-            )}
-          </p>
-        </FadeIn>
+        {quote2 && (
+          <FadeIn delay={0.7}>
+            <p className="font-parfumerie text-[#4a3525] text-[clamp(22px,5.5vw,46px)] leading-relaxed tracking-wide italic font-light">
+              {quote2}{" "}
+              {quote2Highlight && (
+                <span className="font-parfumerie text-[clamp(28px,7vw,58px)] italic font-light text-[#4a3525] inline-block ml-1">
+                  {quote2Highlight}
+                </span>
+              )}
+            </p>
+          </FadeIn>
+        )}
 
         <FadeIn delay={1.0} className="pt-8 sm:pt-10">
           <motion.button
