@@ -225,10 +225,8 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
             try {
               const parsed = JSON.parse(details.wishlist_note);
               if (parsed && typeof parsed === "object") {
+                Object.assign(projectData, parsed);
                 if (parsed.password_dashboard) pwdDash = parsed.password_dashboard;
-                if (parsed.rsvp_deadline && !projectData.rsvp_deadline) {
-                  projectData.rsvp_deadline = parsed.rsvp_deadline;
-                }
               }
             } catch {}
           }

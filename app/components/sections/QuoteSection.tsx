@@ -26,23 +26,25 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
     return `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/${fallbackFilename}`;
   };
 
-  const danceImgUrl = getPhoto(0, 'sec2-dance.jpg');
-  const pigeonsImgUrl = getPhoto(1, 'sec2-pigeons.jpg');
-  const flowersImgUrl = getPhoto(2, 'gallery-24.jpg');
-  const runImgUrl = getPhoto(3, 'sec2-run.jpg');
+  const danceImgUrl = project?.cover_photo_url || getPhoto(0, 'sec2-dance.jpg');
+  const pigeonsImgUrl = getPhoto(4, 'sec2-pigeons.jpg') || getPhoto(1, 'sec2-pigeons.jpg');
+  const flowersImgUrl = project?.bride_photo_url || getPhoto(2, 'gallery-24.jpg');
+  const runImgUrl = project?.groom_photo_url || getPhoto(3, 'sec2-run.jpg');
+
+  const hasCustomQuote = Boolean(project?.quote_intro_line1 || project?.quote_intro_line2);
 
   const quote1 = project?.quote_intro_line1 !== undefined && project?.quote_intro_line1 !== null
     ? project.quote_intro_line1
     : "Our next chapter starts";
   const quote1Highlight = project?.quote_intro_line1_highlight !== undefined && project?.quote_intro_line1_highlight !== null
     ? project.quote_intro_line1_highlight
-    : "here,";
+    : (hasCustomQuote ? "" : "here,");
   const quote2 = project?.quote_intro_line2 !== undefined && project?.quote_intro_line2 !== null
     ? project.quote_intro_line2
-    : "And it starts with";
+    : (hasCustomQuote ? "" : "And it starts with");
   const quote2Highlight = project?.quote_intro_line2_highlight !== undefined && project?.quote_intro_line2_highlight !== null
     ? project.quote_intro_line2_highlight
-    : "love.";
+    : (hasCustomQuote ? "" : "love.");
 
   return (
     <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden bg-[#e2ddc7]">
