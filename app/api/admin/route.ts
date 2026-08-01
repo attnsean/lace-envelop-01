@@ -1,231 +1,70 @@
-import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseAdmin } from "@/lib/doku";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key';
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
-
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { action, payload } = await request.json();
+    const body = await req.json();
+    const { action, payload } = body;
 
-    if (!action || !payload) {
-      return NextResponse.json({ error: 'Missing action or payload' }, { status: 400 });
-    }
+    if (action === "change_password") {
+      const { project_id, password } = payload || {};
+      if (!project_id || !password) {
+        return NextResponse.json({ success: false, error: "project_id and password are required" }, { status: 400 });
+      }
 
-    switch (action) {
-      case 'add_gift': {
-        const { project_id, name, price, original_price, discount_label, image_url } = payload;
-        const { data, error } = await supabaseAdmin
-          .from('gift_registry')
-          .insert({
+      const supabase = createSupabaseAdmin();
+
+      // Fetch existing wishlist_note
+      const { data: current } = await supabase
+        .from("wedding_details")
+        .select("wishlist_note")
+        .eq("project_id", project_id)
+        .maybeSingle();
+
+      let parsed: any = {};
+      if (current?.wishlist_note) {
+        try {
+          parsed = JSON.parse(current.wishlist_note);
+        } catch {}
+      }
+      parsed.password_dashboard = password;
+
+      // Update wedding_details in Supabase DB
+      const updateData: any = {
+        project_id,
+        wishlist_note: JSON.stringify(parsed)
+      };
+
+      // Try setting password_dashboard column directly as well
+      try {
+        updateData.password_dashboard = password;
+      } catch {}
+
+      const { error: updateErr } = await supabase
+        .from("wedding_details")
+        .upsert(updateData);
+
+      if (updateErr) {
+        console.error("[API Admin] Error updating password_dashboard:", updateErr);
+        // Fallback update without direct column if column doesn't exist
+        const { error: fallbackErr } = await supabase
+          .from("wedding_details")
+          .upsert({
             project_id,
-            name,
-            price,
-            original_price,
-            discount_label,
-            image_url,
-            is_bought: false
-          })
-          .select();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
-      }
-
-      case 'update_gift': {
-        const { id, name, price, original_price, discount_label, image_url, is_bought } = payload;
-        const { data, error } = await supabaseAdmin
-          .from('gift_registry')
-          .update({
-            name,
-            price,
-            original_price,
-            discount_label,
-            image_url,
-            is_bought
-          })
-          .eq('id', id)
-          .select();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
-      }
-
-      case 'delete_gift': {
-        const { id } = payload;
-        const { error } = await supabaseAdmin
-          .from('gift_registry')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-        return NextResponse.json({ success: true });
-      }
-
-      case 'upload_image': {
-        const { project_id, file, fileName, fileType } = payload;
-        const base64Data = file.replace(/^data:image\/\w+;base64,/, "");
-        const buffer = Buffer.from(base64Data, 'base64');
-        const filePath = `${project_id}/gifts/${Date.now()}-${fileName}`;
-
-        const { data, error } = await supabaseAdmin.storage
-          .from('undangan')
-          .upload(filePath, buffer, {
-            contentType: fileType || 'image/jpeg',
-            upsert: true
+            wishlist_note: JSON.stringify(parsed)
           });
 
-        if (error) throw error;
-
-        const { data: { publicUrl } } = supabaseAdmin.storage
-          .from('undangan')
-          .getPublicUrl(filePath);
-
-        return NextResponse.json({ success: true, url: publicUrl });
-      }
-
-      case 'update_bot': {
-        const { project_id, status, qr, action } = payload;
-        const { data, error } = await supabaseAdmin
-          .from('projects')
-          .update({
-            love_story: JSON.stringify({ status, qr, action, updatedAt: new Date().toISOString() })
-          })
-          .eq('id', project_id)
-          .select();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
-      }
-
-      case 'add_story': {
-        const { project_id, year, title, description, sort_order } = payload;
-        const { data, error } = await supabaseAdmin
-          .from('love_story_items')
-          .insert({
-            project_id,
-            year,
-            title,
-            description,
-            sort_order
-          })
-          .select();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
-      }
-
-      case 'delete_story': {
-        const { id } = payload;
-        const { error } = await supabaseAdmin
-          .from('love_story_items')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-        return NextResponse.json({ success: true });
-      }
-
-      case 'queue_blast': {
-        const { project_id, blasts } = payload; // blasts is array of { phone, message, guest_id }
-        if (!Array.isArray(blasts)) {
-          return NextResponse.json({ error: 'blasts must be an array' }, { status: 400 });
+        if (fallbackErr) {
+          return NextResponse.json({ success: false, error: fallbackErr.message }, { status: 500 });
         }
-
-        const rows = blasts.map(b => ({
-          project_id,
-          guest_id: b.guest_id || null,
-          phone: b.phone,
-          message: b.message,
-          status: 'queued'
-        }));
-
-        const { data, error } = await supabaseAdmin
-          .from('wa_blast_logs')
-          .insert(rows)
-          .select();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
       }
 
-      case 'change_password': {
-        const { project_id, password } = payload;
-        const { data, error } = await supabaseAdmin
-          .from('projects')
-          .update({ password_dashboard: password })
-          .eq('id', project_id)
-          .select();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
-      }
-
-      case 'update_payment_accounts': {
-        const { project_id, payment_accounts } = payload;
-        const { data, error } = await supabaseAdmin
-          .from('projects')
-          .update({ payment_accounts })
-          .eq('id', project_id)
-          .select();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
-      }
-
-      case 'delete_wish': {
-        const { project_id, id, rsvp_id, name } = payload;
-
-        if (rsvp_id) {
-          const { error } = await supabaseAdmin
-            .from('rsvp')
-            .update({ message: '' })
-            .eq('id', rsvp_id);
-          if (error) throw error;
-        } else if (id) {
-          const { error } = await supabaseAdmin
-            .from('rsvp')
-            .update({ message: '' })
-            .eq('guest_id', id);
-          if (error) throw error;
-        }
-
-        if (id) {
-          await supabaseAdmin
-            .from('guestbook_entries')
-            .delete()
-            .eq('guest_id', id);
-        }
-        if (name) {
-          await supabaseAdmin
-            .from('guestbook_entries')
-            .delete()
-            .eq('project_id', project_id)
-            .eq('name', name);
-        }
-
-        return NextResponse.json({ success: true });
-      }
-
-      case 'get_project_plan': {
-        const { project_id } = payload;
-        const { data, error } = await supabaseAdmin
-          .from('projects')
-          .select('id, project_name, status, hashtag, password_dashboard, subscriptions(status, packages(name))')
-          .eq('id', project_id)
-          .maybeSingle();
-
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
-      }
-
-      default:
-        return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
+      return NextResponse.json({ success: true, message: "Password updated successfully" });
     }
-  } catch (error) {
-    console.error('Admin API error:', error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+
+    return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });
+  } catch (e: any) {
+    console.error("[API Admin] Error:", e);
+    return NextResponse.json({ success: false, error: e?.message || "Server error" }, { status: 500 });
   }
 }
