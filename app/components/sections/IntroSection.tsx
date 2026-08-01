@@ -17,7 +17,7 @@ export default function IntroSection({ project, isOpen, formattedWeddingDate, fo
     <section className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col items-center justify-center">
       <div className="absolute inset-0 z-0 overflow-hidden bg-black">
         <Image
-          src={project?.opening_photo_url || project?.cover_photo_url || "/bg-invitation.jpg"}
+          src={project?.cover_photo_url || project?.opening_photo_url || "/bg-invitation.jpg"}
           alt="Background"
           fill
           sizes="100vw"

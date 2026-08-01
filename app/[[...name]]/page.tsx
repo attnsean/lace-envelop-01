@@ -174,7 +174,7 @@ export default async function Home({ params }: Props) {
   };
 
   const formattedDate = formatDateDot(weddingDateRaw);
-  const mainBgImage = dbData.project?.opening_photo_url || dbData.project?.cover_photo_url || bgImg;
+  const mainBgImage = dbData.project?.cover_photo_url || dbData.project?.opening_photo_url || bgImg;
 
   return (
     <main className="min-h-[100dvh] w-full bg-neutral-950 overflow-hidden relative">
