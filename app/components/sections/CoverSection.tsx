@@ -15,7 +15,7 @@ interface Props {
 
 export default function CoverSection({ project, guestName, isOpen, handleOpen }: Props) {
   const gallery = (project as any)?.gallery_photos || [];
-  const coverImgUrl = (typeof gallery[0] === 'string' ? gallery[0] : gallery[0]?.url) || project?.cover_photo_url || "/bg-invitation.jpg";
+  const coverImgUrl = project?.cover_photo_url || (typeof gallery[0] === 'string' ? gallery[0] : gallery[0]?.url) || "/bg-invitation.jpg";
 
   return (
     <section
