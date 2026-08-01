@@ -98,6 +98,7 @@ export interface DbProject {
   quote_intro_line2_highlight?: string | null;
   question01_rsvp?: string | null;
   question02_rsvp?: string | null;
+  rsvp_deadline?: string | null;
   answer01_rsvp?: string | null;
   answer02_rsvp?: string | null;
   subscriptions?: {
@@ -219,6 +220,14 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
         const details = (projectData as any).wedding_details;
         if (details) {
           Object.assign(projectData, details);
+          if (details.wishlist_note) {
+            try {
+              const parsed = JSON.parse(details.wishlist_note);
+              if (parsed && parsed.rsvp_deadline && !projectData.rsvp_deadline) {
+                projectData.rsvp_deadline = parsed.rsvp_deadline;
+              }
+            } catch {}
+          }
         }
         result.project = projectData;
 

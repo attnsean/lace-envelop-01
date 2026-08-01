@@ -614,11 +614,32 @@ export default function BlessingWall({
                     <div 
                       className="absolute z-10 w-[60%] h-[48%] left-[24%] bottom-[14%] flex items-center justify-center p-2 text-center rotate-[7deg] select-none"
                     >
-                      <p className="font-seasons text-[#4a3f35] text-[12px] xs:text-[13px] sm:text-[14px] md:text-[11px] lg:text-[13px] leading-[1.4] font-medium tracking-wide">
-                        Mohon konfirmasi kehadiran <br />
-                        paling lambat 9 Agustus 2026 <br />
-                        karena tempat duduk telah diatur
-                      </p>
+                      {(() => {
+                        const rawDeadline = project?.rsvp_deadline;
+                        let deadlineText = "9 Agustus 2026";
+                        if (rawDeadline && rawDeadline.trim()) {
+                          deadlineText = rawDeadline.trim();
+                        } else if (project?.wedding_date) {
+                          try {
+                            const wDate = new Date(project.wedding_date);
+                            if (!isNaN(wDate.getTime())) {
+                              const deadlineDate = new Date(wDate.getTime() - 6 * 24 * 60 * 60 * 1000);
+                              const monthsIndo = [
+                                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                              ];
+                              deadlineText = `${deadlineDate.getDate()} ${monthsIndo[deadlineDate.getMonth()]} ${deadlineDate.getFullYear()}`;
+                            }
+                          } catch {}
+                        }
+                        return (
+                          <p className="font-seasons text-[#4a3f35] text-[12px] xs:text-[13px] sm:text-[14px] md:text-[11px] lg:text-[13px] leading-[1.4] font-medium tracking-wide">
+                            Mohon konfirmasi kehadiran <br />
+                            paling lambat {deadlineText} <br />
+                            karena tempat duduk telah diatur
+                          </p>
+                        );
+                      })()}
                     </div>
                   </div>
                 </FadeIn>
