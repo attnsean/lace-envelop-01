@@ -220,14 +220,19 @@ export async function resolveProjectData(slug?: string, host?: string): Promise<
         const details = (projectData as any).wedding_details;
         if (details) {
           Object.assign(projectData, details);
+          let pwdDash = details.password_dashboard || null;
           if (details.wishlist_note) {
             try {
               const parsed = JSON.parse(details.wishlist_note);
-              if (parsed && parsed.rsvp_deadline && !projectData.rsvp_deadline) {
-                projectData.rsvp_deadline = parsed.rsvp_deadline;
+              if (parsed && typeof parsed === "object") {
+                if (parsed.password_dashboard) pwdDash = parsed.password_dashboard;
+                if (parsed.rsvp_deadline && !projectData.rsvp_deadline) {
+                  projectData.rsvp_deadline = parsed.rsvp_deadline;
+                }
               }
             } catch {}
           }
+          projectData.password_dashboard = pwdDash || "serastory";
         }
         result.project = projectData;
 
