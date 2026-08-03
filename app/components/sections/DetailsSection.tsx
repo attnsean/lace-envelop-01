@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { DbProject, DbEvent } from "../../../lib/resolveProject";
+import { supabase } from "../../../lib/supabase";
 import FadeIn from "../FadeIn";
 
 interface Props {
@@ -12,6 +13,25 @@ interface Props {
 }
 
 export default function DetailsSection({ project, events, setShowRundownOverlay }: Props) {
+  const [displayEvents, setDisplayEvents] = useState<DbEvent[]>(events || []);
+
+  useEffect(() => {
+    if (events && events.length > 0) {
+      setDisplayEvents(events);
+    } else if (project?.id) {
+      supabase
+        .from("project_events")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("sort_order", { ascending: true })
+        .then(({ data, error }) => {
+          if (data && data.length > 0) {
+            setDisplayEvents(data);
+          }
+        });
+    }
+  }, [events, project?.id]);
+
   const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
@@ -38,8 +58,8 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
   };
 
   const getWeddingTimeRange = () => {
-    if (events && events.length > 0) {
-      const sortedEvents = [...events].sort((a, b) => {
+    if (displayEvents && displayEvents.length > 0) {
+      const sortedEvents = [...displayEvents].sort((a, b) => {
         if (a.sort_order !== undefined && b.sort_order !== undefined) {
           return a.sort_order - b.sort_order;
         }
@@ -62,31 +82,30 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
   };
 
   const weddingTimeRange = getWeddingTimeRange();
-  const eventDateRaw = project?.wedding_date || events?.[0]?.event_date || "2026-08-08";
+  const eventDateRaw = project?.wedding_date || displayEvents?.[0]?.event_date || "2026-08-08";
   const formattedDate = formatEnglishDate(eventDateRaw);
 
   return (
     <section id="details" className="relative w-full h-[100dvh] snap-start shrink-0 overflow-hidden flex flex-col md:flex-row bg-[#E1D8CC]">
       {/* Left Column (Foot-in-grass photo) */}
-      <div className="relative w-full md:w-[50%] h-[32%] sm:h-[35%] md:h-full shrink-0 overflow-hidden">
-        <FadeIn className="w-full h-full" delay={0.2}>
-          <Image
-            src={detailsImgUrl}
-            alt="Wedding Details Foot Photo"
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover pointer-events-none w-full h-full select-none"
-            unoptimized
-          />
-        </FadeIn>
+      <div className="w-full md:w-1/2 h-[38%] md:h-full relative overflow-hidden shrink-0">
+        <Image
+          src={detailsImgUrl}
+          alt="Wedding Details Photo"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
+          className="object-cover object-center pointer-events-none"
+        />
+        <div className="absolute inset-0 bg-black/10"></div>
       </div>
 
       {/* Right Column (Beige detail card) */}
-      <div className="w-full md:w-[50%] h-[68%] sm:h-[65%] md:h-full flex flex-col items-center justify-center overflow-y-auto no-scrollbar p-3 xs:p-5 md:p-8 text-[#4A3E3D] select-none text-center bg-[#E1D8CC]">
-        {/* The Details Title */}
-        <FadeIn delay={0.3}>
-          <div className="flex flex-col items-center mb-4 sm:mb-8 md:mb-6 select-none relative">
-            <span className="font-parfumerie text-[#4A3E3D] text-[clamp(36px,11vw,65px)] md:text-[clamp(44px,4vw,68px)] leading-none italic font-light z-10 -mb-2 md:-mb-2">
+      <div className="w-full md:w-1/2 h-[62%] md:h-full bg-[#E1D8CC] flex flex-col items-center justify-center p-6 md:p-12 text-center relative select-none overflow-y-auto no-scrollbar">
+        {/* "The Details" title matching template */}
+        <FadeIn delay={0.4}>
+          <div className="flex flex-col items-center mb-3 sm:mb-5 md:mb-4">
+            <span className="font-parfumerie text-[#4A3E3D] text-[clamp(28px,7vw,48px)] md:text-[clamp(32px,2.8vw,48px)] leading-none italic font-light z-10 block -mb-2 sm:-mb-3 md:-mb-2">
               The
             </span>
             <h3 className="font-seasons text-[#4A3E3D] text-[clamp(20px,6.2vw,38px)] md:text-[clamp(24px,2.2vw,36px)] font-normal uppercase leading-none tracking-[0.15em] md:tracking-[0.2em]">
@@ -105,7 +124,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
               {formattedDate}
             </p>
             <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider notranslate">
-              {events?.[0]?.venue_name || project?.venue_name || "Derich Garden Restaurant"}
+              {displayEvents?.[0]?.venue_name || project?.venue_name || "Derich Garden Restaurant"}
             </p>
           </div>
         </FadeIn>
@@ -118,59 +137,33 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
         {/* Akad & Reception */}
         <FadeIn delay={0.7}>
           <div className="flex flex-col items-center gap-3 mb-4 sm:mb-6 md:mb-5">
-            {events && events.length > 0 ? (
-              events.map((evt, idx) => {
-                const label = evt.custom_label || (evt.event_type === "akad" ? "AKAD NIKAH" : evt.event_type === "resepsi" ? "RESEPSI PERNIKAHAN" : evt.event_type?.toUpperCase() || "ACARA");
-                const startTime = evt.event_time ? evt.event_time.substring(0, 5).replace(":", ".") : "";
-                const endTime = evt.end_time ? evt.end_time.substring(0, 5).replace(":", ".") : "";
-                let timeStr = "";
-                if (startTime && endTime) {
-                  timeStr = `${startTime} - ${endTime} WIB`;
-                } else if (startTime) {
-                  timeStr = `${startTime} WIB - Selesai`;
-                } else {
-                  timeStr = "09.00 - 12.00 WIB";
-                }
+            {displayEvents.map((evt, idx) => {
+              const label = evt.custom_label || (evt.event_type === "akad" ? "AKAD NIKAH" : evt.event_type === "resepsi" ? "RESEPSI PERNIKAHAN" : evt.event_type?.toUpperCase() || "ACARA");
+              const startTime = evt.event_time ? evt.event_time.substring(0, 5).replace(":", ".") : "";
+              const endTime = evt.end_time ? evt.end_time.substring(0, 5).replace(":", ".") : "";
+              let timeStr = "";
+              if (startTime && endTime) {
+                timeStr = `${startTime} - ${endTime} WIB`;
+              } else if (startTime) {
+                timeStr = `${startTime} WIB - Selesai`;
+              } else {
+                timeStr = "WIB";
+              }
 
-                return (
-                  <React.Fragment key={evt.id || idx}>
-                    {idx > 0 && <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>}
-                    <div className="flex flex-col items-center gap-1">
-                      <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
-                        {label}
-                      </h4>
-                      <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
-                        {timeStr}
-                      </p>
-                    </div>
-                  </React.Fragment>
-                );
-              })
-            ) : (
-              <>
-                {/* AKAD NIKAH */}
-                <div className="flex flex-col items-center gap-1">
-                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
-                    AKAD NIKAH
-                  </h4>
-                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
-                    09.00 - 12.00 WIB
-                  </p>
-                </div>
-
-                <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>
-
-                {/* RESEPSI */}
-                <div className="flex flex-col items-center gap-1">
-                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
-                    RESEPSI PERNIKAHAN
-                  </h4>
-                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
-                    13.00 - 15.00 WIB
-                  </p>
-                </div>
-              </>
-            )}
+              return (
+                <React.Fragment key={evt.id || idx}>
+                  {idx > 0 && <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>}
+                  <div className="flex flex-col items-center gap-1">
+                    <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
+                      {label}
+                    </h4>
+                    <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
+                      {timeStr}
+                    </p>
+                  </div>
+                </React.Fragment>
+              );
+            })}
           </div>
         </FadeIn>
  
