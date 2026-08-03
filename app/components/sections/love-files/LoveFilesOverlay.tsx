@@ -5,8 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { DbProject } from "../../../../lib/resolveProject";
 import MeetCoupleSlide from "./MeetCoupleSlide";
 import BrideGroomSlide from "./BrideGroomSlide";
-import StoryTimelineSlide from "./StoryTimelineSlide";
-import GallerySlidersSlide from "./GallerySlidersSlide";
 
 interface Props {
   project?: DbProject | null;
@@ -26,7 +24,6 @@ export default function LoveFilesOverlay({
   const meetCoupleRef = useRef<HTMLDivElement>(null);
   const brideGroomSectionRef = useRef<HTMLDivElement>(null);
   const loveStorySectionRef = useRef<HTMLDivElement>(null);
-  const gallerySectionRef = useRef<HTMLDivElement>(null);
 
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
   const projectId = project?.id || "6d889fed-efb5-4a32-97ce-16f74bce763c";
@@ -37,16 +34,31 @@ export default function LoveFilesOverlay({
   const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const gallery = (project as any)?.gallery_photos || [];
-  const getPhoto = (idx: number, fallbackFilename: string) => {
-    const item = gallery[idx];
-    if (item) return typeof item === 'string' ? item : (item.url || item);
-    return `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/${fallbackFilename}`;
-  };
+  
+  // Collect actual user photos (cover, opening, bride, groom, gallery)
+  const userPhotos: string[] = [];
+  if (project?.cover_photo_url) userPhotos.push(project.cover_photo_url);
+  if (project?.opening_photo_url && !userPhotos.includes(project.opening_photo_url)) userPhotos.push(project.opening_photo_url);
+  if (project?.bride_photo_url && !userPhotos.includes(project.bride_photo_url)) userPhotos.push(project.bride_photo_url);
+  if (project?.groom_photo_url && !userPhotos.includes(project.groom_photo_url)) userPhotos.push(project.groom_photo_url);
 
-  const danceImgUrl = getPhoto(0, 'sec2-dance.jpg');
-  const pigeonsImgUrl = getPhoto(1, 'sec2-pigeons.jpg');
-  const flowersImgUrl = getPhoto(2, 'gallery-24.jpg');
-  const runImgUrl = getPhoto(3, 'sec2-run.jpg');
+  if (Array.isArray(gallery)) {
+    gallery.forEach((g: any) => {
+      const url = typeof g === "string" ? g : (g?.url || g);
+      if (url && typeof url === "string" && !userPhotos.includes(url)) {
+        userPhotos.push(url);
+      }
+    });
+  }
+
+  const neutralFlowers = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec2-dance.jpg`;
+  const neutralBouquet = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec2-pigeons.jpg`;
+  const neutralLeaves = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/gallery-24.jpg`;
+
+  const danceImgUrl = userPhotos[0] || neutralFlowers;
+  const pigeonsImgUrl = userPhotos[1] || neutralBouquet;
+  const flowersImgUrl = userPhotos[2] || neutralLeaves;
+  const runImgUrl = userPhotos[3] || userPhotos[0] || neutralFlowers;
 
   return (
     <AnimatePresence>
@@ -100,24 +112,6 @@ export default function LoveFilesOverlay({
               slideRef={brideGroomSectionRef}
               meetCoupleRef={meetCoupleRef}
               loveStorySectionRef={loveStorySectionRef}
-            />
-
-            {/* SLIDE 3: Love Story */}
-            <StoryTimelineSlide
-              project={project}
-              slideRef={loveStorySectionRef}
-              brideGroomSectionRef={brideGroomSectionRef}
-              gallerySectionRef={gallerySectionRef}
-            />
-
-            {/* SLIDE 4: Our The Couple’s Gallery */}
-            <GallerySlidersSlide
-              project={project}
-              galleryImages={galleryImages}
-              openLightbox={openLightbox}
-              slideRef={gallerySectionRef}
-              loveStorySectionRef={loveStorySectionRef}
-              onClose={onClose}
             />
           </div>
         </motion.div>
