@@ -118,27 +118,59 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
         {/* Akad & Reception */}
         <FadeIn delay={0.7}>
           <div className="flex flex-col items-center gap-3 mb-4 sm:mb-6 md:mb-5">
-            {/* AKAD NIKAH */}
-            <div className="flex flex-col items-center gap-1">
-              <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
-                AKAD NIKAH
-              </h4>
-              <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
-                16.00 WIB - Selesai
-              </p>
-            </div>
+            {events && events.length > 0 ? (
+              events.map((evt, idx) => {
+                const label = evt.custom_label || (evt.event_type === "akad" ? "AKAD NIKAH" : evt.event_type === "resepsi" ? "RESEPSI PERNIKAHAN" : evt.event_type?.toUpperCase() || "ACARA");
+                const startTime = evt.event_time ? evt.event_time.substring(0, 5).replace(":", ".") : "";
+                const endTime = evt.end_time ? evt.end_time.substring(0, 5).replace(":", ".") : "";
+                let timeStr = "";
+                if (startTime && endTime) {
+                  timeStr = `${startTime} - ${endTime} WIB`;
+                } else if (startTime) {
+                  timeStr = `${startTime} WIB - Selesai`;
+                } else {
+                  timeStr = "09.00 - 12.00 WIB";
+                }
 
-            <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>
+                return (
+                  <React.Fragment key={evt.id || idx}>
+                    {idx > 0 && <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>}
+                    <div className="flex flex-col items-center gap-1">
+                      <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
+                        {label}
+                      </h4>
+                      <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
+                        {timeStr}
+                      </p>
+                    </div>
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <>
+                {/* AKAD NIKAH */}
+                <div className="flex flex-col items-center gap-1">
+                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
+                    AKAD NIKAH
+                  </h4>
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
+                    09.00 - 12.00 WIB
+                  </p>
+                </div>
 
-            {/* RESEPSI */}
-            <div className="flex flex-col items-center gap-1">
-              <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
-                RESEPSI PERNIKAHAN
-              </h4>
-              <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
-                19.00 - 21.00 WIB
-              </p>
-            </div>
+                <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>
+
+                {/* RESEPSI */}
+                <div className="flex flex-col items-center gap-1">
+                  <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
+                    RESEPSI PERNIKAHAN
+                  </h4>
+                  <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
+                    13.00 - 15.00 WIB
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </FadeIn>
  
