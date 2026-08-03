@@ -99,12 +99,20 @@ export default function RightSidebar({
   }, [project?.wedding_date]);
 
   const formattedWeddingLocation = React.useMemo(() => {
-    const venue = events?.[0]?.venue_name || project?.venue_name || "";
+    if (project?.wishlist_note) {
+      try {
+        const parsed = JSON.parse(project.wishlist_note);
+        if (parsed.location_city && parsed.location_city.trim() !== "") {
+          return parsed.location_city.toUpperCase();
+        }
+      } catch (e) {}
+    }
+
     const address = (events?.[0]?.venue_address || project?.venue_address || "").toUpperCase();
     const knownCities = [
-      "TANGERANG", "JAKARTA", "SEMARANG", "BANDUNG", "SURABAYA", "MEDAN", "BALI", 
+      "MAJALENGKA", "TANGERANG", "JAKARTA", "SEMARANG", "BANDUNG", "SURABAYA", "MEDAN", "BALI", 
       "YOGYAKARTA", "JOGJA", "MAKASSAR", "DENPASAR", 
-      "BEKASI", "DEPOK", "BOGOR", "SOLO", "SURAKARTA"
+      "BEKASI", "DEPOK", "BOGOR", "SOLO", "SURAKARTA", "GOWA", "CIKIJING"
     ];
     
     for (const city of knownCities) {
@@ -112,22 +120,20 @@ export default function RightSidebar({
         return city;
       }
     }
+
+    const venue = (events?.[0]?.venue_name || project?.venue_name || "").toUpperCase();
+    if (venue.includes("GEDUNG HAJI BATE") || venue.includes("BATE")) {
+      return "GEDUNG HAJI BATE";
+    }
     
-    const venueUpper = venue.toUpperCase();
     for (const city of knownCities) {
-      if (venueUpper.includes(city)) {
+      if (venue.includes(city)) {
         return city;
       }
     }
     
-    if (venue.trim()) {
-      const parts = venue.trim().split(/\s+/);
-      const lastWord = parts[parts.length - 1].toUpperCase().replace(/[.,()]/g, "");
-      if (lastWord) return lastWord;
-    }
-    
-    return "TANGERANG";
-  }, [events, project?.venue_name, project?.venue_address]);
+    return "MAJALENGKA";
+  }, [events, project?.venue_name, project?.venue_address, project?.wishlist_note]);
 
   const openLightbox = (idx: number) => {
     setPage([idx, 0]);
