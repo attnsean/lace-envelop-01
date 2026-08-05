@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { DbProject } from "../../../../lib/resolveProject";
 import MeetCoupleSlide from "./MeetCoupleSlide";
 import BrideGroomSlide from "./BrideGroomSlide";
+import StoryTimelineSlide from "./StoryTimelineSlide";
+import GallerySlidersSlide from "./GallerySlidersSlide";
 
 interface Props {
   project?: DbProject | null;
@@ -24,6 +26,7 @@ export default function LoveFilesOverlay({
   const meetCoupleRef = useRef<HTMLDivElement>(null);
   const brideGroomSectionRef = useRef<HTMLDivElement>(null);
   const loveStorySectionRef = useRef<HTMLDivElement>(null);
+  const gallerySectionRef = useRef<HTMLDivElement>(null);
 
   const userId = project?.user_id || "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
   const projectId = project?.id || "6d889fed-efb5-4a32-97ce-16f74bce763c";
@@ -112,6 +115,24 @@ export default function LoveFilesOverlay({
               slideRef={brideGroomSectionRef}
               meetCoupleRef={meetCoupleRef}
               loveStorySectionRef={loveStorySectionRef}
+            />
+
+            {/* SLIDE 3: Love Story */}
+            <StoryTimelineSlide
+              project={project}
+              slideRef={loveStorySectionRef}
+              brideGroomSectionRef={brideGroomSectionRef}
+              gallerySectionRef={gallerySectionRef}
+            />
+
+            {/* SLIDE 4: The Couple's Gallery */}
+            <GallerySlidersSlide
+              project={project}
+              galleryImages={galleryImages}
+              openLightbox={openLightbox}
+              slideRef={gallerySectionRef}
+              loveStorySectionRef={loveStorySectionRef}
+              onClose={onClose}
             />
           </div>
         </motion.div>
