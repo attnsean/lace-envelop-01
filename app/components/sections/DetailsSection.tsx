@@ -48,6 +48,15 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
     return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
+  const formatIndonesianDate = (dateStr?: string | null) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
   const formatTime = (timeStr?: string | null) => {
     if (!timeStr) return "";
     const parts = timeStr.split(":");
