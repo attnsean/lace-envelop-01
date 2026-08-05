@@ -20,14 +20,24 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
   const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
 
+  const userUploadedPhotos = [
+    ...(gallery.map((g: any) => typeof g === 'string' ? g : g?.url).filter(Boolean)),
+    project?.cover_photo_url,
+    project?.bride_photo_url,
+    project?.groom_photo_url,
+  ].filter(Boolean);
+
   const getPhoto = (idx: number, fallbackFilename: string) => {
     const item = gallery[idx];
     if (item) return typeof item === 'string' ? item : (item.url || item);
+    if (userUploadedPhotos.length > 0) {
+      return userUploadedPhotos[idx % userUploadedPhotos.length];
+    }
     return `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/${fallbackFilename}`;
   };
 
   const danceImgUrl = project?.cover_photo_url || getPhoto(0, 'sec2-dance.jpg');
-  const pigeonsImgUrl = getPhoto(4, 'sec2-pigeons.jpg') || getPhoto(1, 'sec2-pigeons.jpg');
+  const pigeonsImgUrl = getPhoto(4, 'sec2-pigeons.jpg');
   const flowersImgUrl = project?.bride_photo_url || getPhoto(2, 'gallery-24.jpg');
   const runImgUrl = project?.groom_photo_url || getPhoto(3, 'sec2-run.jpg');
 
