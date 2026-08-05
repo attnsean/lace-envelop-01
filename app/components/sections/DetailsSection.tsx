@@ -150,6 +150,11 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
                 timeStr = "WIB";
               }
 
+              // Check if event date exists and is different from primary date
+              const primaryDate = displayEvents[0]?.event_date || (project as any)?.wedding_date;
+              const isDifferentDate = evt.event_date && primaryDate && evt.event_date !== primaryDate;
+              const evtFormattedDate = isDifferentDate ? formatIndonesianDate(evt.event_date) : null;
+
               return (
                 <React.Fragment key={evt.id || idx}>
                   {idx > 0 && <div className="w-16 h-[1px] bg-[#4A3E3D]/20 my-1"></div>}
@@ -157,6 +162,11 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
                     <h4 className="font-seasons text-[#4A3E3D] text-[clamp(11px,3.2vw,15px)] md:text-[clamp(13px,1.2vw,16px)] font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
                       {label}
                     </h4>
+                    {evtFormattedDate && (
+                      <p className="font-lekton text-[#4A3E3D] font-bold text-[clamp(10px,2.8vw,13px)] md:text-[clamp(11px,0.8vw,13px)] leading-tight tracking-wider">
+                        {evtFormattedDate}
+                      </p>
+                    )}
                     <p className="font-lekton text-[#4A3E3D]/95 text-[clamp(10px,2.8vw,14px)] md:text-[clamp(12px,0.9vw,14px)] leading-tight sm:leading-relaxed tracking-wider">
                       {timeStr}
                     </p>
