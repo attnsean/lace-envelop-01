@@ -69,7 +69,6 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
           className="object-cover pointer-events-none w-full h-full"
-          unoptimized
         />
       </FadeIn>
 
@@ -84,7 +83,6 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 230px, (max-width: 1024px) 205px, 250px"
           className="object-cover pointer-events-none w-full h-full"
-          unoptimized
         />
       </FadeIn>
 
@@ -99,7 +97,6 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 195px, (max-width: 1024px) 195px, 240px"
           className="object-cover pointer-events-none w-full h-full"
-          unoptimized
         />
       </FadeIn>
 
@@ -114,7 +111,6 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
           className="object-cover pointer-events-none w-full h-full"
-          unoptimized
         />
       </FadeIn>
 
