@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface Props {
   images?: (string | null | undefined)[];
-  coverPhotoUrl?: string; // backwards compatibility
+  coverPhotoUrl?: string;
   coupleName?: string;
   monogram?: string;
   onFinish?: () => void;
@@ -15,35 +15,47 @@ export default function InvitationPreloader({
   images = [],
   coverPhotoUrl,
   coupleName = "The Wedding of",
-  monogram = "S",
+  monogram,
   onFinish,
 }: Props) {
   const [displayProgress, setDisplayProgress] = useState(0);
+  const [isGateOpening, setIsGateOpening] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [statusText, setStatusText] = useState("Menyiapkan Undangan...");
-  
+
   const targetProgressRef = useRef(0);
   const loadedCountRef = useRef(0);
-  const totalImagesRef = useRef(0);
+  const totalAssetsRef = useRef(0);
 
   useEffect(() => {
-    // Collect all valid unique image URLs to preload
-    const candidateList = [...images, coverPhotoUrl].filter(
+    // 1. Gather all candidates & transform into both raw + Next.js optimized URLs
+    const rawList = [...images, coverPhotoUrl].filter(
       (url): url is string => typeof url === "string" && url.trim().length > 0
     );
-    const uniqueImages = Array.from(new Set(candidateList));
-    totalImagesRef.current = Math.max(uniqueImages.length, 1);
+    const uniqueRawList = Array.from(new Set(rawList));
+
+    const allUrlsToPreload: string[] = [];
+    uniqueRawList.forEach((url) => {
+      allUrlsToPreload.push(url);
+      // Generate Next.js optimized image URLs so browser cache primes the exact Next.js <Image /> request
+      if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/")) {
+        try {
+          allUrlsToPreload.push(`/_next/image?url=${encodeURIComponent(url)}&w=1080&q=75`);
+          allUrlsToPreload.push(`/_next/image?url=${encodeURIComponent(url)}&w=640&q=75`);
+        } catch (_) {}
+      }
+    });
+
+    const uniqueUrls = Array.from(new Set(allUrlsToPreload));
+    totalAssetsRef.current = Math.max(uniqueUrls.length, 1);
 
     let isMounted = true;
 
-    // Real Image Preloading Function
-    const preloadAll = async () => {
-      if (uniqueImages.length === 0) {
-        targetProgressRef.current = 100;
-        return;
-      }
-
-      uniqueImages.forEach((url) => {
+    // 2. Real asset download & decoding
+    if (uniqueUrls.length === 0) {
+      targetProgressRef.current = 100;
+    } else {
+      uniqueUrls.forEach((url) => {
         if (typeof window === "undefined") return;
 
         const img = new window.Image();
@@ -52,7 +64,7 @@ export default function InvitationPreloader({
         const onAssetReady = () => {
           if (!isMounted) return;
           loadedCountRef.current += 1;
-          const pct = Math.round((loadedCountRef.current / totalImagesRef.current) * 100);
+          const pct = Math.round((loadedCountRef.current / totalAssetsRef.current) * 100);
           targetProgressRef.current = Math.max(targetProgressRef.current, pct);
         };
 
@@ -66,55 +78,60 @@ export default function InvitationPreloader({
           }
         }
       });
-    };
+    }
 
-    preloadAll();
-
-    // Smooth animation tick to smoothly advance displayProgress toward targetProgress
+    // 3. Smooth animation ticker: steadily moves displayProgress toward targetProgress
     const animInterval = setInterval(() => {
       setDisplayProgress((prev) => {
-        // Natural gradual crawl even if network is fast or slow
         const target = targetProgressRef.current;
-        
         let nextVal = prev;
+
         if (prev < target) {
-          const step = Math.max(1, Math.ceil((target - prev) * 0.25));
+          // Smooth progressive easing toward real target
+          const step = Math.max(1, Math.ceil((target - prev) * 0.18));
           nextVal = Math.min(prev + step, target);
-        } else if (prev < 90 && loadedCountRef.current < totalImagesRef.current) {
-          // Slow incremental bump while waiting
-          nextVal = Math.min(prev + 1, 90);
+        } else if (prev < 92 && loadedCountRef.current < totalAssetsRef.current) {
+          // Subtle crawl while waiting for heavy images
+          nextVal = Math.min(prev + 1, 92);
         }
 
-        // Update dynamic luxury status text
-        if (nextVal < 30) {
-          setStatusText("Menghubungkan & Memuat Data...");
-        } else if (nextVal < 70) {
-          setStatusText("Mengunduh Foto & Galeri...");
-        } else if (nextVal < 99) {
-          setStatusText("Menyempurnakan Tampilan...");
+        // Refined status text
+        if (nextVal < 35) {
+          setStatusText("Memuat Data...");
+        } else if (nextVal < 75) {
+          setStatusText("Mengunduh Foto...");
+        } else if (nextVal < 100) {
+          setStatusText("Menyempurnakan Visual...");
         } else {
           setStatusText("Selamat Datang");
         }
 
+        // When 100% reached, trigger Grand Gate Opening
         if (nextVal >= 100) {
           clearInterval(animInterval);
           setTimeout(() => {
             if (isMounted) {
-              setIsFinished(true);
-              onFinish?.();
+              setIsGateOpening(true);
+              // After gate split animation completes (~1000ms), unmount preloader
+              setTimeout(() => {
+                if (isMounted) {
+                  setIsFinished(true);
+                  onFinish?.();
+                }
+              }, 1050);
             }
-          }, 450);
+          }, 400);
           return 100;
         }
 
         return nextVal;
       });
-    }, 40);
+    }, 35);
 
-    // Fallback safety timeout: ensure preloader finishes within 3.5s regardless of slow network
+    // Fallback safety timeout (6s) so slow 3G network never locks out the user permanently
     const safetyTimeout = setTimeout(() => {
       targetProgressRef.current = 100;
-    }, 3500);
+    }, 6000);
 
     return () => {
       isMounted = false;
@@ -125,130 +142,124 @@ export default function InvitationPreloader({
 
   if (isFinished) return null;
 
-  // Derive Monogram initials from coupleName if not customized
-  const displayMonogram = monogram !== "S" 
-    ? monogram 
-    : (coupleName.includes("&") 
-        ? coupleName.split("&").map(s => s.trim()[0]).filter(Boolean).join("") 
-        : "S").slice(0, 3).toUpperCase();
+  // Simple elegant monogram
+  const displayMonogram = monogram
+    ? monogram
+    : coupleName.includes("&")
+    ? coupleName
+        .split("&")
+        .map((s) => s.trim()[0])
+        .filter(Boolean)
+        .join(" & ")
+    : "S";
 
   return (
-    <AnimatePresence>
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none select-none overflow-hidden">
+      {/* LEFT GATE DOOR */}
       <motion.div
-        initial={{ opacity: 1 }}
-        exit={{
-          opacity: 0,
-          scale: 1.04,
-          filter: "blur(8px)",
-          transition: { duration: 0.85, ease: [0.22, 1, 0.36, 1] },
-        }}
-        className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#070707] text-white select-none px-6 overflow-hidden"
+        initial={{ x: "0%" }}
+        animate={isGateOpening ? { x: "-100%" } : { x: "0%" }}
+        transition={{ duration: 1.05, ease: [0.76, 0, 0.24, 1] }}
+        className="absolute top-0 bottom-0 left-0 w-1/2 bg-[#090807] border-r border-[#d4af37]/25 z-20 shadow-[15px_0_40px_rgba(0,0,0,0.9)] flex items-center justify-end"
       >
-        {/* Deep ambient glow effects */}
-        <div className="absolute w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-amber-600/15 via-amber-400/10 to-transparent blur-[120px] pointer-events-none animate-pulse" />
-        <div className="absolute w-[280px] h-[280px] rounded-full bg-amber-200/5 blur-[80px] pointer-events-none" />
-
-        {/* Ambient floating star sparkles */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-amber-200 rounded-full shadow-[0_0_8px_#fde68a]"
-              style={{
-                top: `${15 + (i * 14)}%`,
-                left: `${10 + ((i * 17) % 80)}%`,
-              }}
-              animate={{
-                opacity: [0.2, 0.9, 0.2],
-                scale: [0.7, 1.3, 0.7],
-                y: [0, -15, 0],
-              }}
-              transition={{
-                duration: 3 + (i % 3),
-                repeat: Infinity,
-                delay: i * 0.4,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Center Container */}
-        <div className="relative z-10 flex flex-col items-center max-w-xs w-full text-center space-y-7">
-          {/* Astrolabe Luxury Rotating Seal Badge */}
-          <div className="relative w-24 h-24 flex items-center justify-center">
-            {/* Outer golden orbiting tick ring */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0 rounded-full border border-dashed border-amber-300/30"
-            />
-            {/* Inner counter-rotating ring */}
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-2 rounded-full border border-dotted border-amber-200/20"
-            />
-            {/* Glowing gold halo */}
-            <div className="absolute inset-3 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-900/40 backdrop-blur-md shadow-[0_0_25px_rgba(251,191,36,0.25)] border border-amber-300/40" />
-
-            {/* Monogram Text */}
-            <motion.span
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="relative z-10 font-serif text-2xl md:text-3xl text-amber-200 tracking-widest font-light drop-shadow-[0_2px_10px_rgba(251,191,36,0.5)]"
-            >
-              {displayMonogram}
-            </motion.span>
-          </div>
-
-          {/* Typography */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-2"
-          >
-            <p className="text-[9px] md:text-[10px] tracking-[0.45em] text-amber-200/70 uppercase font-medium">
-              Wedding Invitation
-            </p>
-            <h1 className="text-xl md:text-2xl font-serif text-white tracking-wide font-light drop-shadow-md">
-              {coupleName}
-            </h1>
-          </motion.div>
-
-          {/* Progress Bar & Dynamic Percentage */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="w-full space-y-3 pt-1"
-          >
-            {/* Shimmering Progress Bar */}
-            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden relative shadow-inner p-[1px]">
-              <motion.div
-                className="h-full bg-gradient-to-r from-amber-500 via-amber-200 to-amber-300 rounded-full relative shadow-[0_0_12px_rgba(251,191,36,0.7)]"
-                style={{ width: `${displayProgress}%` }}
-                transition={{ ease: "easeOut", duration: 0.1 }}
-              >
-                {/* Shimmer light reflection line */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-[shimmer_1.8s_infinite] -translate-x-full" />
-              </motion.div>
-            </div>
-
-            {/* Status Text & Numerical Percentage */}
-            <div className="flex justify-between items-center text-[10px] font-mono text-white/50 tracking-wider pt-0.5">
-              <span className="text-[9px] uppercase tracking-widest text-amber-100/60 font-sans truncate max-w-[190px] text-left">
-                {statusText}
-              </span>
-              <span className="text-amber-200 font-bold font-mono text-[11px] drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">
-                {displayProgress}%
-              </span>
-            </div>
-          </motion.div>
-        </div>
+        {/* Subtle royal door edge trim */}
+        <div className="absolute right-3 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-[#d4af37]/15 to-transparent pointer-events-none" />
       </motion.div>
-    </AnimatePresence>
+
+      {/* RIGHT GATE DOOR */}
+      <motion.div
+        initial={{ x: "0%" }}
+        animate={isGateOpening ? { x: "100%" } : { x: "0%" }}
+        transition={{ duration: 1.05, ease: [0.76, 0, 0.24, 1] }}
+        className="absolute top-0 bottom-0 right-0 w-1/2 bg-[#090807] border-l border-[#d4af37]/25 z-20 shadow-[-15px_0_40px_rgba(0,0,0,0.9)] flex items-center justify-start"
+      >
+        {/* Subtle royal door edge trim */}
+        <div className="absolute left-3 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-[#d4af37]/15 to-transparent pointer-events-none" />
+      </motion.div>
+
+      {/* CENTER SEAM GOLDEN LIGHT BEAM (Shines brightly when gate splits) */}
+      <motion.div
+        animate={
+          isGateOpening
+            ? { opacity: [0.8, 1, 0], scaleX: [1, 8, 20], scaleY: [1, 1.2, 1.5] }
+            : { opacity: [0.4, 0.8, 0.4] }
+        }
+        transition={
+          isGateOpening
+            ? { duration: 0.8, ease: "easeOut" }
+            : { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
+        }
+        className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-gradient-to-b from-transparent via-[#fae19c] to-transparent z-25 pointer-events-none shadow-[0_0_20px_#fae19c]"
+      />
+
+      {/* CENTER CONTENT (Simple, Clean, Ultra-Elegant) */}
+      <AnimatePresence>
+        {!isGateOpening && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{
+              opacity: 0,
+              scale: 0.94,
+              y: -12,
+              filter: "blur(4px)",
+              transition: { duration: 0.35, ease: "easeIn" },
+            }}
+            className="relative z-30 flex flex-col items-center max-w-[290px] w-full text-center px-4"
+          >
+            {/* Ambient Warm Backlight */}
+            <div className="absolute w-64 h-64 rounded-full bg-amber-500/10 blur-[90px] pointer-events-none -top-12" />
+
+            {/* Minimalist Rotating Monogram Emblem */}
+            <div className="relative w-20 h-20 flex items-center justify-center mb-6">
+              {/* Thin Golden Ring */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 rounded-full border border-amber-300/30 border-t-amber-100/80 shadow-[0_0_15px_rgba(251,191,36,0.15)]"
+              />
+              {/* Inner Soft Circle */}
+              <div className="absolute inset-2 rounded-full bg-gradient-to-b from-amber-950/40 to-black/80 backdrop-blur-sm border border-amber-200/20" />
+
+              {/* Monogram Text */}
+              <span className="relative z-10 font-serif text-lg md:text-xl text-amber-100 tracking-widest font-light">
+                {displayMonogram}
+              </span>
+            </div>
+
+            {/* Couple Typography */}
+            <div className="space-y-1.5 mb-7">
+              <p className="text-[9px] tracking-[0.4em] text-amber-200/60 uppercase font-medium">
+                Wedding Invitation
+              </p>
+              <h2 className="text-xl md:text-2xl font-serif text-white tracking-wide font-light">
+                {coupleName}
+              </h2>
+            </div>
+
+            {/* Slim Golden Progress Line */}
+            <div className="w-full space-y-2.5">
+              <div className="w-full bg-white/10 h-[3px] rounded-full overflow-hidden relative p-0">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-amber-400 via-amber-200 to-amber-300 rounded-full relative shadow-[0_0_10px_rgba(251,191,36,0.6)]"
+                  style={{ width: `${displayProgress}%` }}
+                  transition={{ ease: "easeOut", duration: 0.1 }}
+                />
+              </div>
+
+              {/* Status and Percentage */}
+              <div className="flex justify-between items-center text-[10px] font-mono text-white/50 tracking-wider">
+                <span className="text-[9px] uppercase tracking-widest text-amber-100/50 font-sans truncate">
+                  {statusText}
+                </span>
+                <span className="text-amber-200 font-bold font-mono text-[11px]">
+                  {displayProgress}%
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
