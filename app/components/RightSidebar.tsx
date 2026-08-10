@@ -4,6 +4,8 @@ import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 
+import InvitationPreloader from "./InvitationPreloader";
+
 import CustomCursor from "./CustomCursor";
 import { DbGuest, DbProject, DbEvent, DbWish } from "../../lib/resolveProject";
 
@@ -238,6 +240,10 @@ export default function RightSidebar({
 
   return (
     <div className="relative w-full h-[100dvh] z-20 flex-shrink-0 overflow-hidden bg-neutral-950">
+      <InvitationPreloader
+        coverPhotoUrl={project?.cover_photo_url || (project as any)?.gallery_photos?.[0] || "/bg-invitation.jpg"}
+        coupleName={`${project?.groom_nickname || project?.groom_name || 'Groom'} & ${project?.bride_nickname || project?.bride_name || 'Bride'}`}
+      />
       <CustomCursor />
 
       {/* Audio Element */}

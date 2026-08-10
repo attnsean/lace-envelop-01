@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import ProgressiveImage from "../../ProgressiveImage";
 import { motion } from "framer-motion";
 import { DbProject } from "../../../../lib/resolveProject";
 import FadeIn from "../../FadeIn";
@@ -83,12 +84,11 @@ export default function BrideGroomSlide({
               style={{ top: "17%", left: "17%", width: "66%", height: "66%" }}
               className="absolute overflow-hidden rounded-[8px] sm:rounded-[12px] md:rounded-[16px]"
             >
-              <Image
+              <ProgressiveImage
                 src={project?.bride_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/bride-photo.jpg`}
                 alt={project?.bride_name || "Jovita Lola Edria"}
                 fill
                 className="object-cover object-[32%_25%] scale-125"
-                unoptimized
               />
             </div>
           </div>
@@ -136,12 +136,11 @@ export default function BrideGroomSlide({
               style={{ top: "17%", left: "17%", width: "66%", height: "66%" }}
               className="absolute overflow-hidden rounded-[8px] sm:rounded-[12px] md:rounded-[16px]"
             >
-              <Image
+              <ProgressiveImage
                 src={project?.groom_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/groom-photo.jpg`}
                 alt={project?.groom_name || "Muhammad Luqman Fikri"}
                 fill
                 className="object-cover object-[center_25%] scale-110"
-                unoptimized
               />
             </div>
           </div>

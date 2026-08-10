@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { DbProject } from "../../../lib/resolveProject";
 import FloatingParticles from "../FloatingParticles";
 
+import ProgressiveImage from "../ProgressiveImage";
+
 interface Props {
   project?: DbProject | null;
   guestName: string;
@@ -23,9 +25,9 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
         isOpen ? "-translate-y-[120%] pointer-events-none" : "translate-y-0 pointer-events-auto"
       } flex flex-col items-center justify-center`}
     >
-      <div className="absolute inset-0 z-0 overflow-hidden bg-black shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
+      <div className="absolute inset-0 z-0 overflow-hidden bg-neutral-950 shadow-[0_30px_60px_rgba(0,0,0,0.9)]">
         <FloatingParticles />
-        <Image
+        <ProgressiveImage
           src={coverImgUrl}
           alt="Background"
           fill
@@ -33,8 +35,9 @@ export default function CoverSection({ project, guestName, isOpen, handleOpen }:
           className="object-cover object-[center_bottom] brightness-[0.65] select-none"
           draggable={false}
           priority
+          showSpinner={true}
         />
-        <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply pointer-events-none"></div>
       </div>
 
       <div className="relative z-20 flex flex-col items-center justify-center min-h-full py-16 text-white text-center px-4 w-full overflow-y-auto no-scrollbar">
