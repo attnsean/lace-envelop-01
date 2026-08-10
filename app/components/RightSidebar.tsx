@@ -29,6 +29,10 @@ import RundownOverlay from "./sections/rundown/RundownOverlay";
 
 
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xnruifsptjsafctjwqdh.supabase.co";
+const tplUserId = "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
+const tplAssetProjectId = "c8907317-5e60-452f-87a4-e910f1352e80";
+
 const fragments = [
   "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=400&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=400&auto=format&fit=crop",
@@ -241,7 +245,15 @@ export default function RightSidebar({
   return (
     <div className="relative w-full h-[100dvh] z-20 flex-shrink-0 overflow-hidden bg-neutral-950">
       <InvitationPreloader
-        coverPhotoUrl={project?.cover_photo_url || (project as any)?.gallery_photos?.[0] || "/bg-invitation.jpg"}
+        images={[
+          project?.cover_photo_url,
+          project?.groom_photo_url,
+          project?.bride_photo_url,
+          project?.opening_photo_url,
+          ...(galleryImages.slice(0, 4)),
+          `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/lace-frame.png`,
+          `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/wax-seal-jovita.png`,
+        ]}
         coupleName={`${project?.groom_nickname || project?.groom_name || 'Groom'} & ${project?.bride_nickname || project?.bride_name || 'Bride'}`}
       />
       <CustomCursor />
