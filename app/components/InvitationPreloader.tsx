@@ -23,12 +23,14 @@ export default function InvitationPreloader({
   const [isFinished, setIsFinished] = useState(false);
   const [statusText, setStatusText] = useState("Menyiapkan Undangan...");
 
-  const targetProgressRef = useRef(0);
-  const loadedCountRef = useRef(0);
-  const totalAssetsRef = useRef(0);
+  const allAssetsReadyRef = useRef(false);
+  const startTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
-    // 1. Gather all candidates & transform into both raw + Next.js optimized URLs
+    startTimeRef.current = Date.now();
+    let isMounted = true;
+
+    // 1. Collect all candidates
     const rawList = [...images, coverPhotoUrl].filter(
       (url): url is string => typeof url === "string" && url.trim().length > 0
     );
@@ -37,7 +39,6 @@ export default function InvitationPreloader({
     const allUrlsToPreload: string[] = [];
     uniqueRawList.forEach((url) => {
       allUrlsToPreload.push(url);
-      // Generate Next.js optimized image URLs so browser cache primes the exact Next.js <Image /> request
       if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/")) {
         try {
           allUrlsToPreload.push(`/_next/image?url=${encodeURIComponent(url)}&w=1080&q=75`);
@@ -47,55 +48,64 @@ export default function InvitationPreloader({
     });
 
     const uniqueUrls = Array.from(new Set(allUrlsToPreload));
-    totalAssetsRef.current = Math.max(uniqueUrls.length, 1);
 
-    let isMounted = true;
-
-    // 2. Real asset download & decoding
-    if (uniqueUrls.length === 0) {
-      targetProgressRef.current = 100;
-    } else {
-      uniqueUrls.forEach((url) => {
-        if (typeof window === "undefined") return;
-
+    // 2. Real async decoding of all images
+    const preloadImage = (url: string): Promise<void> => {
+      return new Promise((resolve) => {
+        if (typeof window === "undefined") return resolve();
         const img = new window.Image();
         img.src = url;
 
-        const onAssetReady = () => {
-          if (!isMounted) return;
-          loadedCountRef.current += 1;
-          const pct = Math.round((loadedCountRef.current / totalAssetsRef.current) * 100);
-          targetProgressRef.current = Math.max(targetProgressRef.current, pct);
+        const onReady = () => {
+          if (typeof img.decode === "function") {
+            img.decode().then(() => resolve()).catch(() => resolve());
+          } else {
+            resolve();
+          }
         };
 
         if (img.complete && img.naturalWidth > 0) {
-          onAssetReady();
+          onReady();
         } else {
-          img.onload = onAssetReady;
-          img.onerror = onAssetReady;
-          if (typeof img.decode === "function") {
-            img.decode().then(onAssetReady).catch(onAssetReady);
-          }
+          img.onload = onReady;
+          img.onerror = () => resolve(); // continue on error
         }
       });
-    }
+    };
 
-    // 3. Smooth animation ticker: steadily moves displayProgress toward targetProgress
-    const animInterval = setInterval(() => {
+    // Preload all assets in parallel
+    Promise.all(uniqueUrls.map(preloadImage)).then(() => {
+      if (isMounted) {
+        allAssetsReadyRef.current = true;
+      }
+    });
+
+    // Minimum animation duration: 1.4 seconds for smooth elegant progression & GPU texture upload
+    const MIN_DURATION_MS = 1400;
+
+    // 3. Smooth animation ticker
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const timeRatio = Math.min(elapsed / MIN_DURATION_MS, 1);
+      const isAssetsReady = allAssetsReadyRef.current;
+
       setDisplayProgress((prev) => {
-        const target = targetProgressRef.current;
         let nextVal = prev;
 
-        if (prev < target) {
-          // Smooth progressive easing toward real target
-          const step = Math.max(1, Math.ceil((target - prev) * 0.18));
-          nextVal = Math.min(prev + step, target);
-        } else if (prev < 92 && loadedCountRef.current < totalAssetsRef.current) {
-          // Subtle crawl while waiting for heavy images
-          nextVal = Math.min(prev + 1, 92);
+        if (isAssetsReady && timeRatio >= 1) {
+          // Both asset decoding and minimum duration completed -> reach 100%
+          nextVal = 100;
+        } else if (isAssetsReady) {
+          // Assets ready, smoothly curve towards 95% based on elapsed time
+          const target = Math.floor(timeRatio * 95);
+          nextVal = Math.max(prev + 1, Math.min(target, 95));
+        } else {
+          // Assets still downloading, cap at 85% max until decoding completes
+          const target = Math.min(Math.floor(timeRatio * 85), 85);
+          nextVal = Math.max(prev + 1, target);
         }
 
-        // Refined status text
+        // Status text update
         if (nextVal < 35) {
           setStatusText("Memuat Data...");
         } else if (nextVal < 75) {
@@ -106,43 +116,42 @@ export default function InvitationPreloader({
           setStatusText("Selamat Datang");
         }
 
-        // When 100% reached, trigger Grand Gate Opening
+        // Trigger Grand Gate Opening once 100% is reached
         if (nextVal >= 100) {
-          clearInterval(animInterval);
+          clearInterval(interval);
           setTimeout(() => {
             if (isMounted) {
               setIsGateOpening(true);
-              // After gate split animation completes (~1000ms), unmount preloader
+              // Wait for gate slide transition to finish before unmounting
               setTimeout(() => {
                 if (isMounted) {
                   setIsFinished(true);
                   onFinish?.();
                 }
-              }, 1050);
+              }, 1100);
             }
-          }, 400);
+          }, 350);
           return 100;
         }
 
         return nextVal;
       });
-    }, 35);
+    }, 30);
 
-    // Fallback safety timeout (6s) so slow 3G network never locks out the user permanently
+    // Safety timeout: unlock after 6 seconds max even if user has extreme network throttling
     const safetyTimeout = setTimeout(() => {
-      targetProgressRef.current = 100;
+      allAssetsReadyRef.current = true;
     }, 6000);
 
     return () => {
       isMounted = false;
-      clearInterval(animInterval);
+      clearInterval(interval);
       clearTimeout(safetyTimeout);
     };
   }, [images, coverPhotoUrl, onFinish]);
 
   if (isFinished) return null;
 
-  // Simple elegant monogram
   const displayMonogram = monogram
     ? monogram
     : coupleName.includes("&")
@@ -162,7 +171,6 @@ export default function InvitationPreloader({
         transition={{ duration: 1.05, ease: [0.76, 0, 0.24, 1] }}
         className="absolute top-0 bottom-0 left-0 w-1/2 bg-[#090807] border-r border-[#d4af37]/25 z-20 shadow-[15px_0_40px_rgba(0,0,0,0.9)] flex items-center justify-end"
       >
-        {/* Subtle royal door edge trim */}
         <div className="absolute right-3 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-[#d4af37]/15 to-transparent pointer-events-none" />
       </motion.div>
 
@@ -173,11 +181,10 @@ export default function InvitationPreloader({
         transition={{ duration: 1.05, ease: [0.76, 0, 0.24, 1] }}
         className="absolute top-0 bottom-0 right-0 w-1/2 bg-[#090807] border-l border-[#d4af37]/25 z-20 shadow-[-15px_0_40px_rgba(0,0,0,0.9)] flex items-center justify-start"
       >
-        {/* Subtle royal door edge trim */}
         <div className="absolute left-3 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-[#d4af37]/15 to-transparent pointer-events-none" />
       </motion.div>
 
-      {/* CENTER SEAM GOLDEN LIGHT BEAM (Shines brightly when gate splits) */}
+      {/* CENTER SEAM GOLDEN LIGHT BEAM */}
       <motion.div
         animate={
           isGateOpening
@@ -192,7 +199,7 @@ export default function InvitationPreloader({
         className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-gradient-to-b from-transparent via-[#fae19c] to-transparent z-25 pointer-events-none shadow-[0_0_20px_#fae19c]"
       />
 
-      {/* CENTER CONTENT (Simple, Clean, Ultra-Elegant) */}
+      {/* CENTER CONTENT */}
       <AnimatePresence>
         {!isGateOpening && (
           <motion.div
@@ -207,21 +214,17 @@ export default function InvitationPreloader({
             }}
             className="relative z-30 flex flex-col items-center max-w-[290px] w-full text-center px-4"
           >
-            {/* Ambient Warm Backlight */}
+            {/* Warm Backlight */}
             <div className="absolute w-64 h-64 rounded-full bg-amber-500/10 blur-[90px] pointer-events-none -top-12" />
 
-            {/* Minimalist Rotating Monogram Emblem */}
+            {/* Rotating Monogram Emblem */}
             <div className="relative w-20 h-20 flex items-center justify-center mb-6">
-              {/* Thin Golden Ring */}
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-0 rounded-full border border-amber-300/30 border-t-amber-100/80 shadow-[0_0_15px_rgba(251,191,36,0.15)]"
               />
-              {/* Inner Soft Circle */}
               <div className="absolute inset-2 rounded-full bg-gradient-to-b from-amber-950/40 to-black/80 backdrop-blur-sm border border-amber-200/20" />
-
-              {/* Monogram Text */}
               <span className="relative z-10 font-serif text-lg md:text-xl text-amber-100 tracking-widest font-light">
                 {displayMonogram}
               </span>
@@ -247,7 +250,7 @@ export default function InvitationPreloader({
                 />
               </div>
 
-              {/* Status and Percentage */}
+              {/* Status & Percentage */}
               <div className="flex justify-between items-center text-[10px] font-mono text-white/50 tracking-wider">
                 <span className="text-[9px] uppercase tracking-widest text-amber-100/50 font-sans truncate">
                   {statusText}
