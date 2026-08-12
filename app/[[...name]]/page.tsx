@@ -14,6 +14,26 @@ type Props = {
   params: Promise<{ name?: string[] }>;
 };
 
+const formatFallbackGuestName = (raw: string): string => {
+  let name = raw;
+  try {
+    name = decodeURIComponent(raw);
+  } catch {}
+  name = name
+    .replace(/%20/g, " ")
+    .replace(/%25/g, " ")
+    .replace(/%/g, " ")
+    .replace(/\+/g, " ")
+    .replace(/[-_]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return name
+    .split(" ")
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ""))
+    .join(" ");
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   let guestName = "Special Guest";
@@ -27,15 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (dbData.guest) {
     guestName = dbData.guest.name;
   } else if (resolvedParams?.name && resolvedParams.name.length > 0) {
-    const rawName = resolvedParams.name.join(" ");
-    try {
-      guestName = decodeURIComponent(rawName);
-    } catch {
-      guestName = rawName;
-    }
-    guestName = guestName
-      .replace(/%20/g, " ").replace(/%25/g, " ").replace(/%/g, " ").replace(/\+/g, " ")
-      .replace(/\s+/g, " ").trim();
+    guestName = formatFallbackGuestName(resolvedParams.name.join(" "));
   }
 
   const brideName = dbData.project?.bride_nickname || "Jovita";
@@ -138,24 +150,7 @@ export default async function Home({ params }: Props) {
   if (dbData.guest) {
     guestName = dbData.guest.name;
   } else if (resolvedParams?.name && resolvedParams.name.length > 0) {
-    const rawName = resolvedParams.name.join(" ");
-    
-    // First try standard decode
-    try {
-      guestName = decodeURIComponent(rawName);
-    } catch {
-      guestName = rawName;
-    }
-
-    // Fix double-encoded or literal URL entities that some platforms might introduce
-    guestName = guestName
-      .replace(/%20/g, " ")  // Replace literal %20 with space
-      .replace(/%25/g, " ")  // Replace literal %25 with space
-      .replace(/%/g, " ")    // Replace any remaining literal % with space
-      .replace(/\+/g, " ");  // Replace + with space (often used in URLs)
-    
-    // Replace multiple spaces with a single space and trim
-    guestName = guestName.replace(/\s+/g, " ").trim();
+    guestName = formatFallbackGuestName(resolvedParams.name.join(" "));
   }
 
   const brideNickname = dbData.project?.bride_nickname || "JOVITA";
