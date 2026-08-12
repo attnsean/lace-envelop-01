@@ -8,6 +8,7 @@ interface Props {
   coverPhotoUrl?: string;
   coupleName?: string;
   monogram?: string;
+  isDomReady?: boolean;
   onFinish?: () => void;
 }
 
@@ -16,6 +17,7 @@ export default function InvitationPreloader({
   coverPhotoUrl,
   coupleName = "The Wedding of",
   monogram,
+  isDomReady,
   onFinish,
 }: Props) {
   const [displayProgress, setDisplayProgress] = useState(0);
@@ -68,7 +70,7 @@ export default function InvitationPreloader({
           onReady();
         } else {
           img.onload = onReady;
-          img.onerror = () => resolve(); // continue on error
+          img.onerror = () => resolve();
         }
       });
     };
@@ -87,7 +89,8 @@ export default function InvitationPreloader({
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
       const timeRatio = Math.min(elapsed / MIN_DURATION_MS, 1);
-      const isAssetsReady = allAssetsReadyRef.current;
+      // Wait for both asset decoding AND DOM ready flag (if provided)
+      const isAssetsReady = allAssetsReadyRef.current && (isDomReady === undefined || isDomReady === true);
 
       setDisplayProgress((prev) => {
         let nextVal = prev;
@@ -100,7 +103,7 @@ export default function InvitationPreloader({
           const target = Math.floor(timeRatio * 95);
           nextVal = Math.max(prev + 1, Math.min(target, 95));
         } else {
-          // Assets still downloading, cap at 85% max until decoding completes
+          // Stay locked in loading screen (max 85%) until DOM image is fully ready
           const target = Math.min(Math.floor(timeRatio * 85), 85);
           nextVal = Math.max(prev + 1, target);
         }
@@ -138,17 +141,17 @@ export default function InvitationPreloader({
       });
     }, 30);
 
-    // Safety timeout: unlock after 6 seconds max even if user has extreme network throttling
+    // Fallback safety timeout so slow 3G network never permanently blocks user
     const safetyTimeout = setTimeout(() => {
       allAssetsReadyRef.current = true;
-    }, 6000);
+    }, 7000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
       clearTimeout(safetyTimeout);
     };
-  }, [images, coverPhotoUrl, onFinish]);
+  }, [images, coverPhotoUrl, isDomReady, onFinish]);
 
   if (isFinished) return null;
 
