@@ -108,8 +108,8 @@ export default function BlessingWall({
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xnruifsptjsafctjwqdh.supabase.co";
 
-  const sec5Bg = project?.cover_photo_url || "/bg-invitation.jpg";
-  const sec5Envelope = "/heart-doily.png";
+  const sec5Bg = "/bg-invitation.jpg";
+  const sec5Envelope = "/sec5-envelope.png";
   const sec5Couple = (galleryImages && galleryImages.length > 16 ? galleryImages[16] : (project?.gallery_photos && Array.isArray(project.gallery_photos) && project.gallery_photos[16] ? (typeof project.gallery_photos[16] === 'string' ? project.gallery_photos[16] : (project.gallery_photos[16] as any)?.url) : (galleryImages && galleryImages.length > 5 ? galleryImages[5] : (project?.cover_photo_url || project?.opening_photo_url))));
 
   const q1Rsvp = project?.question01_rsvp || "Are you coming?";
@@ -612,7 +612,7 @@ export default function BlessingWall({
                     </div>
                     {/* Overlay text aligned perfectly inside the doily card boundaries */}
                     <div 
-                      className="absolute z-10 w-[60%] h-[48%] left-[24%] bottom-[14%] flex items-center justify-center p-2 text-center rotate-[7deg] select-none"
+                      className="absolute z-10 w-[70%] h-[32%] left-[15%] top-[38%] flex items-center justify-center p-2 text-center select-none"
                     >
                       {(() => {
                         const rawDeadline = project?.rsvp_deadline;
