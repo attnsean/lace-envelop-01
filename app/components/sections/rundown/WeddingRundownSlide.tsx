@@ -129,7 +129,7 @@ export default function WeddingRundownSlide({
           {rundownItems.map((item, idx) => {
             const imgUrl = item.icon.startsWith("http://") || item.icon.startsWith("https://") || item.icon.startsWith("/")
               ? item.icon
-              : `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/${item.icon}?v=5`;
+              : `/${item.icon}`;
             return (
               <FadeIn
                 key={idx}

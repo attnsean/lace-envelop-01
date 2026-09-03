@@ -74,7 +74,7 @@ export default function BrideGroomSlide({
         >
           <div className="relative w-[65vw] h-[65vw] max-w-[270px] max-h-[270px] xs:w-[70vw] xs:h-[70vw] sm:w-[360px] sm:h-[360px] lg:w-[28vw] lg:h-[28vw] lg:max-w-[340px] lg:max-h-[340px] xl:w-[22vw] xl:h-[22vw] xl:max-w-[360px] xl:max-h-[360px] flex-shrink-0">
             <Image
-              src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/lace-frame.png`}
+              src={`/lace-frame.png`}
               alt="Lace frame"
               fill
               className="object-contain filter drop-shadow-[0_8px_16px_rgba(74,53,37,0.18)]"
@@ -126,7 +126,7 @@ export default function BrideGroomSlide({
         >
           <div className="relative w-[65vw] h-[65vw] max-w-[270px] max-h-[270px] xs:w-[70vw] xs:h-[70vw] sm:w-[360px] sm:h-[360px] lg:w-[28vw] lg:h-[28vw] lg:max-w-[340px] lg:max-h-[340px] xl:w-[22vw] xl:h-[22vw] xl:max-w-[360px] xl:max-h-[360px] flex-shrink-0">
             <Image
-              src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/lace-frame.png`}
+              src={`/lace-frame.png`}
               alt="Lace frame"
               fill
               className="object-contain filter drop-shadow-[0_8px_16px_rgba(74,53,37,0.18)]"

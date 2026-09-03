@@ -108,8 +108,8 @@ export default function BlessingWall({
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xnruifsptjsafctjwqdh.supabase.co";
 
-  const sec5Bg = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-bg.png`;
-  const sec5Envelope = `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/sec5-envelope.png`;
+  const sec5Bg = project?.cover_photo_url || "/bg-invitation.jpg";
+  const sec5Envelope = "/heart-doily.png";
   const sec5Couple = (galleryImages && galleryImages.length > 16 ? galleryImages[16] : (project?.gallery_photos && Array.isArray(project.gallery_photos) && project.gallery_photos[16] ? (typeof project.gallery_photos[16] === 'string' ? project.gallery_photos[16] : (project.gallery_photos[16] as any)?.url) : (galleryImages && galleryImages.length > 5 ? galleryImages[5] : (project?.cover_photo_url || project?.opening_photo_url))));
 
   const q1Rsvp = project?.question01_rsvp || "Are you coming?";

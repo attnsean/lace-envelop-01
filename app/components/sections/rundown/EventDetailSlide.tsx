@@ -72,7 +72,7 @@ export default function EventDetailSlide({
             className="relative w-[70vw] h-[70vw] max-w-[240px] max-h-[240px] xs:max-w-[270px] xs:max-h-[270px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[350px] md:max-h-[350px] flex items-center justify-center drop-shadow-2xl"
           >
             <Image
-              src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/lace-frame.png`}
+              src={`/lace-frame.png`}
               alt="Lace Frame"
               fill
               className="object-contain pointer-events-none select-none z-10"
