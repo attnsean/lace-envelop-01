@@ -108,7 +108,7 @@ export default function BlessingWall({
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xnruifsptjsafctjwqdh.supabase.co";
 
-  const sec5Bg = "/bg-invitation.jpg";
+  const sec5Bg = project?.cover_photo_url || "/bg-invitation.jpg";
   const sec5Envelope = "/sec5-envelope.png";
   const sec5Couple = (galleryImages && galleryImages.length > 16 ? galleryImages[16] : (project?.gallery_photos && Array.isArray(project.gallery_photos) && project.gallery_photos[16] ? (typeof project.gallery_photos[16] === 'string' ? project.gallery_photos[16] : (project.gallery_photos[16] as any)?.url) : (galleryImages && galleryImages.length > 5 ? galleryImages[5] : (project?.cover_photo_url || project?.opening_photo_url))));
 
@@ -610,37 +610,7 @@ export default function BlessingWall({
                         className="object-contain"
                       />
                     </div>
-                    {/* Overlay text aligned perfectly inside the doily card boundaries */}
-                    <div 
-                      className="absolute z-10 w-[70%] h-[32%] left-[15%] top-[38%] flex items-center justify-center p-2 text-center select-none"
-                    >
-                      {(() => {
-                        const rawDeadline = project?.rsvp_deadline;
-                        let deadlineText = "9 Agustus 2026";
-                        if (rawDeadline && rawDeadline.trim()) {
-                          deadlineText = rawDeadline.trim();
-                        } else if (project?.wedding_date) {
-                          try {
-                            const wDate = new Date(project.wedding_date);
-                            if (!isNaN(wDate.getTime())) {
-                              const deadlineDate = new Date(wDate.getTime() - 6 * 24 * 60 * 60 * 1000);
-                              const monthsIndo = [
-                                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-                              ];
-                              deadlineText = `${deadlineDate.getDate()} ${monthsIndo[deadlineDate.getMonth()]} ${deadlineDate.getFullYear()}`;
-                            }
-                          } catch {}
-                        }
-                        return (
-                          <p className="font-seasons text-[#4a3f35] text-[12px] xs:text-[13px] sm:text-[14px] md:text-[11px] lg:text-[13px] leading-[1.4] font-medium tracking-wide">
-                            Mohon konfirmasi kehadiran <br />
-                            paling lambat {deadlineText} <br />
-                            karena tempat duduk telah diatur
-                          </p>
-                        );
-                      })()}
-                    </div>
+                    
                   </div>
                 </FadeIn>
 
