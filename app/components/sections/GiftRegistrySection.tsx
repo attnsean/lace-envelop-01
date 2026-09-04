@@ -114,17 +114,17 @@ export default function GiftRegistrySection({ project }: Props) {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 * i }}
-                    className="relative w-[304px] xl:w-[330px] flex-none"
+                    className="relative w-[240px] xl:w-[270px] flex-none"
                   >
                     <motion.div
                       animate={{ y: [-4, 4, -4] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      className="relative w-full aspect-[560/345] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
+                      className="relative w-full aspect-square flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
                     >
                       <Image
-                        src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-lace.png`}
+                        src={"/gift-lace.png"}
                         alt="Lace Card Frame"
                         fill
                         sizes="(max-width: 1280px) 400px, 480px"
@@ -132,8 +132,7 @@ export default function GiftRegistrySection({ project }: Props) {
                         unoptimized
                       />
                       <div 
-                        className="relative z-10 flex flex-col items-center justify-center text-center p-4 -mt-2 w-[85%] h-[80%] origin-center"
-                        style={{ transform: "rotate(-3.5deg)" }}
+                        className="relative z-10 flex flex-col items-center justify-center text-center p-3 w-[68%] h-[68%] origin-center"
                       >
                         <span className="text-[clamp(10px,1.1vw,13px)] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                           {bankName}
@@ -232,16 +231,16 @@ export default function GiftRegistrySection({ project }: Props) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 * i }}
-                  className="relative"
+                  className="relative w-[260px] xs:w-[280px] flex-none"
                 >
                   <motion.div
                     animate={{ y: [-3, 3, -3] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                     whileTap={{ scale: 0.97 }}
-                    className="relative w-[340px] h-[210px] flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
+                    className="relative w-full aspect-square flex items-center justify-center text-[#4A3E3D] font-seasons cursor-pointer"
                   >
                     <Image
-                      src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-lace.png`}
+                      src={"/gift-lace.png"}
                       alt="Lace Card Frame"
                       fill
                       sizes="340px"
@@ -249,8 +248,7 @@ export default function GiftRegistrySection({ project }: Props) {
                       unoptimized
                     />
                     <div 
-                      className="relative z-10 flex flex-col items-center justify-center text-center p-3 -mt-1 w-[80%] h-[75%] origin-center"
-                      style={{ transform: "rotate(-3.5deg)" }}
+                      className="relative z-10 flex flex-col items-center justify-center text-center p-3 w-[68%] h-[68%] origin-center"
                     >
                       <span className="text-[13px] tracking-[0.2em] font-light uppercase text-[#4A3E3D]/80">
                         {bankName}
