@@ -29,7 +29,7 @@ import RundownOverlay from "./sections/rundown/RundownOverlay";
 
 
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xnruifsptjsafctjwqdh.supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ujiqdozsipxwjrugtsgd.supabase.co";
 const tplUserId = "a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf";
 const tplAssetProjectId = "c8907317-5e60-452f-87a4-e910f1352e80";
 

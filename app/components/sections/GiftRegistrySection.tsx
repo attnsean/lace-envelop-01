@@ -25,7 +25,7 @@ interface Props {
 }
 
 export default function GiftRegistrySection({ project }: Props) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ujiqdozsipxwjrugtsgd.supabase.co';
   const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const tplAssetProjectId = 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
 

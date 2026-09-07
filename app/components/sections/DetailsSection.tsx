@@ -34,7 +34,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
 
   const userId = project?.user_id || 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const projectId = project?.id || 'f93ad18d-cba2-4de0-a86b-b1fadf2783a2';
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xnruifsptjsafctjwqdh.supabase.co';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ujiqdozsipxwjrugtsgd.supabase.co';
   const gallery = (project as any)?.gallery_photos || [];
   const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';

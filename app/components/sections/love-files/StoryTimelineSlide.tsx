@@ -25,7 +25,7 @@ export default function StoryTimelineSlide({
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    "https://xnruifsptjsafctjwqdh.supabase.co";
+    "https://ujiqdozsipxwjrugtsgd.supabase.co";
 
   const gallery = (project as any)?.gallery_photos || [];
   const bgStoryUrl = (typeof gallery[2] === 'string' ? gallery[2] : gallery[2]?.url) || project?.opening_photo_url || project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/love-story-bg.jpg`;
