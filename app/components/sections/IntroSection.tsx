@@ -24,6 +24,7 @@ export default function IntroSection({ project, isOpen, formattedWeddingDate, fo
           className="object-cover object-[center_bottom] brightness-[0.55] select-none"
           draggable={false}
           priority
+          unoptimized
         />
         <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply"></div>
       </div>
@@ -42,6 +43,7 @@ export default function IntroSection({ project, isOpen, formattedWeddingDate, fo
             fill
             className="object-contain"
             priority
+            unoptimized
           />
           <motion.div
             initial={{ opacity: 0 }}

@@ -33,13 +33,13 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
     if (userUploadedPhotos.length > 0) {
       return userUploadedPhotos[idx % userUploadedPhotos.length];
     }
-    return `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/${fallbackFilename}`;
+    return `https://www.serastory.com/storage/undangan/templates/lace-envelop-01/${fallbackFilename}`;
   };
 
-  const danceImgUrl = project?.cover_photo_url || getPhoto(0, 'sec2-dance.jpg');
-  const pigeonsImgUrl = getPhoto(4, 'sec2-pigeons.jpg');
-  const flowersImgUrl = project?.bride_photo_url || getPhoto(2, 'gallery-24.jpg');
-  const runImgUrl = project?.groom_photo_url || getPhoto(3, 'sec2-run.jpg');
+  const danceImgUrl = project?.cover_photo_url || getPhoto(0, '01.webp');
+  const pigeonsImgUrl = getPhoto(4, '05.webp');
+  const flowersImgUrl = project?.bride_photo_url || getPhoto(2, '03.webp');
+  const runImgUrl = project?.groom_photo_url || getPhoto(3, '04.webp');
 
   const hasCustomQuote = Boolean(project?.quote_intro_line1 || project?.quote_intro_line2);
 
@@ -69,6 +69,7 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
           className="object-cover pointer-events-none w-full h-full"
+          unoptimized
         />
       </FadeIn>
 
@@ -83,6 +84,7 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 230px, (max-width: 1024px) 205px, 250px"
           className="object-cover pointer-events-none w-full h-full"
+          unoptimized
         />
       </FadeIn>
 
@@ -97,6 +99,7 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 195px, (max-width: 1024px) 195px, 240px"
           className="object-cover pointer-events-none w-full h-full"
+          unoptimized
         />
       </FadeIn>
 
@@ -111,6 +114,7 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
           fill
           sizes="(max-width: 768px) 250px, (max-width: 1024px) 225px, 280px"
           className="object-cover pointer-events-none w-full h-full"
+          unoptimized
         />
       </FadeIn>
 

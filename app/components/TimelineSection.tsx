@@ -58,6 +58,7 @@ export default function TimelineSection({ loveStoryItems }: TimelineSectionProps
           fill
           sizes="(max-width: 768px) 100vw, 30vw"
           className="object-cover object-center opacity-40 grayscale"
+          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80"></div>
       </div>

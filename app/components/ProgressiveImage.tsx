@@ -18,6 +18,7 @@ export default function ProgressiveImage({
   showSpinner = false,
   fill,
   priority,
+  unoptimized = true,
   ...props
 }: ProgressiveImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -46,6 +47,7 @@ export default function ProgressiveImage({
         alt={alt}
         fill={fill}
         priority={priority}
+        unoptimized={unoptimized}
         onLoad={() => setIsLoaded(true)}
         onError={() => setHasError(true)}
         className={`transition-all duration-700 ease-out ${

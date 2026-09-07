@@ -74,7 +74,7 @@ export default function GiftRegistrySection({ project }: Props) {
               className="relative w-[360px] h-[200px] mt-3 select-none pointer-events-none"
             >
               <Image
-                src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-bird.png`}
+                src={`/gift-bird.png`}
                 alt="Bird Illustration"
                 fill
                 sizes="360px"
@@ -186,7 +186,7 @@ export default function GiftRegistrySection({ project }: Props) {
           className="relative w-[140px] h-[80px] select-none pointer-events-none -mt-1"
         >
           <Image
-            src={`${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplAssetProjectId}/gift-bird.png`}
+            src={`/gift-bird.png`}
             alt="Bird Illustration"
             fill
             sizes="140px"

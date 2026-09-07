@@ -38,7 +38,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
   const gallery = (project as any)?.gallery_photos || [];
   const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
-  const detailsImgUrl = (typeof gallery[4] === 'string' ? gallery[4] : gallery[4]?.url) || project?.cover_photo_url || `${supabaseUrl}/storage/v1/object/public/undangan/${tplUserId}/${tplDemoProjectId}/sec6-details.jpg`;
+  const detailsImgUrl = displayEvents?.[0]?.venue_photo_url || (typeof gallery[4] === 'string' ? gallery[4] : gallery[4]?.url) || project?.cover_photo_url || "https://www.serastory.com/storage/undangan/templates/lace-envelop-01/venue-01.webp";
 
   const formatEnglishDate = (dateStr?: string | null) => {
     const date = dateStr ? new Date(dateStr) : null;
@@ -104,6 +104,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
+          unoptimized
           className="object-cover object-center pointer-events-none"
         />
         <div className="absolute inset-0 bg-black/10"></div>

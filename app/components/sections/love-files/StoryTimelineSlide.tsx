@@ -49,6 +49,7 @@ export default function StoryTimelineSlide({
           className="object-cover brightness-[0.55] select-none"
           draggable={false}
           priority
+          unoptimized
         />
         <div className="absolute inset-0 bg-[#5b3b1e]/45 mix-blend-multiply"></div>
       </div>
