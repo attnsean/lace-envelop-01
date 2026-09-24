@@ -89,16 +89,28 @@ export default function RundownOverlay({
   const latitude = firstEvent?.latitude;
   const longitude = firstEvent?.longitude;
 
-  let mapIframeSrc = `https://maps.google.com/maps?q=${venueQuery}&hl=id&z=15&output=embed`;
-  if (latitude && longitude) {
-    mapIframeSrc = `https://maps.google.com/maps?q=${latitude},${longitude}&hl=id&z=15&output=embed`;
-  } else if (rawMapsUrl && (rawMapsUrl.includes("output=embed") || rawMapsUrl.includes("/embed"))) {
+  const latNum = latitude ? parseFloat(String(latitude)) : NaN;
+  const lngNum = longitude ? parseFloat(String(longitude)) : NaN;
+
+  let mapIframeSrc = "";
+  if (!isNaN(latNum) && !isNaN(lngNum) && latNum !== 0 && lngNum !== 0) {
+    const delta = 0.005;
+    mapIframeSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${lngNum - delta}%2C${latNum - delta}%2C${lngNum + delta}%2C${latNum + delta}&layer=mapnik&marker=${latNum}%2C${lngNum}`;
+  } else if (rawMapsUrl && (rawMapsUrl.includes("openstreetmap.org") || rawMapsUrl.includes("embed"))) {
     mapIframeSrc = rawMapsUrl;
+  } else {
+    mapIframeSrc = `https://www.openstreetmap.org/export/embed.html?bbox=106.822%2C-6.180%2C106.832%2C-6.170&layer=mapnik`;
   }
 
-  const mapLinkUrl = (rawMapsUrl && !rawMapsUrl.includes("output=embed") && rawMapsUrl.startsWith("http"))
+  let mapLinkUrl = (rawMapsUrl && !rawMapsUrl.includes("output=embed") && rawMapsUrl.startsWith("http"))
     ? rawMapsUrl
     : `https://www.google.com/maps/search/?api=1&query=${venueQuery}`;
+
+  if (!isNaN(latNum) && !isNaN(lngNum) && latNum !== 0 && lngNum !== 0) {
+    if (!rawMapsUrl || rawMapsUrl.includes("output=embed")) {
+      mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${latNum},${lngNum}`;
+    }
+  }
 
   const googleCalendarLink = getGoogleCalendarLink();
 

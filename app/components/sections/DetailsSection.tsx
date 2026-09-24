@@ -40,6 +40,26 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const detailsImgUrl = displayEvents?.[0]?.venue_photo_url || (typeof gallery[4] === 'string' ? gallery[4] : gallery[4]?.url) || project?.cover_photo_url || "https://www.serastory.com/storage/undangan/templates/lace-envelop-01/venue-01.webp";
 
+  const firstEvt = displayEvents?.[0];
+  const directVenueMapUrl = (() => {
+    const rawMapsUrl = firstEvt?.venue_maps_url || project?.venue_maps_url || "";
+    if (rawMapsUrl && !rawMapsUrl.includes("output=embed") && rawMapsUrl.startsWith("http")) {
+      return rawMapsUrl;
+    }
+    const lat = firstEvt?.latitude;
+    const lng = firstEvt?.longitude;
+    const latN = lat ? parseFloat(String(lat)) : NaN;
+    const lngN = lng ? parseFloat(String(lng)) : NaN;
+    if (!isNaN(latN) && !isNaN(lngN) && latN !== 0 && lngN !== 0) {
+      return `https://www.google.com/maps/search/?api=1&query=${latN},${lngN}`;
+    }
+    const vName = firstEvt?.venue_name || project?.venue_name;
+    if (vName) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(vName + " " + (firstEvt?.venue_address || project?.venue_address || ""))}`;
+    }
+    return null;
+  })();
+
   const formatEnglishDate = (dateStr?: string | null) => {
     const date = dateStr ? new Date(dateStr) : null;
     if (!date || isNaN(date.getTime())) return "Saturday, 8 August 2026";
@@ -193,13 +213,27 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
         </FadeIn>
  
         {/* Action Button */}
-        <FadeIn delay={0.9} className="mt-2 sm:mt-4">
+        <FadeIn delay={0.9} className="mt-2 sm:mt-4 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
           <button
             onClick={() => setShowRundownOverlay(true)}
-            className="font-lekton text-[#4A3E3D] text-[clamp(10px,2.8vw,13px)] md:text-[clamp(11px,0.8vw,13px)] tracking-wider px-6 md:px-10 py-2.5 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
+            className="font-lekton text-[#4A3E3D] text-[clamp(10px,2.8vw,13px)] md:text-[clamp(11px,0.8vw,13px)] tracking-wider px-5 md:px-8 py-2.5 md:py-3.5 border border-[#4A3E3D] rounded-full bg-transparent hover:bg-[#4A3E3D]/10 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             Detailed Info & Rundown
           </button>
+          {directVenueMapUrl && (
+            <a
+              href={directVenueMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-lekton text-[#4A3E3D] text-[clamp(10px,2.8vw,13px)] md:text-[clamp(11px,0.8vw,13px)] tracking-wider px-5 md:px-7 py-2.5 md:py-3.5 border border-[#4A3E3D]/60 rounded-full bg-[#4A3E3D]/5 hover:bg-[#4A3E3D]/15 active:scale-95 transition-all duration-300 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              Google Maps
+            </a>
+          )}
         </FadeIn>
       </div>
     </section>

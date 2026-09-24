@@ -422,26 +422,30 @@ export default function BlessingWall({
         throw new Error(errData.error || 'Failed to submit RSVP');
       }
 
-      // Optional trigger for email sending
-      if (email) {
-        try {
-          await fetch('/api/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email,
-              name: rsvpGuestName.trim(),
-              attendance: isAttending === 'yes' ? 'Hadir' : 'Tidak Hadir',
-              pax: guestsCount,
-              brideName: project?.bride_nickname || 'Ananda',
-              groomName: project?.groom_nickname || 'Angga',
-              weddingDate: project?.wedding_date || '2026-06-13',
-              venueName: project?.venue_name || 'Hotel Grand Tjokro Bandung'
-            })
-          });
-        } catch (emailErr) {
-          console.error('Failed to send RSVP email:', emailErr);
-        }
+      // Trigger email sending (guest ticket & host notification)
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim(),
+            phone: phone.trim(),
+            name: rsvpGuestName.trim(),
+            attendance: isAttending === 'yes' ? 'Hadir' : 'Tidak Hadir',
+            pax: isAttending === 'yes' ? guestsCount : 0,
+            brideName: project?.bride_nickname || 'Ira',
+            groomName: project?.groom_nickname || 'Faisal',
+            weddingDate: project?.wedding_date || '2026-09-18',
+            venueName: project?.venue_name || 'Joglo Bumi Salika',
+            venueAddress: project?.venue_address || '',
+            projectId: projectId,
+            notes: (dietaryRestrictions || songNomination)
+              ? `Dietary: ${dietaryRestrictions || '-'} | Song: ${songNomination || '-'}`
+              : ''
+          })
+        });
+      } catch (emailErr) {
+        console.error('Failed to send RSVP email:', emailErr);
       }
 
       // Fetch updated RSVP stats
@@ -658,7 +662,37 @@ export default function BlessingWall({
                             disabled
                             readOnly
                             placeholder="Guest Name"
-                            className="w-full bg-[#ebe7db]/80 border border-[#b8b3a9] py-2.5 px-4 md:py-1.5 md:px-3 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans font-bold cursor-not-allowed select-none opacity-90"
+                            className="w-full bg-[#ebe7db]/80 border border-[#b8b3a9] py-2 px-3 md:py-1.5 md:px-2.5 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans font-bold cursor-not-allowed select-none opacity-90"
+                          />
+                        </div>
+
+                        {/* WhatsApp / Phone input */}
+                        <div className="space-y-1 md:space-y-0.5">
+                          <label className="block font-sans text-xs md:text-[11px] font-medium text-[#3d332a] select-none">
+                            WhatsApp / No. HP
+                          </label>
+                          <input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            disabled={hasRsvpSubmitted}
+                            placeholder="081234567890"
+                            className="w-full bg-[#ebe7db]/40 border border-[#b8b3a9] py-2 px-3 md:py-1.5 md:px-2.5 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans focus:outline-none focus:border-[#6c6355] focus:ring-1 focus:ring-[#6c6355] transition-all"
+                          />
+                        </div>
+
+                        {/* Email input for ticket & confirmation */}
+                        <div className="space-y-1 md:space-y-0.5">
+                          <label className="block font-sans text-xs md:text-[11px] font-medium text-[#3d332a] select-none">
+                            Email <span className="text-[10px] text-gray-500 font-normal">(untuk e-ticket & konfirmasi)</span>
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={hasRsvpSubmitted}
+                            placeholder="nama@email.com"
+                            className="w-full bg-[#ebe7db]/40 border border-[#b8b3a9] py-2 px-3 md:py-1.5 md:px-2.5 rounded-md text-xs md:text-[11px] text-[#3d332a] font-sans focus:outline-none focus:border-[#6c6355] focus:ring-1 focus:ring-[#6c6355] transition-all"
                           />
                         </div>
 
