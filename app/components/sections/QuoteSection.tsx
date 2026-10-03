@@ -33,7 +33,7 @@ export default function QuoteSection({ project, setShowLoveFiles }: Props) {
     if (userUploadedPhotos.length > 0) {
       return userUploadedPhotos[idx % userUploadedPhotos.length];
     }
-    return `https://www.serastory.com/storage/undangan/templates/lace-envelop-01/${fallbackFilename}`;
+    return `https://cdn.serastory.com/undangan/templates/lace-envelop-01/${fallbackFilename}`;
   };
 
   const danceImgUrl = project?.cover_photo_url || getPhoto(0, '01.webp');

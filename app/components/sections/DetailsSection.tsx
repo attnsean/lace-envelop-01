@@ -38,7 +38,7 @@ export default function DetailsSection({ project, events, setShowRundownOverlay 
   const gallery = (project as any)?.gallery_photos || [];
   const tplUserId = 'a3e99edc-aab7-4a84-b0c6-986a2fd0b0bf';
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
-  const detailsImgUrl = displayEvents?.[0]?.venue_photo_url || (typeof gallery[4] === 'string' ? gallery[4] : gallery[4]?.url) || project?.cover_photo_url || "https://www.serastory.com/storage/undangan/templates/lace-envelop-01/venue-01.webp";
+  const detailsImgUrl = displayEvents?.[0]?.venue_photo_url || (typeof gallery[4] === 'string' ? gallery[4] : gallery[4]?.url) || project?.cover_photo_url || "https://cdn.serastory.com/undangan/templates/lace-envelop-01/venue-01.webp";
 
   const firstEvt = displayEvents?.[0];
   const directVenueMapUrl = (() => {
