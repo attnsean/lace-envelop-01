@@ -95,11 +95,11 @@ export default function RundownOverlay({
   let mapIframeSrc = "";
   if (!isNaN(latNum) && !isNaN(lngNum) && latNum !== 0 && lngNum !== 0) {
     const delta = 0.005;
-    mapIframeSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${lngNum - delta}%2C${latNum - delta}%2C${lngNum + delta}%2C${latNum + delta}&layer=mapnik&marker=${latNum}%2C${lngNum}`;
+    mapIframeSrc = ` - delta}%2C${latNum - delta}%2C${lngNum + delta}%2C${latNum + delta}&layer=mapnik&marker=${latNum}%2C${lngNum}`;
   } else if (rawMapsUrl && (rawMapsUrl.includes("openstreetmap.org") || rawMapsUrl.includes("embed"))) {
     mapIframeSrc = rawMapsUrl;
   } else {
-    mapIframeSrc = `https://www.openstreetmap.org/export/embed.html?bbox=106.822%2C-6.180%2C106.832%2C-6.170&layer=mapnik`;
+    mapIframeSrc = ``;
   }
 
   let mapLinkUrl = (rawMapsUrl && !rawMapsUrl.includes("output=embed") && rawMapsUrl.startsWith("http"))

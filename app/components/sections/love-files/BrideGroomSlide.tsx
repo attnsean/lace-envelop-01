@@ -27,7 +27,7 @@ export default function BrideGroomSlide({
   const tplDemoProjectId = '6d889fed-efb5-4a32-97ce-16f74bce763c';
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    "https://ujiqdozsipxwjrugtsgd.supabase.co";
+    "https://sdnuzcdcaxuydoyocqgj.supabase.co";
 
   return (
     <div
